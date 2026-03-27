@@ -7,189 +7,175 @@
 
 <style>
 body {
-  margin: 0;
   font-family: "Cairo", sans-serif;
   background: linear-gradient(135deg, #4facfe, #00f2fe);
+  margin: 0;
+  padding: 20px;
   display: flex;
   justify-content: center;
-  padding: 20px;
 }
 
 .container {
   width: 100%;
-  max-width: 400px;
-  background: #f3f3f3;
-  border-radius: 30px;
-  overflow: hidden;
-}
-
-.header {
-  height: 150px;
-  background: linear-gradient(135deg, #0072ff, #00c6ff);
-}
-
-.profile {
+  max-width: 500px;
+  background: #fff;
+  border-radius: 25px;
+  padding: 20px;
   text-align: center;
-  margin-top: -60px;
 }
 
-.profile img {
-  width: 120px;
-  height: 120px;
+/* Profile */
+.cover {
+  height: 150px;
+  background: linear-gradient(135deg, #4facfe, #00c6ff);
+  border-radius: 20px;
+}
+
+.profile-img {
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  border: 5px solid #f3f3f3;
+  margin-top: -50px;
+  border: 4px solid #fff;
   object-fit: cover;
 }
 
-h1 { margin: 10px 0; }
-
-.subtitle {
-  color: #00aaff;
-  font-size: 14px;
+h2 {
+  margin: 10px 0;
 }
 
 .students {
-  margin: 10px 0;
+  color: #0099cc;
   font-weight: bold;
-  color: #00aaff;
 }
 
+/* Buttons */
 .card {
-  background: #eaeaea;
-  margin: 15px;
+  background: #f1f1f1;
+  border-radius: 15px;
   padding: 15px;
-  border-radius: 20px;
+  margin: 10px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 button {
-  background: #00aaff;
-  color: white;
+  background: #00c6ff;
   border: none;
-  padding: 8px 20px;
+  padding: 10px 20px;
   border-radius: 20px;
+  color: white;
   cursor: pointer;
 }
 
-/* تسجيل الدخول */
-.login {
-  text-align: center;
-  margin-top: 100px;
-}
-
+/* Input */
 input {
+  width: 90%;
   padding: 10px;
+  margin: 10px 0;
   border-radius: 10px;
   border: 1px solid #ccc;
-  width: 80%;
-  margin-bottom: 10px;
+}
+
+/* Result */
+#result {
+  margin-top: 20px;
+  text-align: left;
+  font-size: 14px;
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginPage" class="login">
-  <h2>👋 أهلاً بك</h2>
-  <input id="name" placeholder="اكتب اسمك">
-  <br>
-  <button onclick="login()">دخول</button>
-</div>
+<div class="container">
 
-<!-- APP -->
-<div id="app" style="display:none;" class="container">
+  <div class="cover"></div>
+  <img src="me.jpeg" class="profile-img">
 
-  <div class="header"></div>
+  <h2>إنجلش بالعربي</h2>
+  <p>تعلم الإنجليزية بطريقة ذكية 🚀</p>
 
-  <div class="profile">
-    <img src="me.jpeg">
+  <p class="students">👨‍🎓 أكثر من 129 طالب</p>
 
-    <h1>إنجلش بالعربي</h1>
-    <p class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</p>
-
-    <p id="welcome"></p>
-    <p class="students" id="students"></p>
-  </div>
-
+  <!-- YouTube -->
   <div class="card">
     <span>📺 تحليل فيديو يوتيوب</span>
     <button onclick="goYoutube()">ابدأ</button>
   </div>
 
+  <!-- PDF -->
   <div class="card">
     <span>📄 تحليل كتاب PDF</span>
     <button onclick="goPDF()">ابدأ</button>
   </div>
 
+  <!-- Search -->
   <div class="card">
     <span>🔍 البحث عن كلمة</span>
     <button onclick="goSearch()">ابدأ</button>
   </div>
 
+  <!-- Inputs -->
+  <input id="youtubeUrl" placeholder="ضع رابط يوتيوب هنا">
+  <input id="searchWord" placeholder="اكتب كلمة للبحث">
+
+  <!-- Result -->
+  <div id="result"></div>
+
 </div>
 
 <script>
 
-// ================= LOGIN =================
-function login() {
-  const name = document.getElementById("name").value;
-  if (!name) return alert("اكتب اسمك");
+// 🔹 YouTube
+async function goYoutube() {
+  const url = document.getElementById("youtubeUrl").value;
 
-  localStorage.setItem("user", name);
-  showApp();
+  if (!url) return alert("حط رابط الفيديو");
+
+  const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/video-ai", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ url })
+  });
+
+  const data = await res.json();
+  document.getElementById("result").innerText = JSON.stringify(data, null, 2);
 }
 
-function showApp() {
-  const name = localStorage.getItem("user");
+// 🔹 PDF
+async function goPDF() {
 
-  if (!name) return;
+  const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
+    method: "POST"
+  });
 
-  document.getElementById("loginPage").style.display = "none";
-  document.getElementById("app").style.display = "block";
-
-  document.getElementById("welcome").innerText = "👋 أهلاً " + name;
+  const data = await res.json();
+  document.getElementById("result").innerText = JSON.stringify(data, null, 2);
 }
 
-showApp();
+// 🔹 Search
+async function goSearch() {
+  const word = document.getElementById("searchWord").value;
 
+  if (!word) return alert("اكتب كلمة");
 
-// ================= COUNTER =================
-let count = localStorage.getItem("studentsCount");
+  const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/69c0fd9b-1072-4c11-93f0-aa96f41ed012", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ word })
+  });
 
-if (!count) count = 129;
-else count = parseInt(count);
-
-function updateStudents() {
-  document.getElementById("students").innerText =
-    "👨‍🎓 أكثر من " + count + " طالب";
-}
-
-updateStudents();
-
-setInterval(() => {
-  const increase = Math.random() > 0.8 ? 1 : 0;
-  count += increase;
-
-  updateStudents();
-  localStorage.setItem("studentsCount", count);
-}, 5000);
-
-
-// ================= N8N LINKS =================
-
-function goYoutube() {
-  window.location.href = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
-}
-
-function goPDF() {
-  window.location.href = "https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf";
-}
-
-function goSearch() {
-  window.location.href = "https://n8n.srv1495053.hstgr.cloud/webhook/69c0fd9b-1072-4c11-93f0-aa96f41ed012";
+  const data = await res.json();
+  document.getElementById("result").innerText = JSON.stringify(data, null, 2);
 }
 
 </script>

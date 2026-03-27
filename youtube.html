@@ -15,6 +15,7 @@ body {
   margin: 0;
 }
 
+/* 👇 فقط ضبط المقاس */
 .container {
   max-width: 900px;
   margin: auto;
@@ -22,6 +23,7 @@ body {
   box-sizing: border-box;
 }
 
+/* 👇 يخلي الإدخال مناسب لكل الشاشات */
 input {
   padding: 10px;
   width: 100%;
@@ -31,6 +33,7 @@ input {
   box-sizing: border-box;
 }
 
+/* الزر نفس الشكل */
 button {
   background: #22c55e;
   padding: 10px 15px;
@@ -41,21 +44,20 @@ button {
   margin: 5px;
 }
 
-.speak-btn {
-  background: #0ea5e9;
-  padding: 5px 8px;
-  border-radius: 8px;
-  border: none;
-  color: white;
-  cursor: pointer;
-}
-
+/* الكارد بدون تغيير */
 .card {
   background: #1e293b;
   margin: 15px 0;
   padding: 15px;
   border-radius: 15px;
   box-shadow: 0 0 10px #000;
+}
+
+/* 👇 الفيديو متجاوب */
+iframe {
+  width: 100%;
+  height: 250px;
+  border-radius: 15px;
 }
 
 h3 {
@@ -68,11 +70,13 @@ h3 {
   margin-top: 10px;
 }
 
+/* 👇 مهم للجوال */
 .table th, .table td {
   border-bottom: 1px solid #334155;
   padding: 10px;
   text-align: left;
   vertical-align: top;
+  word-break: break-word;
 }
 
 .table th {
@@ -82,6 +86,7 @@ h3 {
 .en {
   color: #38bdf8;
   font-weight: bold;
+  cursor: pointer;
 }
 
 .ar {
@@ -127,10 +132,7 @@ h3 {
 <p id="loading">⏳ جاري التحليل...</p>
 
 <div id="videoBox" class="card" style="display:none;">
-  <iframe id="videoFrame" width="100%" height="300"
-    style="border-radius:15px;" frameborder="0"
-    allowfullscreen>
-  </iframe>
+  <iframe id="videoFrame" frameborder="0" allowfullscreen></iframe>
 </div>
 
 <div id="result"></div>
@@ -143,7 +145,6 @@ const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 
 let videoId = "";
 
-// استخراج ID
 function getVideoId(url) {
   if (url.includes("youtu.be")) {
     return url.split("/").pop().split("?")[0];
@@ -151,7 +152,6 @@ function getVideoId(url) {
   return url.split("v=")[1]?.split("&")[0];
 }
 
-// عرض الفيديو
 function showVideo(url) {
   videoId = getVideoId(url);
   document.getElementById("videoFrame").src =
@@ -159,21 +159,17 @@ function showVideo(url) {
   document.getElementById("videoBox").style.display = "block";
 }
 
-// الانتقال للتوقيت
 function goToTime(sec) {
   document.getElementById("videoFrame").src =
     `https://www.youtube.com/embed/${videoId}?start=${sec}&autoplay=1`;
 }
 
-// ⭐ تمييز الكلمة (مصلح)
 function highlightWord(sentence, word) {
-  if (!sentence || !word) return sentence || "";
-
+  if (!sentence) return "";
   const regex = new RegExp(`\\b(${word})\\b`, "gi");
   return sentence.replace(regex, `<span class="highlight">$1</span>`);
 }
 
-// إرسال
 async function sendUrl() {
   const url = document.getElementById("url").value;
   if (!url) return alert("اكتب رابط");
@@ -192,7 +188,6 @@ async function sendUrl() {
   show(data);
 }
 
-// عرض (تم إصلاح الأمثلة)
 function show(data) {
   let html = "";
 
@@ -206,7 +201,6 @@ function show(data) {
       <table class="table">
         <tr>
           <th>Word</th>
-          <th>🔊</th>
           <th>Arabic</th>
           <th>Example</th>
         </tr>
@@ -220,14 +214,8 @@ function show(data) {
 
       html += `
         <tr>
-          <td class="en">${word}</td>
-
-          <td>
-            <button class="speak-btn" onclick="speak('${word}')">🔊</button>
-          </td>
-
-          <td class="ar">${w.ar || ""}</td>
-
+          <td class="en" onclick="speak('${word}')">${word}</td>
+          <td class="ar">${w.ar}</td>
           <td onclick="goToTime(${w.time || 0})" style="cursor:pointer;">
             <div class="example">${highlighted}</div>
             <div class="example-ar">${w.example_ar || ""}</div>
@@ -242,28 +230,12 @@ function show(data) {
   document.getElementById("result").innerHTML = html;
 }
 
-// 🔥 صوت رجالي بطيء
 function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
-
   msg.lang = "en-US";
-  msg.rate = 0.75;
-  msg.pitch = 0.8;
-
-  const voices = speechSynthesis.getVoices();
-
-  const maleVoice = voices.find(v =>
-    v.name.toLowerCase().includes("male") ||
-    v.name.toLowerCase().includes("david") ||
-    v.name.toLowerCase().includes("mark")
-  );
-
-  if (maleVoice) msg.voice = maleVoice;
-
   speechSynthesis.speak(msg);
 }
 
-// loading
 function startLoading() {
   document.getElementById("loading").style.display = "block";
 }

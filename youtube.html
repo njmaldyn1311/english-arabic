@@ -68,6 +68,7 @@ h3 {
   color: #22c55e;
 }
 
+/* الجدول */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -75,26 +76,23 @@ h3 {
   table-layout: fixed;
 }
 
+/* 🔥 توسيع عمود الكلمة */
 .table th:nth-child(1),
-.table td:nth-child(1) { width: 25%; }
+.table td:nth-child(1) { width: 30%; }
 
 .table th:nth-child(2),
 .table td:nth-child(2) { width: 20%; }
 
 .table th:nth-child(3),
-.table td:nth-child(3) { width: 55%; }
+.table td:nth-child(3) { width: 50%; }
 
+/* الخلايا */
 .table th, .table td {
   border-bottom: 1px solid #334155;
   padding: 10px;
   text-align: left;
   vertical-align: top;
   word-break: break-word;
-  overflow-wrap: break-word;
-}
-
-.table th {
-  color: #22c55e;
 }
 
 /* 🔥 تحسين الكلمة */
@@ -102,18 +100,14 @@ h3 {
   color: #38bdf8;
   font-weight: bold;
   cursor: pointer;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
-/* 👇 تصغير تلقائي */
-.en.small {
-  font-size: 14px;
-}
-
-.en.smaller {
-  font-size: 13px;
-}
+/* 🔥 تصغير ذكي */
+.en.small { font-size: 13px; }
+.en.smaller { font-size: 12px; }
+.en.tiny { font-size: 11px; }
 
 .ar {
   color: #f87171;
@@ -148,7 +142,7 @@ h3 {
 
 <div class="container">
 
-<h2>🎥 تعلم من الفيديو بالذكاء الاصطناعي</h2>
+<h2>🎥 تعلم من الفيديو بذكاء </h2>
 
 <input type="text" id="url" placeholder="ضع رابط YouTube">
 <br>
@@ -237,9 +231,11 @@ function show(data) {
       const word = w.en || w.word || "";
       const arabic = w.ar || w.arabic || "";
 
+      /* 🔥 تصغير ذكي */
       let sizeClass = "";
-      if (word.length > 10) sizeClass = "small";
-      if (word.length > 14) sizeClass = "smaller";
+      if (word.length > 8) sizeClass = "small";
+      if (word.length > 10) sizeClass = "smaller";
+      if (word.length > 13) sizeClass = "tiny";
 
       const shortExample = (w.example || "").split(".")[0];
       const highlighted = highlightWord(shortExample, word);
@@ -262,16 +258,11 @@ function show(data) {
   document.getElementById("result").innerHTML = html;
 }
 
+/* صوت أبطأ */
 function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "en-US";
-  msg.rate = 0.85; // 🔥 أبطأ شوي
-
-  // محاولة صوت رجالي
-  const voices = speechSynthesis.getVoices();
-  const maleVoice = voices.find(v => v.name.toLowerCase().includes("male"));
-  if (maleVoice) msg.voice = maleVoice;
-
+  msg.rate = 0.85;
   speechSynthesis.speak(msg);
 }
 

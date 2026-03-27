@@ -7,30 +7,24 @@ body {
   font-family: "Cairo", sans-serif;
   background: linear-gradient(135deg, #1e88e5, #26c6da);
   margin: 0;
-  padding: 0;
 }
 
-/* 🔥 الحاوية */
+/* الحاوية */
 .container {
   display: flex;
   justify-content: center;
   padding: 20px;
 }
 
-/* 🔥 الكرت الأبيض (مثل الصفحة الرئيسية) */
+/* الكرت الأبيض */
 .card {
   background: #f3f4f6;
   width: 98%;
-  max-width: 420px; /* 👈 نفس شكل الجوال */
+  max-width: 420px;
   border-radius: 30px;
   padding: 25px;
   text-align: center;
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-}
-
-/* العنوان */
-h2 {
-  margin-bottom: 20px;
 }
 
 /* زر */
@@ -38,22 +32,12 @@ button {
   background: linear-gradient(135deg, #1e88e5, #26c6da);
   color: white;
   border: none;
-  padding: 12px 18px;
-  border-radius: 15px;
+  padding: 10px 15px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 16px;
 }
 
-button:hover {
-  opacity: 0.9;
-}
-
-/* النتائج */
-#result {
-  margin-top: 20px;
-}
-
-/* عنصر الكلمة */
+/* عنصر كلمة */
 .word {
   background: white;
   border-radius: 12px;
@@ -64,16 +48,11 @@ button:hover {
   align-items: center;
 }
 
-/* الإنجليزي */
-.en {
-  flex: 1;
-  text-align: left;
-}
+.en { text-align: left; flex: 1; }
+.ar { text-align: right; flex: 1; }
 
-/* العربي */
-.ar {
-  flex: 1;
-  text-align: right;
+h3 {
+  margin-top: 20px;
 }
 
 /* تحميل */
@@ -81,16 +60,8 @@ button:hover {
   margin-top: 15px;
   color: #1e88e5;
 }
-
-/* 🔥 موبايل */
-@media (max-width: 600px) {
-  .card {
-    max-width: 95%;
-    border-radius: 25px;
-    padding: 20px;
-  }
-}
-</style></head><body><div class="container">  <div class="card"><h2>📄 رفع PDF</h2>
+</style></head><body><div class="container">
+  <div class="card"><h2>📄 رفع PDF</h2>
 
 <input type="file" id="file" accept="application/pdf"><br><br>
 
@@ -100,7 +71,8 @@ button:hover {
 
 <div id="result"></div>
 
-  </div></div><script>
+  </div>
+</div><script>
 async function upload() {
   const file = document.getElementById("file").files[0];
   const status = document.getElementById("status");
@@ -133,26 +105,33 @@ async function upload() {
 
     status.innerText = "✅ تم التحليل";
 
-    function renderList(list) {
-      return (list || []).map(item => `
-        <div class="word">
-          <span class="en">${item.word || item.phrase}</span>
-          <button onclick="speak('${item.word || item.phrase}')">🔊</button>
-          <span class="ar">${item.arabic}</span>
-        </div>
-      `).join("");
+    function renderSection(title, list) {
+      if (!list || list.length === 0) return "";
+
+      return `
+        <h3>${title}</h3>
+        ${list.map(item => `
+          <div class="word">
+            <span class="en">${item.word || item.phrase || ""}</span>
+
+            <button onclick="speak('${item.word || item.phrase}')">🔊</button>
+
+            <span class="ar">${item.arabic || ""}</span>
+          </div>
+        `).join("")}
+      `;
     }
 
     result.innerHTML = `
-      <h3>📌 الأفعال</h3>
-      ${renderList(data.verbs)}
-
-      <h3>📌 الأسماء</h3>
-      ${renderList(data.nouns)}
+      ${renderSection("📌 الأفعال (Verbs)", data.verbs)}
+      ${renderSection("📌 الأسماء (Nouns)", data.nouns)}
+      ${renderSection("📌 الصفات (Adjectives)", data.adjectives)}
+      ${renderSection("📌 العبارات (Idioms)", data.idioms)}
+      ${renderSection("📌 الأفعال المركبة (Phrasal Verbs)", data.phrasal_verbs)}
     `;
 
   } catch (err) {
-    status.innerText = "❌ خطأ";
+    status.innerText = "❌ خطأ في الاتصال";
   }
 }
 

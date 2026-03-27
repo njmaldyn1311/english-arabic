@@ -9,20 +9,24 @@ body {
   background-attachment: fixed;
   min-height: 100vh;
   margin: 0;
-  padding: 20px; /* 🔥 مسافة من الحواف */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
-/* الصندوق */
+/* 🔥 الحاوية الخارجية (المهم) */
+.container {
+  width: 100%;
+  max-width: 700px;
+  margin: auto;
+  padding: 20px; /* 👈 هنا المسافة من الجوانب */
+  box-sizing: border-box;
+}
+
+/* الصندوق الأبيض */
 .box {
   background: white;
   padding: 25px;
   border-radius: 20px;
   width: 100%;
-  max-width: 600px;
-  margin-bottom: 15px; /* 🔥 مسافة تحت */
+  margin-bottom: 15px;
   text-align: center;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
@@ -31,7 +35,6 @@ body {
 #result {
   margin-top: 15px;
   width: 100%;
-  max-width: 600px;
   background: white;
   padding: 20px;
   border-radius: 20px;
@@ -92,8 +95,8 @@ button:hover {
 
 /* تحسين للجوال */
 @media (max-width: 600px) {
-  body {
-    padding: 15px;
+  .container {
+    padding: 15px; /* 🔥 مسافة مناسبة للجوال */
   }
 
   .word {
@@ -104,13 +107,14 @@ button:hover {
     padding: 8px;
   }
 }
-</style></head><body><div class="box">
-  <h2>📄 رفع PDF</h2><input type="file" id="file" accept="application/pdf"><br><br>
+</style></head><body><div class="container">  <div class="box">
+    <h2>📄 رفع PDF</h2><input type="file" id="file" accept="application/pdf"><br><br>
 
 <button onclick="upload()">🚀 تحليل</button>
 
-  <p id="status"></p>
-</div><div id="result"></div><script>
+<p id="status"></p>
+
+  </div>  <div id="result"></div></div><script>
 async function upload() {
   const file = document.getElementById("file").files[0];
   const status = document.getElementById("status");

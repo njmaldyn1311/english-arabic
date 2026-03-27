@@ -3,108 +3,81 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>إنجلش بالعربي</title>
 
 <style>
 body {
+  margin: 0;
   font-family: "Cairo", sans-serif;
   background: linear-gradient(135deg, #4facfe, #00f2fe);
-  margin: 0;
   display: flex;
   justify-content: center;
+  padding: 20px;
 }
 
-/* الكرت */
 .container {
   width: 100%;
   max-width: 400px;
-  background: white;
-  border-radius: 25px;
-  margin: 20px;
+  background: #f3f3f3;
+  border-radius: 30px;
   overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
-/* الغلاف */
-.cover {
-  height: 140px;
-  background: linear-gradient(135deg, #00c6ff, #0072ff);
+.header {
+  height: 150px;
+  background: linear-gradient(135deg, #0072ff, #00c6ff);
 }
 
-/* الصورة */
-.profile-img {
+.profile {
+  text-align: center;
+  margin-top: -60px;
+}
+
+.profile img {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  border: 4px solid white;
-  margin-top: -60px;
+  border: 5px solid #f3f3f3;
   object-fit: cover;
 }
 
-/* المحتوى */
-.content {
-  padding: 15px;
-  text-align: center;
+h1 {
+  margin: 10px 0 5px;
 }
 
-/* الاسم */
-.name {
-  font-size: 22px;
-  font-weight: bold;
-}
-
-/* الوصف */
-.tagline {
+.subtitle {
   color: #00aaff;
   font-size: 14px;
-  margin-top: 5px;
 }
 
-/* الإحصائية */
-.stats {
-  margin: 15px 0;
-  font-size: 18px;
-  color: #00aaff;
+.students {
+  margin: 10px 0;
   font-weight: bold;
+  color: #00aaff;
 }
 
-/* الخدمات */
-.service {
-  background: #f7f7f7;
+.card {
+  background: #eaeaea;
+  margin: 15px;
   padding: 15px;
-  border-radius: 15px;
-  margin-bottom: 12px;
+  border-radius: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* النص */
-.service span {
-  font-size: 15px;
-}
-
-/* الزر */
-.btn {
-  background: #00c6ff;
+button {
+  background: #00aaff;
   color: white;
   border: none;
-  padding: 8px 18px;
+  padding: 8px 20px;
   border-radius: 20px;
   cursor: pointer;
-  font-size: 14px;
 }
 
-.btn:hover {
-  background: #009edb;
-}
-
-/* موبايل */
-@media (max-width: 480px) {
-  .container {
-    margin: 10px;
-  }
+button:active {
+  transform: scale(0.95);
 }
 </style>
 </head>
@@ -113,62 +86,58 @@ body {
 
 <div class="container">
 
-  <div class="cover"></div>
+  <div class="header"></div>
 
-  <div class="content">
+  <div class="profile">
+    <!-- غير الصورة هنا -->
+    <img src="me.jpeg">
 
-    <!-- غير اسم الصورة هنا -->
-    <img src="me.jpeg" class="profile-img">
+    <h1>إنجلش بالعربي</h1>
+    <p class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</p>
 
-    <div class="name">إنجلش بالعربي</div>
+    <p class="students" id="students">👨‍🎓 أكثر من 129 طالب</p>
+  </div>
 
-    <div class="tagline">تعلم الإنجليزية بطريقة ذكية 🚀</div>
+  <div class="card">
+    <span>📺 تحليل فيديو يوتيوب</span>
+    <button onclick="location.href='youtube.html'">ابدأ</button>
+  </div>
 
-    <!-- ✅ تم تعديل علامة + -->
-    <div class="stats">
-      👨‍🎓 <span id="students">120</span>+ طالب
-    </div>
+  <div class="card">
+    <span>📄 تحليل كتاب PDF</span>
+    <button onclick="location.href='pdf.html'">ابدأ</button>
+  </div>
 
-    <div class="service">
-      <span>📺 تحليل فيديو يوتيوب</span>
-      <button class="btn" onclick="goYoutube()">ابدأ</button>
-    </div>
-
-    <div class="service">
-      <span>📄 تحليل كتاب PDF</span>
-      <button class="btn" onclick="goPDF()">ابدأ</button>
-    </div>
-
-    <div class="service">
-      <span>🔍 البحث عن كلمة</span>
-      <button class="btn" onclick="goSearch()">ابدأ</button>
-    </div>
-
+  <div class="card">
+    <span>🔍 البحث عن كلمة</span>
+    <button onclick="location.href='search.html'">ابدأ</button>
   </div>
 
 </div>
 
 <script>
-// 🔥 عداد وهمي متحرك
-let count = 120;
+// جلب العدد أو بدء من 129
+let count = localStorage.getItem("studentsCount");
 
+if (!count) {
+  count = 129;
+} else {
+  count = parseInt(count);
+}
+
+// عرض
+document.getElementById("students").innerText = "👨‍🎓 أكثر من " + count + " طالب";
+
+// زيادة واقعية
 setInterval(() => {
-  count += Math.floor(Math.random() * 3);
-  document.getElementById("students").innerText = count;
-}, 2000);
+  const increase = Math.random() > 0.8 ? 1 : 0;
+  count += increase;
 
-// روابطك
-function goYoutube() {
-  window.location.href = "youtube.html";
-}
+  document.getElementById("students").innerText = "👨‍🎓 أكثر من " + count + " طالب";
 
-function goPDF() {
-  window.location.href = "pdf.html";
-}
+  localStorage.setItem("studentsCount", count);
 
-function goSearch() {
-  window.location.href = "search.html";
-}
+}, 5000);
 </script>
 
 </body>

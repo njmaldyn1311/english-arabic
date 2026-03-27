@@ -21,7 +21,6 @@ body {
   background: #f3f3f3;
   border-radius: 30px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 .header {
@@ -42,9 +41,7 @@ body {
   object-fit: cover;
 }
 
-h1 {
-  margin: 10px 0 5px;
-}
+h1 { margin: 10px 0; }
 
 .subtitle {
   color: #00aaff;
@@ -76,68 +73,125 @@ button {
   cursor: pointer;
 }
 
-button:active {
-  transform: scale(0.95);
+/* تسجيل الدخول */
+.login {
+  text-align: center;
+  margin-top: 100px;
+}
+
+input {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  width: 80%;
+  margin-bottom: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- LOGIN -->
+<div id="loginPage" class="login">
+  <h2>👋 أهلاً بك</h2>
+  <input id="name" placeholder="اكتب اسمك">
+  <br>
+  <button onclick="login()">دخول</button>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;" class="container">
 
   <div class="header"></div>
 
   <div class="profile">
-    <!-- غير الصورة هنا -->
     <img src="me.jpeg">
 
     <h1>إنجلش بالعربي</h1>
     <p class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</p>
 
-    <p class="students" id="students">👨‍🎓 أكثر من 129 طالب</p>
+    <p id="welcome"></p>
+    <p class="students" id="students"></p>
   </div>
 
   <div class="card">
     <span>📺 تحليل فيديو يوتيوب</span>
-    <button onclick="location.href='youtube.html'">ابدأ</button>
+    <button onclick="goYoutube()">ابدأ</button>
   </div>
 
   <div class="card">
     <span>📄 تحليل كتاب PDF</span>
-    <button onclick="location.href='pdf.html'">ابدأ</button>
+    <button onclick="goPDF()">ابدأ</button>
   </div>
 
   <div class="card">
     <span>🔍 البحث عن كلمة</span>
-    <button onclick="location.href='search.html'">ابدأ</button>
+    <button onclick="goSearch()">ابدأ</button>
   </div>
 
 </div>
 
 <script>
-// جلب العدد أو بدء من 129
-let count = localStorage.getItem("studentsCount");
 
-if (!count) {
-  count = 129;
-} else {
-  count = parseInt(count);
+// ================= LOGIN =================
+function login() {
+  const name = document.getElementById("name").value;
+  if (!name) return alert("اكتب اسمك");
+
+  localStorage.setItem("user", name);
+  showApp();
 }
 
-// عرض
-document.getElementById("students").innerText = "👨‍🎓 أكثر من " + count + " طالب";
+function showApp() {
+  const name = localStorage.getItem("user");
 
-// زيادة واقعية
+  if (!name) return;
+
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("app").style.display = "block";
+
+  document.getElementById("welcome").innerText = "👋 أهلاً " + name;
+}
+
+showApp();
+
+
+// ================= COUNTER =================
+let count = localStorage.getItem("studentsCount");
+
+if (!count) count = 129;
+else count = parseInt(count);
+
+function updateStudents() {
+  document.getElementById("students").innerText =
+    "👨‍🎓 أكثر من " + count + " طالب";
+}
+
+updateStudents();
+
 setInterval(() => {
   const increase = Math.random() > 0.8 ? 1 : 0;
   count += increase;
 
-  document.getElementById("students").innerText = "👨‍🎓 أكثر من " + count + " طالب";
-
+  updateStudents();
   localStorage.setItem("studentsCount", count);
-
 }, 5000);
+
+
+// ================= N8N LINKS =================
+
+function goYoutube() {
+  window.location.href = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
+}
+
+function goPDF() {
+  window.location.href = "https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf";
+}
+
+function goSearch() {
+  window.location.href = "https://n8n.srv1495053.hstgr.cloud/webhook/69c0fd9b-1072-4c11-93f0-aa96f41ed012";
+}
+
 </script>
 
 </body>

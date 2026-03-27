@@ -2,6 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Video Learning</title>
 
 <style>
@@ -10,6 +11,8 @@ body {
   color: white;
   font-family: Arial;
   text-align: center;
+  margin: 0;
+  padding: 15px;
 }
 
 .container {
@@ -17,14 +20,17 @@ body {
   margin: auto;
 }
 
+/* input */
 input {
-  padding: 10px;
-  width: 80%;
+  padding: 12px;
+  width: 100%;
   border-radius: 10px;
   border: none;
-  margin: 5px;
+  margin: 5px 0;
+  font-size: 16px;
 }
 
+/* button */
 button {
   background: #22c55e;
   padding: 10px 15px;
@@ -33,8 +39,10 @@ button {
   color: white;
   cursor: pointer;
   margin: 5px;
+  font-size: 14px;
 }
 
+/* card */
 .card {
   background: #1e293b;
   margin: 15px 0;
@@ -43,10 +51,21 @@ button {
   box-shadow: 0 0 10px #000;
 }
 
-h3 {
-  color: #22c55e;
+/* video responsive */
+.video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
 }
 
+.video-wrapper iframe {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+}
+
+/* table */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -67,7 +86,6 @@ h3 {
 .en {
   color: #38bdf8;
   font-weight: bold;
-  cursor: pointer;
 }
 
 .ar {
@@ -84,7 +102,16 @@ h3 {
   margin-top: 5px;
 }
 
-/* ⭐ تمييز الكلمة */
+/* زر الصوت */
+.speak-btn {
+  background: #0ea5e9;
+  border-radius: 8px;
+  padding: 5px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* highlight */
 .highlight {
   color: #38bdf8;
   font-weight: bold;
@@ -93,9 +120,20 @@ h3 {
   border-radius: 5px;
 }
 
+/* موبايل */
+@media (max-width: 600px) {
+  .table th, .table td {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  button {
+    width: 100%;
+  }
+}
+
 #loading {
   display: none;
-  margin-top: 10px;
 }
 </style>
 </head>
@@ -107,17 +145,15 @@ h3 {
 <h2>🎥 تعلم من الفيديو بالذكاء الاصطناعي</h2>
 
 <input type="text" id="url" placeholder="ضع رابط YouTube">
-<br>
 
-<button onclick="sendUrl()">🔗 تحليل رابط</button>
+<button onclick="sendUrl()">🔗 تحليل الرابط</button>
 
 <p id="loading">⏳ جاري التحليل...</p>
 
 <div id="videoBox" class="card" style="display:none;">
-  <iframe id="videoFrame" width="100%" height="300"
-    style="border-radius:15px;" frameborder="0"
-    allowfullscreen>
-  </iframe>
+  <div class="video-wrapper">
+    <iframe id="videoFrame" frameborder="0" allowfullscreen></iframe>
+  </div>
 </div>
 
 <div id="result"></div>
@@ -146,18 +182,16 @@ function showVideo(url) {
   document.getElementById("videoBox").style.display = "block";
 }
 
-// الانتقال للتوقيت
+// الانتقال للوقت
 function goToTime(sec) {
   document.getElementById("videoFrame").src =
     `https://www.youtube.com/embed/${videoId}?start=${sec}&autoplay=1`;
 }
 
-// ⭐ تمييز الكلمة داخل المثال
+// تمييز الكلمة
 function highlightWord(sentence, word) {
   if (!sentence) return "";
-
   const regex = new RegExp(`\\b(${word})\\b`, "gi");
-
   return sentence.replace(regex, `<span class="highlight">$1</span>`);
 }
 
@@ -180,7 +214,7 @@ async function sendUrl() {
   show(data);
 }
 
-// عرض
+// عرض البيانات
 function show(data) {
   let html = "";
 
@@ -194,6 +228,7 @@ function show(data) {
       <table class="table">
         <tr>
           <th>Word</th>
+          <th>🔊</th>
           <th>Arabic</th>
           <th>Example</th>
         </tr>
@@ -202,13 +237,18 @@ function show(data) {
     data[cat].forEach(w => {
 
       const shortExample = (w.example || "").split(".")[0];
-
       const highlighted = highlightWord(shortExample, w.en);
 
       html += `
         <tr>
-          <td class="en" onclick="speak('${w.en}')">${w.en}</td>
+          <td class="en">${w.en}</td>
+
+          <td>
+            <button class="speak-btn" onclick="speak('${w.en}')">🔊</button>
+          </td>
+
           <td class="ar">${w.ar}</td>
+
           <td onclick="goToTime(${w.time || 0})" style="cursor:pointer;">
             <div class="example">${highlighted}</div>
             <div class="example-ar">${w.example_ar || ""}</div>
@@ -223,11 +263,28 @@ function show(data) {
   document.getElementById("result").innerHTML = html;
 }
 
-// صوت
+// 🔥 صوت احترافي (رجالي + بطيء)
 function speak(text) {
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = "en-US";
-  speechSynthesis.speak(msg);
+  const utterance = new SpeechSynthesisUtterance(text);
+
+  utterance.lang = "en-US";
+  utterance.rate = 0.7;   // أبطأ
+  utterance.pitch = 0.8;  // أعمق (رجالي)
+
+  const voices = speechSynthesis.getVoices();
+
+  const maleVoice = voices.find(v =>
+    v.lang.includes("en") &&
+    (v.name.toLowerCase().includes("male") ||
+     v.name.toLowerCase().includes("david") ||
+     v.name.toLowerCase().includes("mark"))
+  );
+
+  if (maleVoice) {
+    utterance.voice = maleVoice;
+  }
+
+  speechSynthesis.speak(utterance);
 }
 
 // loading

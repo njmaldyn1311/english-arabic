@@ -2,8 +2,6 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>AI Video Learning</title>
 
 <style>
@@ -15,17 +13,35 @@ body {
   margin: 0;
 }
 
-/* 👇 فقط ضبط المقاس */
 .container {
   max-width: 900px;
   margin: auto;
   padding: 15px;
-  box-sizing: border-box;
 }
 
-/* 👇 يخلي الإدخال مناسب لكل الشاشات */
+/* ⭐ الفيديو ثابت */
+#videoBox {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: #0f172a;
+  padding: 10px 0;
+}
+
+#videoFrame {
+  width: 100%;
+  height: 220px;
+  border-radius: 15px;
+}
+
+@media (min-width: 768px) {
+  #videoFrame {
+    height: 350px;
+  }
+}
+
 input {
-  padding: 10px;
+  padding: 12px;
   width: 100%;
   border-radius: 10px;
   border: none;
@@ -33,18 +49,17 @@ input {
   box-sizing: border-box;
 }
 
-/* الزر نفس الشكل */
 button {
   background: #22c55e;
-  padding: 10px 15px;
+  padding: 12px;
+  width: 100%;
   border: none;
   border-radius: 10px;
   color: white;
   cursor: pointer;
-  margin: 5px;
+  margin: 10px 0;
 }
 
-/* الكارد بدون تغيير */
 .card {
   background: #1e293b;
   margin: 15px 0;
@@ -53,24 +68,17 @@ button {
   box-shadow: 0 0 10px #000;
 }
 
-/* 👇 الفيديو متجاوب */
-iframe {
-  width: 100%;
-  height: 250px;
-  border-radius: 15px;
-}
-
 h3 {
   color: #22c55e;
 }
 
+/* ⭐ إصلاح الجداول */
 .table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  table-layout: fixed;
 }
 
-/* 👇 مهم للجوال */
 .table th, .table td {
   border-bottom: 1px solid #334155;
   padding: 10px;
@@ -82,6 +90,15 @@ h3 {
 .table th {
   color: #22c55e;
 }
+
+.table th:nth-child(1),
+.table td:nth-child(1) { width: 25%; }
+
+.table th:nth-child(2),
+.table td:nth-child(2) { width: 20%; }
+
+.table th:nth-child(3),
+.table td:nth-child(3) { width: 55%; }
 
 .en {
   color: #38bdf8;
@@ -100,7 +117,6 @@ h3 {
 .example-ar {
   color: #94a3b8;
   font-size: 13px;
-  margin-top: 5px;
 }
 
 .highlight {
@@ -113,7 +129,6 @@ h3 {
 
 #loading {
   display: none;
-  margin-top: 10px;
 }
 </style>
 </head>
@@ -122,10 +137,9 @@ h3 {
 
 <div class="container">
 
-<h2>🎥 تعلم من الفيديو بالذكاء الاصطناعي</h2>
+<h2>🎥 تعلم من الفيديو بذكاء </h2>
 
 <input type="text" id="url" placeholder="ضع رابط YouTube">
-<br>
 
 <button onclick="sendUrl()">🔗 تحليل رابط</button>
 
@@ -145,6 +159,7 @@ const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 
 let videoId = "";
 
+// استخراج ID
 function getVideoId(url) {
   if (url.includes("youtu.be")) {
     return url.split("/").pop().split("?")[0];
@@ -152,6 +167,7 @@ function getVideoId(url) {
   return url.split("v=")[1]?.split("&")[0];
 }
 
+// عرض الفيديو
 function showVideo(url) {
   videoId = getVideoId(url);
   document.getElementById("videoFrame").src =
@@ -159,17 +175,20 @@ function showVideo(url) {
   document.getElementById("videoBox").style.display = "block";
 }
 
+// الانتقال للتوقيت
 function goToTime(sec) {
   document.getElementById("videoFrame").src =
     `https://www.youtube.com/embed/${videoId}?start=${sec}&autoplay=1`;
 }
 
+// تمييز الكلمة
 function highlightWord(sentence, word) {
   if (!sentence) return "";
   const regex = new RegExp(`\\b(${word})\\b`, "gi");
   return sentence.replace(regex, `<span class="highlight">$1</span>`);
 }
 
+// إرسال
 async function sendUrl() {
   const url = document.getElementById("url").value;
   if (!url) return alert("اكتب رابط");
@@ -177,17 +196,27 @@ async function sendUrl() {
   startLoading();
   showVideo(url);
 
-  const res = await fetch(WEBHOOK, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url })
-  });
+  try {
+    const res = await fetch(WEBHOOK, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ url })
+    });
 
-  const data = await res.json();
+    const text = await res.text();
+    const data = JSON.parse(text);
+
+    show(data);
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ مشكلة في البيانات");
+  }
+
   stopLoading();
-  show(data);
 }
 
+// عرض النتائج (⭐ ذكي)
 function show(data) {
   let html = "";
 
@@ -209,16 +238,21 @@ function show(data) {
     data[cat].forEach(w => {
 
       const word = w.en || w.word || "";
-      const shortExample = (w.example || "").split(".")[0];
+      const arabic = w.ar || w.arabic || "";
+      const example = w.example || "";
+      const example_ar = w.example_ar || "";
+      const time = w.time || 0;
+
+      const shortExample = example.split(".")[0];
       const highlighted = highlightWord(shortExample, word);
 
       html += `
         <tr>
           <td class="en" onclick="speak('${word}')">${word}</td>
-          <td class="ar">${w.ar}</td>
-          <td onclick="goToTime(${w.time || 0})" style="cursor:pointer;">
+          <td class="ar">${arabic}</td>
+          <td onclick="goToTime(${time})" style="cursor:pointer;">
             <div class="example">${highlighted}</div>
-            <div class="example-ar">${w.example_ar || ""}</div>
+            <div class="example-ar">${example_ar}</div>
           </td>
         </tr>
       `;
@@ -230,12 +264,25 @@ function show(data) {
   document.getElementById("result").innerHTML = html;
 }
 
+// ⭐ صوت رجالي بطيء
 function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "en-US";
+  msg.rate = 0.75;
+
+  const voices = speechSynthesis.getVoices();
+  const male = voices.find(v =>
+    v.lang.includes("en") &&
+    (v.name.toLowerCase().includes("david") ||
+     v.name.toLowerCase().includes("male"))
+  );
+
+  if (male) msg.voice = male;
+
   speechSynthesis.speak(msg);
 }
 
+// loading
 function startLoading() {
   document.getElementById("loading").style.display = "block";
 }

@@ -2,119 +2,118 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>AI Video Learning</title>
 
 <style>
-
 body {
-  margin: 0;
-  font-family: Arial;
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: white;
-  min-height: 100vh;
-}
-
-/* الكونتينر */
-.container {
-  width: 100%;
-  max-width: 800px;
-  margin: auto;
-  padding: 20px 15px 100px;
-  box-sizing: border-box;
-}
-
-/* العنوان */
-h2 {
+  font-family: Arial;
   text-align: center;
-  margin-bottom: 20px;
+  margin: 0;
 }
 
-/* صندوق الإدخال */
-.top-box {
-  background: rgba(255,255,255,0.05);
+/* 👇 تعديل خفيف فقط للاستجابة */
+.container {
+  max-width: 900px;
+  margin: auto;
   padding: 15px;
-  border-radius: 15px;
-  margin-bottom: 15px;
-}
-
-/* الإدخال */
-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  margin-bottom: 10px;
   box-sizing: border-box;
 }
 
-/* الزر */
-button {
+/* 👇 يخلي الإدخال متجاوب */
+input {
+  padding: 10px;
   width: 100%;
-  background: #22c55e;
-  padding: 12px;
+  max-width: 100%;
+  border-radius: 10px;
   border: none;
-  border-radius: 12px;
+  margin: 5px 0;
+  box-sizing: border-box;
+}
+
+button {
+  background: #22c55e;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px;
   color: white;
-  font-size: 16px;
+  cursor: pointer;
+  margin: 5px;
+}
+
+/* 👇 زر الصوت */
+.speak-btn {
+  background: #0ea5e9;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: none;
+  color: white;
   cursor: pointer;
 }
 
-/* الكارد */
 .card {
   background: #1e293b;
-  margin-top: 15px;
+  margin: 15px 0;
   padding: 15px;
   border-radius: 15px;
+  box-shadow: 0 0 10px #000;
 }
 
-/* الفيديو */
-iframe {
-  width: 100%;
-  height: 220px;
-  border-radius: 15px;
+h3 {
+  color: #22c55e;
 }
 
-/* الجدول */
 .table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 10px;
 }
 
-.table td {
-  padding: 10px;
+.table th, .table td {
   border-bottom: 1px solid #334155;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
 }
 
-/* الكلمة */
+.table th {
+  color: #22c55e;
+}
+
 .en {
   color: #38bdf8;
   font-weight: bold;
 }
 
-/* العربي */
 .ar {
   color: #f87171;
 }
 
-/* زر الصوت */
-.speak-btn {
-  background: #0ea5e9;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 10px;
-  color: white;
-  cursor: pointer;
+.example {
+  color: #e2e8f0;
 }
 
-/* loading */
+.example-ar {
+  color: #94a3b8;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.highlight {
+  color: #38bdf8;
+  font-weight: bold;
+  background: rgba(56,189,248,0.1);
+  padding: 2px 4px;
+  border-radius: 5px;
+}
+
 #loading {
-  text-align: center;
-  margin-top: 10px;
   display: none;
+  margin-top: 10px;
 }
-
 </style>
 </head>
 
@@ -122,17 +121,20 @@ iframe {
 
 <div class="container">
 
-<h2>🎥 تعلم من الفيديو بذكاء </h2>
+<h2>🎥 تعلم من الفيديو بالذكاء الاصطناعي</h2>
 
-<div class="top-box">
-  <input id="url" placeholder="ضع رابط YouTube">
-  <button onclick="sendUrl()">🔗 تحليل الرابط</button>
-</div>
+<input type="text" id="url" placeholder="ضع رابط YouTube">
+<br>
+
+<button onclick="sendUrl()">🔗 تحليل رابط</button>
 
 <p id="loading">⏳ جاري التحليل...</p>
 
 <div id="videoBox" class="card" style="display:none;">
-  <iframe id="videoFrame" allowfullscreen></iframe>
+  <iframe id="videoFrame" width="100%" height="300"
+    style="border-radius:15px;" frameborder="0"
+    allowfullscreen>
+  </iframe>
 </div>
 
 <div id="result"></div>
@@ -145,7 +147,7 @@ const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 
 let videoId = "";
 
-/* استخراج ID */
+// استخراج ID
 function getVideoId(url) {
   if (url.includes("youtu.be")) {
     return url.split("/").pop().split("?")[0];
@@ -153,7 +155,7 @@ function getVideoId(url) {
   return url.split("v=")[1]?.split("&")[0];
 }
 
-/* عرض الفيديو */
+// عرض الفيديو
 function showVideo(url) {
   videoId = getVideoId(url);
   document.getElementById("videoFrame").src =
@@ -161,62 +163,94 @@ function showVideo(url) {
   document.getElementById("videoBox").style.display = "block";
 }
 
-/* إرسال */
+// الانتقال للتوقيت
+function goToTime(sec) {
+  document.getElementById("videoFrame").src =
+    `https://www.youtube.com/embed/${videoId}?start=${sec}&autoplay=1`;
+}
+
+// تمييز الكلمة
+function highlightWord(sentence, word) {
+  if (!sentence) return "";
+  const regex = new RegExp(`\\b(${word})\\b`, "gi");
+  return sentence.replace(regex, `<span class="highlight">$1</span>`);
+}
+
+// إرسال
 async function sendUrl() {
   const url = document.getElementById("url").value;
   if (!url) return alert("اكتب رابط");
 
-  document.getElementById("loading").style.display = "block";
-
+  startLoading();
   showVideo(url);
 
   const res = await fetch(WEBHOOK, {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ url })
   });
 
   const data = await res.json();
-
-  document.getElementById("loading").style.display = "none";
-
+  stopLoading();
   show(data);
 }
 
-/* عرض البيانات */
+// عرض
 function show(data) {
   let html = "";
 
   for (let cat in data) {
     if (!data[cat] || data[cat].length === 0) continue;
 
-    html += `<div class="card"><h3>${cat}</h3><table class="table">`;
+    html += `
+    <div class="card">
+      <h3>${cat}</h3>
+
+      <table class="table">
+        <tr>
+          <th>Word</th>
+          <th>🔊</th>
+          <th>Arabic</th>
+          <th>Example</th>
+        </tr>
+    `;
 
     data[cat].forEach(w => {
+
+      const shortExample = (w.example || "").split(".")[0];
+      const highlighted = highlightWord(shortExample, w.en);
+
       html += `
-      <tr>
-        <td class="en">${w.en || w.word || ""}</td>
-        <td>
-          <button class="speak-btn" onclick="speak('${w.en || w.word}')">🔊</button>
-        </td>
-        <td class="ar">${w.ar || w.arabic || ""}</td>
-      </tr>
+        <tr>
+          <td class="en">${w.en}</td>
+
+          <td>
+            <button class="speak-btn" onclick="speak('${w.en}')">🔊</button>
+          </td>
+
+          <td class="ar">${w.ar}</td>
+
+          <td onclick="goToTime(${w.time || 0})" style="cursor:pointer;">
+            <div class="example">${highlighted}</div>
+            <div class="example-ar">${w.example_ar || ""}</div>
+          </td>
+        </tr>
       `;
     });
 
-    html += "</table></div>";
+    html += `</table></div>`;
   }
 
   document.getElementById("result").innerHTML = html;
 }
 
-/* 🎤 صوت رجالي بطيء */
+// 🔥 صوت احترافي (رجالي + بطيء)
 function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
 
   msg.lang = "en-US";
-  msg.rate = 0.75;
-  msg.pitch = 0.8;
+  msg.rate = 0.75; // بطيء
+  msg.pitch = 0.8; // صوت أعمق
 
   const voices = speechSynthesis.getVoices();
 
@@ -231,10 +265,14 @@ function speak(text) {
   speechSynthesis.speak(msg);
 }
 
-/* إصلاح الكيبورد */
-window.addEventListener("resize", () => {
-  document.body.style.height = window.innerHeight + "px";
-});
+// loading
+function startLoading() {
+  document.getElementById("loading").style.display = "block";
+}
+
+function stopLoading() {
+  document.getElementById("loading").style.display = "none";
+}
 
 </script>
 

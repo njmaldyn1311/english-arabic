@@ -2,82 +2,49 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-
-<!-- ⭐ مهم جداً للموبايل -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>AI Video Learning</title>
 
 <style>
-html, body {
-  height: 100%;
-  overflow-x: hidden;
-}
-
 body {
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: white;
   font-family: Arial;
   text-align: center;
   margin: 0;
-
-  min-height: 100vh;
-  min-height: 100dvh; /* ⭐ يحل مشكلة الكيبورد */
 }
 
-/* ⭐ الحاوية */
+/* container */
 .container {
   max-width: 900px;
   margin: auto;
   padding: 15px;
-  padding-bottom: 80px; /* يمنع التصاق تحت */
+  box-sizing: border-box;
 }
 
-/* ⭐ الفيديو ثابت */
-#videoBox {
-  position: sticky;
-  top: 0;
-  z-index: 999;
-  background: #0f172a;
-  padding: 10px 0;
-}
-
-#videoFrame {
-  width: 100%;
-  height: 220px;
-  border-radius: 15px;
-}
-
-@media (min-width: 768px) {
-  #videoFrame {
-    height: 350px;
-  }
-}
-
-/* ⭐ input */
+/* input */
 input {
-  padding: 12px;
+  padding: 10px;
   width: 100%;
   border-radius: 10px;
   border: none;
   margin: 5px 0;
   box-sizing: border-box;
-  font-size: 16px; /* يمنع zoom */
 }
 
-/* ⭐ button */
+/* button */
 button {
   background: #22c55e;
-  padding: 12px;
-  width: 100%;
+  padding: 10px 15px;
   border: none;
   border-radius: 10px;
   color: white;
   cursor: pointer;
-  margin: 10px 0;
+  margin: 5px;
 }
 
-/* ⭐ card */
+/* card */
 .card {
   background: #1e293b;
   margin: 15px 0;
@@ -86,29 +53,35 @@ button {
   box-shadow: 0 0 10px #000;
 }
 
+/* ⭐ تثبيت الفيديو */
+#videoBox {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: #0f172a;
+  padding-top: 10px;
+}
+
+/* الفيديو */
+iframe {
+  width: 100%;
+  height: 250px;
+  border-radius: 15px;
+}
+
 h3 {
   color: #22c55e;
 }
 
-/* ⭐ جدول */
+/* ⭐ حل مشكلة خروج الجدول */
 .table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  margin-top: 10px;
+  table-layout: fixed; /* 🔥 أهم سطر */
 }
 
-.table th, .table td {
-  border-bottom: 1px solid #334155;
-  padding: 10px;
-  text-align: left;
-  vertical-align: top;
-  word-break: break-word;
-}
-
-.table th {
-  color: #22c55e;
-}
-
+/* الأعمدة */
 .table th:nth-child(1),
 .table td:nth-child(1) { width: 25%; }
 
@@ -117,6 +90,20 @@ h3 {
 
 .table th:nth-child(3),
 .table td:nth-child(3) { width: 55%; }
+
+/* الخلايا */
+.table th, .table td {
+  border-bottom: 1px solid #334155;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.table th {
+  color: #22c55e;
+}
 
 .en {
   color: #38bdf8;
@@ -135,9 +122,9 @@ h3 {
 .example-ar {
   color: #94a3b8;
   font-size: 13px;
+  margin-top: 5px;
 }
 
-/* ⭐ تمييز */
 .highlight {
   color: #38bdf8;
   font-weight: bold;
@@ -148,6 +135,7 @@ h3 {
 
 #loading {
   display: none;
+  margin-top: 10px;
 }
 </style>
 </head>
@@ -159,6 +147,7 @@ h3 {
 <h2>🎥 تعلم من الفيديو بذكاء </h2>
 
 <input type="text" id="url" placeholder="ضع رابط YouTube">
+<br>
 
 <button onclick="sendUrl()">🔗 تحليل رابط</button>
 
@@ -175,14 +164,9 @@ h3 {
 <script>
 
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
+
 let videoId = "";
 
-// ⭐ حل مشكلة الكيبورد
-window.addEventListener('resize', () => {
-  document.body.style.height = window.innerHeight + "px";
-});
-
-// استخراج ID
 function getVideoId(url) {
   if (url.includes("youtu.be")) {
     return url.split("/").pop().split("?")[0];
@@ -190,7 +174,6 @@ function getVideoId(url) {
   return url.split("v=")[1]?.split("&")[0];
 }
 
-// عرض الفيديو
 function showVideo(url) {
   videoId = getVideoId(url);
   document.getElementById("videoFrame").src =
@@ -198,20 +181,17 @@ function showVideo(url) {
   document.getElementById("videoBox").style.display = "block";
 }
 
-// الانتقال للتوقيت
 function goToTime(sec) {
   document.getElementById("videoFrame").src =
     `https://www.youtube.com/embed/${videoId}?start=${sec}&autoplay=1`;
 }
 
-// تمييز
 function highlightWord(sentence, word) {
   if (!sentence) return "";
   const regex = new RegExp(`\\b(${word})\\b`, "gi");
   return sentence.replace(regex, `<span class="highlight">$1</span>`);
 }
 
-// إرسال
 async function sendUrl() {
   const url = document.getElementById("url").value;
   if (!url) return alert("اكتب رابط");
@@ -219,26 +199,17 @@ async function sendUrl() {
   startLoading();
   showVideo(url);
 
-  try {
-    const res = await fetch(WEBHOOK, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ url })
-    });
+  const res = await fetch(WEBHOOK, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url })
+  });
 
-    const text = await res.text();
-    const data = JSON.parse(text);
-
-    show(data);
-
-  } catch (err) {
-    alert("❌ مشكلة في البيانات");
-  }
-
+  const data = await res.json();
   stopLoading();
+  show(data);
 }
 
-// عرض
 function show(data) {
   let html = "";
 
@@ -248,6 +219,7 @@ function show(data) {
     html += `
     <div class="card">
       <h3>${cat}</h3>
+
       <table class="table">
         <tr>
           <th>Word</th>
@@ -257,22 +229,20 @@ function show(data) {
     `;
 
     data[cat].forEach(w => {
+
       const word = w.en || w.word || "";
       const arabic = w.ar || w.arabic || "";
-      const example = w.example || "";
-      const example_ar = w.example_ar || "";
-      const time = w.time || 0;
 
-      const shortExample = example.split(".")[0];
+      const shortExample = (w.example || "").split(".")[0];
       const highlighted = highlightWord(shortExample, word);
 
       html += `
         <tr>
           <td class="en" onclick="speak('${word}')">${word}</td>
           <td class="ar">${arabic}</td>
-          <td onclick="goToTime(${time})" style="cursor:pointer;">
+          <td onclick="goToTime(${w.time || 0})" style="cursor:pointer;">
             <div class="example">${highlighted}</div>
-            <div class="example-ar">${example_ar}</div>
+            <div class="example-ar">${w.example_ar || ""}</div>
           </td>
         </tr>
       `;
@@ -284,25 +254,12 @@ function show(data) {
   document.getElementById("result").innerHTML = html;
 }
 
-// صوت رجالي بطيء
 function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "en-US";
-  msg.rate = 0.75;
-
-  const voices = speechSynthesis.getVoices();
-  const male = voices.find(v =>
-    v.lang.includes("en") &&
-    (v.name.toLowerCase().includes("david") ||
-     v.name.toLowerCase().includes("male"))
-  );
-
-  if (male) msg.voice = male;
-
   speechSynthesis.speak(msg);
 }
 
-// loading
 function startLoading() {
   document.getElementById("loading").style.display = "block";
 }

@@ -14,20 +14,29 @@ body {
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: white;
   min-height: 100vh;
-  min-height: 100dvh;
 }
 
 /* الكونتينر */
 .container {
-  max-width: 900px;
+  width: 100%;
+  max-width: 800px;
   margin: auto;
-  padding: 15px;
-  padding-bottom: 100px;
+  padding: 20px 15px 100px;
+  box-sizing: border-box;
 }
 
 /* العنوان */
 h2 {
   text-align: center;
+  margin-bottom: 20px;
+}
+
+/* صندوق الإدخال */
+.top-box {
+  background: rgba(255,255,255,0.05);
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 15px;
 }
 
 /* الإدخال */
@@ -36,7 +45,7 @@ input {
   padding: 12px;
   border-radius: 12px;
   border: none;
-  margin: 10px 0;
+  margin-bottom: 10px;
   box-sizing: border-box;
 }
 
@@ -115,9 +124,10 @@ iframe {
 
 <h2>🎥 تعلم من الفيديو بالذكاء الاصطناعي</h2>
 
-<input id="url" placeholder="ضع رابط YouTube">
-
-<button onclick="sendUrl()">🔗 تحليل رابط</button>
+<div class="top-box">
+  <input id="url" placeholder="ضع رابط YouTube">
+  <button onclick="sendUrl()">🔗 تحليل الرابط</button>
+</div>
 
 <p id="loading">⏳ جاري التحليل...</p>
 
@@ -200,17 +210,16 @@ function show(data) {
   document.getElementById("result").innerHTML = html;
 }
 
-/* 🎤 صوت احترافي */
+/* 🎤 صوت رجالي بطيء */
 function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
 
   msg.lang = "en-US";
-  msg.rate = 0.75; // بطيء
-  msg.pitch = 0.8; // صوت أعمق
+  msg.rate = 0.75;
+  msg.pitch = 0.8;
 
   const voices = speechSynthesis.getVoices();
 
-  // اختيار صوت رجالي
   const maleVoice = voices.find(v =>
     v.name.toLowerCase().includes("male") ||
     v.name.toLowerCase().includes("david") ||
@@ -222,7 +231,7 @@ function speak(text) {
   speechSynthesis.speak(msg);
 }
 
-/* إصلاح مشكلة الكيبورد */
+/* إصلاح الكيبورد */
 window.addEventListener("resize", () => {
   document.body.style.height = window.innerHeight + "px";
 });

@@ -1,78 +1,117 @@
-<!DOCTYPE html><html lang="ar">
+<!DOCTYPE html>
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تحليل PDF</title><style>
+<title>تحليل PDF</title>
+
+<style>
 body {
   font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg, #1e88e5, #26c6da);
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
   margin: 0;
-}
-
-/* الحاوية */
-.container {
+  padding: 20px;
   display: flex;
   justify-content: center;
-  padding: 20px;
 }
 
-/* الكرت الأبيض */
-.card {
-  background: #f3f4f6;
-  width: 98%;
-  max-width: 420px;
-  border-radius: 30px;
+/* الحاوية العامة */
+.container {
+  width: 100%;
+  max-width: 500px;
+}
+
+/* الصندوق الأبيض */
+.box {
+  background: white;
   padding: 25px;
+  border-radius: 20px;
+  width: 98%;
+  box-sizing: border-box;
   text-align: center;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
 }
 
-/* زر */
+/* الزر */
 button {
-  background: linear-gradient(135deg, #1e88e5, #26c6da);
+  background: #00c6ff;
   color: white;
   border: none;
-  padding: 10px 15px;
-  border-radius: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
   cursor: pointer;
+  font-size: 14px;
 }
 
-/* عنصر كلمة */
+button:hover {
+  background: #009edb;
+}
+
+/* النتائج */
+#result {
+  width: 100%;
+}
+
+/* عنوان القسم */
+.title {
+  margin: 15px 0 10px;
+  text-align: center;
+}
+
+/* كل كلمة */
 .word {
-  background: white;
-  border-radius: 12px;
   padding: 10px;
-  margin: 8px 0;
+  border-bottom: 1px solid #eee;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.en { text-align: left; flex: 1; }
-.ar { text-align: right; flex: 1; }
-
-h3 {
-  margin-top: 20px;
+.en {
+  flex: 1;
+  text-align: left;
 }
 
-/* تحميل */
-.loading {
-  margin-top: 15px;
-  color: #1e88e5;
+.ar {
+  flex: 1;
+  text-align: right;
 }
-</style></head><body><div class="container">
-  <div class="card"><h2>📄 رفع PDF</h2>
 
-<input type="file" id="file" accept="application/pdf"><br><br>
+/* موبايل */
+@media (max-width: 480px) {
+  body {
+    padding: 15px;
+  }
 
-<button onclick="upload()">🚀 تحليل</button>
+  .box {
+    padding: 20px;
+  }
+}
+</style>
 
-<p id="status"></p>
+</head>
 
-<div id="result"></div>
+<body>
 
+<div class="container">
+
+  <div class="box">
+    <h2>📄 رفع PDF</h2>
+
+    <input type="file" id="file" accept="application/pdf"><br><br>
+
+    <button onclick="upload()">🚀 تحليل</button>
+
+    <p id="status"></p>
   </div>
-</div><script>
+
+  <div id="result"></div>
+
+</div>
+
+<script>
 async function upload() {
   const file = document.getElementById("file").files[0];
   const status = document.getElementById("status");
@@ -87,7 +126,7 @@ async function upload() {
   formData.append("file", file);
 
   status.innerText = "⏳ جاري التحليل...";
-  result.innerHTML = `<div class="loading">⏳ جاري استخراج الكلمات...</div>`;
+  result.innerHTML = "";
 
   try {
     const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
@@ -105,32 +144,35 @@ async function upload() {
 
     status.innerText = "✅ تم التحليل";
 
-    function renderSection(title, list) {
+    function renderList(list) {
       if (!list || list.length === 0) return "";
 
-      return `
-        <h3>${title}</h3>
-        ${list.map(item => `
-          <div class="word">
-            <span class="en">${item.word || item.phrase || ""}</span>
-
-            <button onclick="speak('${item.word || item.phrase}')">🔊</button>
-
-            <span class="ar">${item.arabic || ""}</span>
-          </div>
-        `).join("")}
-      `;
+      return list.map(item => `
+        <div class="word">
+          <span class="en">${item.word || item.phrase || ""}</span>
+          <button onclick="speak('${item.word || item.phrase}')">🔊</button>
+          <span class="ar">${item.arabic || ""}</span>
+        </div>
+      `).join("");
     }
 
     result.innerHTML = `
-      ${renderSection("📌 الأفعال (Verbs)", data.verbs)}
-      ${renderSection("📌 الأسماء (Nouns)", data.nouns)}
-      ${renderSection("📌 الصفات (Adjectives)", data.adjectives)}
-      ${renderSection("📌 العبارات (Idioms)", data.idioms)}
-      ${renderSection("📌 الأفعال المركبة (Phrasal Verbs)", data.phrasal_verbs)}
+      ${data.verbs?.length ? `<div class="box"><h3 class="title">📌 الأفعال</h3>${renderList(data.verbs)}</div>` : ""}
+
+      ${data.nouns?.length ? `<div class="box"><h3 class="title">📌 الأسماء</h3>${renderList(data.nouns)}</div>` : ""}
+
+      ${data.adjectives?.length ? `<div class="box"><h3 class="title">📌 الصفات</h3>${renderList(data.adjectives)}</div>` : ""}
+
+      ${data.idioms?.length ? `<div class="box"><h3 class="title">📌 العبارات</h3>${renderList(data.idioms)}</div>` : ""}
+
+      ${(data.phrasal_verbs?.length || data.phrasalVerbs?.length)
+        ? `<div class="box"><h3 class="title">📌 الأفعال المركبة</h3>${renderList(data.phrasal_verbs || data.phrasalVerbs)}</div>`
+        : ""
+      }
     `;
 
   } catch (err) {
+    console.error(err);
     status.innerText = "❌ خطأ في الاتصال";
   }
 }
@@ -140,5 +182,7 @@ function speak(word) {
   utterance.lang = "en-US";
   speechSynthesis.speak(utterance);
 }
-</script></body>
+</script>
+
+</body>
 </html>

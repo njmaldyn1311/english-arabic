@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>English Smart Bot</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #020617);
+  color: white;
+  text-align: center;
+  padding: 40px;
+}
+
+/* العنوان */
+h1 {
+  color: #38bdf8;
+  margin-bottom: 30px;
+}
+
+/* مربع الإدخال */
+input {
+  padding: 12px;
+  width: 250px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+/* الزر */
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #22c55e;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #16a34a;
+}
+
+/* الكارد */
+.card {
+  background: #0f172a;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  text-align: right;
+  max-width: 400px;
+  margin: 30px auto;
+}
+
+/* الصفوف */
+.row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  background: rgba(255,255,255,0.05);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+/* العناوين */
+.title {
+  color: #38bdf8;
+  font-weight: bold;
+}
+
+/* القيم */
+.value {
+  color: white;
+}
+
+/* المثال */
+.example {
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  color: #fbbf24;
+  line-height: 1.6;
+}
+</style>
+
+</head>
+<body>
+
+<h1>🚀 English Smart Bot</h1>
+
+<input id="wordInput" placeholder="اكتب كلمة..." />
+<br>
+<button onclick="sendWord()">ابدأ</button>
+
+<div id="result"></div>
+
+<script>
+async function sendWord() {
+  const input = document.getElementById("wordInput");
+  const word = input.value;
+
+  if (!word) return;
+
+  const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/69c0fd9b-1072-4c11-93f0-aa96f41ed012", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ text: word })
+  });
+
+  const data = await res.json();
+
+  // حل مشكلة array / object
+  const item = Array.isArray(data) ? data[0] : data;
+
+  // مسح الحقل بعد الإرسال
+  input.value = "";
+
+  document.getElementById("result").innerHTML = `
+    <div class="card">
+
+      <div class="row">
+        <span class="title">📘 الكلمة</span>
+        <span class="value">${item.word || item.reply || "❌"}</span>
+      </div>
+
+      <div class="row">
+        <span class="title">🌍 الترجمة</span>
+        <span class="value">${item.translation || item.clean || "❌"}</span>
+      </div>
+
+      <div class="row">
+        <span class="title">🧠 النوع</span>
+        <span class="value">${item.type || "-"}</span>
+      </div>
+
+      <div class="example">
+        ✏️ ${item.example || item.reply || "-"}
+      </div>
+
+      <div style="margin-top:15px;">
+        🔊
+        <audio controls style="width:100%;">
+          <source src="data:audio/mp3;base64,${item.audio}" type="audio/mp3">
+        </audio>
+      </div>
+
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>

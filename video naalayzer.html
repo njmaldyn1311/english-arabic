@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>AI Video Learning</title>
+
+<style>
+body {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  font-family: Arial;
+  text-align: center;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+}
+
+input {
+  padding: 10px;
+  width: 80%;
+  border-radius: 10px;
+  border: none;
+  margin: 5px;
+}
+
+button {
+  background: #22c55e;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.card {
+  background: #1e293b;
+  margin: 15px 0;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px #000;
+}
+
+h3 {
+  color: #22c55e;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.table th, .table td {
+  border-bottom: 1px solid #334155;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  color: #22c55e;
+}
+
+.en {
+  color: #38bdf8;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.ar {
+  color: #f87171;
+}
+
+.example {
+  color: #e2e8f0;
+}
+
+.example-ar {
+  color: #94a3b8;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+/* ⭐ تمييز الكلمة */
+.highlight {
+  color: #38bdf8;
+  font-weight: bold;
+  background: rgba(56,189,248,0.1);
+  padding: 2px 4px;
+  border-radius: 5px;
+}
+
+#loading {
+  display: none;
+  margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🎥 تعلم من الفيديو بالذكاء الاصطناعي</h2>
+
+<input type="text" id="url" placeholder="ضع رابط YouTube">
+<br>
+
+<button onclick="sendUrl()">🔗 تحليل رابط</button>
+
+<p id="loading">⏳ جاري التحليل...</p>
+
+<div id="videoBox" class="card" style="display:none;">
+  <iframe id="videoFrame" width="100%" height="300"
+    style="border-radius:15px;" frameborder="0"
+    allowfullscreen>
+  </iframe>
+</div>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
+
+let videoId = "";
+
+// استخراج ID
+function getVideoId(url) {
+  if (url.includes("youtu.be")) {
+    return url.split("/").pop().split("?")[0];
+  }
+  return url.split("v=")[1]?.split("&")[0];
+}
+
+// عرض الفيديو
+function showVideo(url) {
+  videoId = getVideoId(url);
+  document.getElementById("videoFrame").src =
+    `https://www.youtube.com/embed/${videoId}`;
+  document.getElementById("videoBox").style.display = "block";
+}
+
+// الانتقال للتوقيت
+function goToTime(sec) {
+  document.getElementById("videoFrame").src =
+    `https://www.youtube.com/embed/${videoId}?start=${sec}&autoplay=1`;
+}
+
+// ⭐ تمييز الكلمة داخل المثال
+function highlightWord(sentence, word) {
+  if (!sentence) return "";
+
+  const regex = new RegExp(`\\b(${word})\\b`, "gi");
+
+  return sentence.replace(regex, `<span class="highlight">$1</span>`);
+}
+
+// إرسال
+async function sendUrl() {
+  const url = document.getElementById("url").value;
+  if (!url) return alert("اكتب رابط");
+
+  startLoading();
+  showVideo(url);
+
+  const res = await fetch(WEBHOOK, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url })
+  });
+
+  const data = await res.json();
+  stopLoading();
+  show(data);
+}
+
+// عرض
+function show(data) {
+  let html = "";
+
+  for (let cat in data) {
+    if (!data[cat] || data[cat].length === 0) continue;
+
+    html += `
+    <div class="card">
+      <h3>${cat}</h3>
+
+      <table class="table">
+        <tr>
+          <th>Word</th>
+          <th>Arabic</th>
+          <th>Example</th>
+        </tr>
+    `;
+
+    data[cat].forEach(w => {
+
+      const shortExample = (w.example || "").split(".")[0];
+
+      const highlighted = highlightWord(shortExample, w.en);
+
+      html += `
+        <tr>
+          <td class="en" onclick="speak('${w.en}')">${w.en}</td>
+          <td class="ar">${w.ar}</td>
+          <td onclick="goToTime(${w.time || 0})" style="cursor:pointer;">
+            <div class="example">${highlighted}</div>
+            <div class="example-ar">${w.example_ar || ""}</div>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += `</table></div>`;
+  }
+
+  document.getElementById("result").innerHTML = html;
+}
+
+// صوت
+function speak(text) {
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "en-US";
+  speechSynthesis.speak(msg);
+}
+
+// loading
+function startLoading() {
+  document.getElementById("loading").style.display = "block";
+}
+
+function stopLoading() {
+  document.getElementById("loading").style.display = "none";
+}
+
+</script>
+
+</body>
+</html>

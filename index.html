@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>إنجلش بالعربي</title>
+
+<style>
+body {
+  font-family: "Cairo", sans-serif;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* الكرت */
+.container {
+  width: 100%;
+  max-width: 400px;
+  background: white;
+  border-radius: 25px;
+  margin: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* الغلاف */
+.cover {
+  height: 140px;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+}
+
+/* الصورة */
+.profile-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid white;
+  margin-top: -60px;
+  object-fit: cover;
+}
+
+/* المحتوى */
+.content {
+  padding: 15px;
+  text-align: center;
+}
+
+/* الاسم */
+.name {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+/* الوصف */
+.tagline {
+  color: #00aaff;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+/* الإحصائية */
+.stats {
+  margin: 15px 0;
+  font-size: 18px;
+  color: #00aaff;
+  font-weight: bold;
+}
+
+/* الخدمات */
+.service {
+  background: #f7f7f7;
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* النص */
+.service span {
+  font-size: 15px;
+}
+
+/* الزر */
+.btn {
+  background: #00c6ff;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn:hover {
+  background: #009edb;
+}
+
+/* موبايل */
+@media (max-width: 480px) {
+  .container {
+    margin: 10px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="cover"></div>
+
+  <div class="content">
+
+    <!-- غير اسم الصورة هنا -->
+    <img src="me.jpeg" class="profile-img">
+
+    <div class="name">إنجلش بالعربي</div>
+
+    <div class="tagline">تعلم الإنجليزية بطريقة ذكية 🚀</div>
+
+    <!-- ✅ تم تعديل علامة + -->
+    <div class="stats">
+      👨‍🎓 <span id="students">120</span>+ طالب
+    </div>
+
+    <div class="service">
+      <span>📺 تحليل فيديو يوتيوب</span>
+      <button class="btn" onclick="goYoutube()">ابدأ</button>
+    </div>
+
+    <div class="service">
+      <span>📄 تحليل كتاب PDF</span>
+      <button class="btn" onclick="goPDF()">ابدأ</button>
+    </div>
+
+    <div class="service">
+      <span>🔍 البحث عن كلمة</span>
+      <button class="btn" onclick="goSearch()">ابدأ</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// 🔥 عداد وهمي متحرك
+let count = 120;
+
+setInterval(() => {
+  count += Math.floor(Math.random() * 3);
+  document.getElementById("students").innerText = count;
+}, 2000);
+
+// روابطك
+function goYoutube() {
+  window.location.href = "youtube.html";
+}
+
+function goPDF() {
+  window.location.href = "pdf.html";
+}
+
+function goSearch() {
+  window.location.href = "search.html";
+}
+</script>
+
+</body>
+</html>

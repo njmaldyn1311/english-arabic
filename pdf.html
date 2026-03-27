@@ -5,116 +5,102 @@
 <title>تحليل PDF</title><style>
 body {
   font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
-  background-attachment: fixed;
-  min-height: 100vh;
+  background: linear-gradient(135deg, #1e88e5, #26c6da);
   margin: 0;
+  padding: 0;
 }
 
-/* 🔥 الحاوية الخارجية (المهم) */
+/* 🔥 الحاوية */
 .container {
-  width: 100%;
-  max-width: 700px;
-  margin: auto;
-  padding: 20px; /* 👈 هنا المسافة من الجوانب */
-  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
 }
 
-/* الصندوق الأبيض */
-.box {
-  background: white;
-  padding: 25px;
-  border-radius: 20px;
+/* 🔥 الكرت الأبيض (مثل الصفحة الرئيسية) */
+.card {
+  background: #f3f4f6;
   width: 100%;
-  margin-bottom: 15px;
+  max-width: 420px; /* 👈 نفس شكل الجوال */
+  border-radius: 30px;
+  padding: 25px;
   text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+/* العنوان */
+h2 {
+  margin-bottom: 20px;
+}
+
+/* زر */
+button {
+  background: linear-gradient(135deg, #1e88e5, #26c6da);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  opacity: 0.9;
 }
 
 /* النتائج */
 #result {
-  margin-top: 15px;
-  width: 100%;
-  background: white;
-  padding: 20px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  margin-top: 20px;
 }
 
-/* الزر */
-button {
-  background: #00c6ff;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 15px;
-}
-
-button:hover {
-  background: #009edb;
-}
-
-/* الصف */
+/* عنصر الكلمة */
 .word {
+  background: white;
+  border-radius: 12px;
   padding: 10px;
-  border-bottom: 1px solid #eee;
+  margin: 8px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
 }
 
 /* الإنجليزي */
 .en {
-  color: #333;
   flex: 1;
   text-align: left;
 }
 
 /* العربي */
 .ar {
-  color: #333;
   flex: 1;
   text-align: right;
-}
-
-/* العناوين */
-.title {
-  text-align: center;
-  margin: 20px 0 10px;
 }
 
 /* تحميل */
 .loading {
   margin-top: 15px;
-  color: #00c6ff;
-  font-weight: bold;
+  color: #1e88e5;
 }
 
-/* تحسين للجوال */
+/* 🔥 موبايل */
 @media (max-width: 600px) {
-  .container {
-    padding: 15px; /* 🔥 مسافة مناسبة للجوال */
-  }
-
-  .word {
-    font-size: 14px;
-  }
-
-  button {
-    padding: 8px;
+  .card {
+    max-width: 95%;
+    border-radius: 25px;
+    padding: 20px;
   }
 }
-</style></head><body><div class="container">  <div class="box">
-    <h2>📄 رفع PDF</h2><input type="file" id="file" accept="application/pdf"><br><br>
+</style></head><body><div class="container">  <div class="card"><h2>📄 رفع PDF</h2>
+
+<input type="file" id="file" accept="application/pdf"><br><br>
 
 <button onclick="upload()">🚀 تحليل</button>
 
 <p id="status"></p>
 
-  </div>  <div id="result"></div></div><script>
+<div id="result"></div>
+
+  </div></div><script>
 async function upload() {
   const file = document.getElementById("file").files[0];
   const status = document.getElementById("status");
@@ -150,35 +136,23 @@ async function upload() {
     function renderList(list) {
       return (list || []).map(item => `
         <div class="word">
-          <span class="en">${item.word || item.phrase || ""}</span>
-
+          <span class="en">${item.word || item.phrase}</span>
           <button onclick="speak('${item.word || item.phrase}')">🔊</button>
-
-          <span class="ar">${item.arabic || ""}</span>
+          <span class="ar">${item.arabic}</span>
         </div>
       `).join("");
     }
 
     result.innerHTML = `
-      <h3 class="title">📌 الأفعال (Verbs)</h3>
+      <h3>📌 الأفعال</h3>
       ${renderList(data.verbs)}
 
-      <h3 class="title">📌 الأسماء (Nouns)</h3>
+      <h3>📌 الأسماء</h3>
       ${renderList(data.nouns)}
-
-      <h3 class="title">📌 الصفات (Adjectives)</h3>
-      ${renderList(data.adjectives)}
-
-      <h3 class="title">📌 العبارات (Idioms)</h3>
-      ${renderList(data.idioms)}
-
-      <h3 class="title">📌 الأفعال المركبة (Phrasal Verbs)</h3>
-      ${renderList(data.phrasal_verbs || data.phrasalVerbs)}
     `;
 
   } catch (err) {
-    console.error(err);
-    status.innerText = "❌ خطأ في الاتصال";
+    status.innerText = "❌ خطأ";
   }
 }
 

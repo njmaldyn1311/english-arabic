@@ -2,6 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>English Smart Bot</title>
 
 <style>
@@ -23,6 +24,7 @@ h1 {
 input {
   padding: 12px;
   width: 250px;
+  max-width: 90%;
   border-radius: 10px;
   border: none;
   outline: none;
@@ -54,6 +56,7 @@ button:hover {
   box-shadow: 0 0 20px rgba(0,0,0,0.4);
   text-align: right;
   max-width: 400px;
+  width: 90%;
   margin: 30px auto;
 }
 
@@ -87,6 +90,20 @@ button:hover {
   color: #fbbf24;
   line-height: 1.6;
 }
+
+/* تحميل */
+.loading {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #38bdf8;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {opacity: 0.3;}
+  50% {opacity: 1;}
+  100% {opacity: 0.3;}
+}
 </style>
 
 </head>
@@ -107,6 +124,11 @@ async function sendWord() {
 
   if (!word) return;
 
+  // 🔥 عرض جاري البحث
+  document.getElementById("result").innerHTML = `
+    <div class="loading">⏳ جاري البحث...</div>
+  `;
+
   const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/69c0fd9b-1072-4c11-93f0-aa96f41ed012", {
     method: "POST",
     headers: {
@@ -116,11 +138,8 @@ async function sendWord() {
   });
 
   const data = await res.json();
-
-  // حل مشكلة array / object
   const item = Array.isArray(data) ? data[0] : data;
 
-  // مسح الحقل بعد الإرسال
   input.value = "";
 
   document.getElementById("result").innerHTML = `
@@ -142,7 +161,9 @@ async function sendWord() {
       </div>
 
       <div class="example">
-        ✏️ ${item.example || item.reply || "-"}
+        ✏️ ${item.example || "-"}
+        <br><br>
+        🇸🇦 ${item.example_ar || item.translation || "-"}
       </div>
 
       <div style="margin-top:15px;">

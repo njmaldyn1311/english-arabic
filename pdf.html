@@ -1,167 +1,169 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>تحليل PDF</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تحليل PDF</title>
 
-  <style>
-    body {
-      font-family: "Cairo", sans-serif;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+<style>
+body {
+  font-family: "Cairo", sans-serif;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-    .box {
-      background: white;
-      padding: 25px;
-      border-radius: 20px;
-      width: 360px;
-      text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
+/* الكارد */
+.box, #result {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
 
-    button {
-      background: #00c6ff;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 14px;
-    }
+/* زر */
+button {
+  background: #00c6ff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
 
-    button:hover {
-      background: #009edb;
-    }
+button:hover {
+  background: #009edb;
+}
 
-    #result {
-      margin-top: 20px;
-      width: 360px;
-      background: white;
-      padding: 20px;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
+/* كل كلمة */
+.word {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
 
-    .word {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+/* النص */
+.en, .ar {
+  flex: 1;
+  font-size: 14px;
+}
 
-    .en {
-      color: #333;
-      width: 90px;
-    }
+.en {
+  text-align: left;
+}
 
-    .ar {
-      color: #333; /* نفس لون الكلمة */
-      font-weight: normal;
-      width: 90px;
-      text-align: right;
-    }
+.ar {
+  text-align: right;
+}
 
-    .title {
-      text-align: center;
-      margin-top: 15px;
-    }
-  </style>
+/* العناوين */
+.title {
+  text-align: center;
+  margin-top: 15px;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="box">
-    <h2>📄 رفع PDF</h2>
+<div class="box">
+  <h2>📄 رفع PDF</h2>
 
-    <input type="file" id="file" accept="application/pdf"><br><br>
+  <input type="file" id="file" accept="application/pdf"><br><br>
 
-    <button onclick="upload()">🚀 تحليل</button>
+  <button onclick="upload()">🚀 تحليل</button>
 
-    <p id="status"></p>
-  </div>
+  <p id="status"></p>
+</div>
 
-  <div id="result"></div>
+<div id="result"></div>
 
-  <script>
-    async function upload() {
-      const file = document.getElementById("file").files[0];
-      const status = document.getElementById("status");
-      const result = document.getElementById("result");
+<script>
+async function upload() {
+  const file = document.getElementById("file").files[0];
+  const status = document.getElementById("status");
+  const result = document.getElementById("result");
 
-      if (!file) {
-        alert("اختر ملف");
-        return;
-      }
+  if (!file) {
+    alert("اختر ملف");
+    return;
+  }
 
-      const formData = new FormData();
-      formData.append("file", file);
+  const formData = new FormData();
+  formData.append("file", file);
 
-      status.innerText = "⏳ جاري التحليل...";
-      result.innerHTML = "";
+  status.innerText = "⏳ جاري التحليل...";
+  result.innerHTML = "";
 
+  try {
+    const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
+      method: "POST",
+      body: formData
+    });
+
+    let data = await res.json();
+
+    if (data.raw) {
       try {
-        const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
-          method: "POST",
-          body: formData
-        });
-
-        let data = await res.json();
-
-        if (data.raw) {
-          try {
-            data = JSON.parse(data.raw);
-          } catch {}
-        }
-
-        status.innerText = "✅ تم التحليل";
-
-        function renderList(list) {
-          return (list || []).map(item => `
-            <div class="word">
-              <span class="en">${item.word || item.phrase || ""}</span>
-
-              <button onclick="speak('${item.word || item.phrase}')">🔊</button>
-
-              <span class="ar">${item.arabic || ""}</span>
-            </div>
-          `).join("");
-        }
-
-        result.innerHTML = `
-          <h3 class="title">📌 الأفعال (Verbs)</h3>
-          ${renderList(data.verbs)}
-
-          <h3 class="title">📌 الأسماء (Nouns)</h3>
-          ${renderList(data.nouns)}
-
-          <h3 class="title">📌 الصفات (Adjectives)</h3>
-          ${renderList(data.adjectives)}
-
-          <h3 class="title">📌 العبارات (Idioms)</h3>
-          ${renderList(data.idioms)}
-
-          <h3 class="title">📌 الأفعال المركبة (Phrasal Verbs)</h3>
-          ${renderList(data.phrasal_verbs || data.phrasalVerbs)}
-        `;
-
-      } catch (err) {
-        console.error(err);
-        status.innerText = "❌ خطأ في الاتصال";
-      }
+        data = JSON.parse(data.raw);
+      } catch {}
     }
 
-    function speak(word) {
-      const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = "en-US";
-      speechSynthesis.speak(utterance);
+    status.innerText = "✅ تم التحليل";
+
+    function renderList(list) {
+      return (list || []).map(item => `
+        <div class="word">
+          <span class="en">${item.word || item.phrase || ""}</span>
+
+          <button onclick="speak('${item.word || item.phrase}')">🔊</button>
+
+          <span class="ar">${item.arabic || ""}</span>
+        </div>
+      `).join("");
     }
-  </script>
+
+    result.innerHTML = `
+      <h3 class="title">📌 الأفعال (Verbs)</h3>
+      ${renderList(data.verbs)}
+
+      <h3 class="title">📌 الأسماء (Nouns)</h3>
+      ${renderList(data.nouns)}
+
+      <h3 class="title">📌 الصفات (Adjectives)</h3>
+      ${renderList(data.adjectives)}
+
+      <h3 class="title">📌 العبارات (Idioms)</h3>
+      ${renderList(data.idioms)}
+
+      <h3 class="title">📌 الأفعال المركبة (Phrasal Verbs)</h3>
+      ${renderList(data.phrasal_verbs || data.phrasalVerbs)}
+    `;
+
+  } catch (err) {
+    console.error(err);
+    status.innerText = "❌ خطأ في الاتصال";
+  }
+}
+
+function speak(word) {
+  const utterance = new SpeechSynthesisUtterance(word);
+  utterance.lang = "en-US";
+  speechSynthesis.speak(utterance);
+}
+</script>
 
 </body>
 </html>

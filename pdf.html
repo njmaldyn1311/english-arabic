@@ -9,20 +9,31 @@ body {
   background-attachment: fixed;
   min-height: 100vh;
   margin: 0;
-  padding: 20px 10px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* الصندوق */
+/* الصندوق العلوي */
 .box {
   background: white;
   padding: 25px;
   border-radius: 20px;
   width: 100%;
-  max-width: 420px;
+  max-width: 600px; /* 🔥 أكبر */
   text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* النتائج */
+#result {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 600px; /* 🔥 نفس العرض */
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
@@ -31,53 +42,44 @@ button {
   background: #00c6ff;
   color: white;
   border: none;
-  padding: 8px 12px;
+  padding: 10px 16px;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 button:hover {
   background: #009edb;
 }
 
-/* النتائج */
-#result {
-  margin-top: 20px;
-  width: 100%;
-  max-width: 420px;
-  background: white;
-  padding: 20px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
-
 /* الصف */
 .word {
-  padding: 8px;
+  padding: 10px;
   border-bottom: 1px solid #eee;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
 }
 
 /* الإنجليزي */
 .en {
   color: #333;
-  width: 90px;
+  flex: 1;
+  text-align: left;
 }
 
 /* العربي */
 .ar {
   color: #333;
-  width: 90px;
+  flex: 1;
   text-align: right;
 }
 
 /* العناوين */
 .title {
   text-align: center;
-  margin-top: 15px;
+  margin: 20px 0 10px;
 }
 
 /* تحميل */
@@ -85,6 +87,18 @@ button:hover {
   margin-top: 15px;
   color: #00c6ff;
   font-weight: bold;
+}
+
+/* 🔥 تحسين للجوال */
+@media (max-width: 600px) {
+  .word {
+    flex-direction: row;
+    font-size: 14px;
+  }
+
+  button {
+    padding: 8px;
+  }
 }
 </style></head><body><div class="box">
   <h2>📄 رفع PDF</h2><input type="file" id="file" accept="application/pdf"><br><br>

@@ -15,7 +15,6 @@ body {
   margin: 0;
 }
 
-/* 👇 تعديل خفيف فقط للاستجابة */
 .container {
   max-width: 900px;
   margin: auto;
@@ -23,11 +22,9 @@ body {
   box-sizing: border-box;
 }
 
-/* 👇 يخلي الإدخال متجاوب */
 input {
   padding: 10px;
   width: 100%;
-  max-width: 100%;
   border-radius: 10px;
   border: none;
   margin: 5px 0;
@@ -44,7 +41,6 @@ button {
   margin: 5px;
 }
 
-/* 👇 زر الصوت */
 .speak-btn {
   background: #0ea5e9;
   padding: 5px 8px;
@@ -169,9 +165,10 @@ function goToTime(sec) {
     `https://www.youtube.com/embed/${videoId}?start=${sec}&autoplay=1`;
 }
 
-// تمييز الكلمة
+// ⭐ تمييز الكلمة (مصلح)
 function highlightWord(sentence, word) {
-  if (!sentence) return "";
+  if (!sentence || !word) return sentence || "";
+
   const regex = new RegExp(`\\b(${word})\\b`, "gi");
   return sentence.replace(regex, `<span class="highlight">$1</span>`);
 }
@@ -195,7 +192,7 @@ async function sendUrl() {
   show(data);
 }
 
-// عرض
+// عرض (تم إصلاح الأمثلة)
 function show(data) {
   let html = "";
 
@@ -217,18 +214,19 @@ function show(data) {
 
     data[cat].forEach(w => {
 
+      const word = w.en || w.word || "";
       const shortExample = (w.example || "").split(".")[0];
-      const highlighted = highlightWord(shortExample, w.en);
+      const highlighted = highlightWord(shortExample, word);
 
       html += `
         <tr>
-          <td class="en">${w.en}</td>
+          <td class="en">${word}</td>
 
           <td>
-            <button class="speak-btn" onclick="speak('${w.en}')">🔊</button>
+            <button class="speak-btn" onclick="speak('${word}')">🔊</button>
           </td>
 
-          <td class="ar">${w.ar}</td>
+          <td class="ar">${w.ar || ""}</td>
 
           <td onclick="goToTime(${w.time || 0})" style="cursor:pointer;">
             <div class="example">${highlighted}</div>
@@ -244,13 +242,13 @@ function show(data) {
   document.getElementById("result").innerHTML = html;
 }
 
-// 🔥 صوت احترافي (رجالي + بطيء)
+// 🔥 صوت رجالي بطيء
 function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
 
   msg.lang = "en-US";
-  msg.rate = 0.75; // بطيء
-  msg.pitch = 0.8; // صوت أعمق
+  msg.rate = 0.75;
+  msg.pitch = 0.8;
 
   const voices = speechSynthesis.getVoices();
 

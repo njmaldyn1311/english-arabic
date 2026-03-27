@@ -15,15 +15,13 @@ body {
   margin: 0;
 }
 
-/* container */
 .container {
   max-width: 900px;
   margin: auto;
-  padding: 5px;
+  padding: 15px;
   box-sizing: border-box;
 }
 
-/* input */
 input {
   padding: 10px;
   width: 100%;
@@ -33,7 +31,6 @@ input {
   box-sizing: border-box;
 }
 
-/* button */
 button {
   background: #22c55e;
   padding: 10px 15px;
@@ -44,7 +41,6 @@ button {
   margin: 5px;
 }
 
-/* card */
 .card {
   background: #1e293b;
   margin: 15px 0;
@@ -53,7 +49,7 @@ button {
   box-shadow: 0 0 10px #000;
 }
 
-/* ⭐ تثبيت الفيديو */
+/* تثبيت الفيديو */
 #videoBox {
   position: sticky;
   top: 0;
@@ -62,7 +58,6 @@ button {
   padding-top: 10px;
 }
 
-/* الفيديو */
 iframe {
   width: 100%;
   height: 250px;
@@ -73,15 +68,13 @@ h3 {
   color: #22c55e;
 }
 
-/* ⭐ حل مشكلة خروج الجدول */
 .table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
-  table-layout: fixed; /* 🔥 أهم سطر */
+  table-layout: fixed;
 }
 
-/* الأعمدة */
 .table th:nth-child(1),
 .table td:nth-child(1) { width: 25%; }
 
@@ -91,7 +84,6 @@ h3 {
 .table th:nth-child(3),
 .table td:nth-child(3) { width: 55%; }
 
-/* الخلايا */
 .table th, .table td {
   border-bottom: 1px solid #334155;
   padding: 10px;
@@ -105,10 +97,22 @@ h3 {
   color: #22c55e;
 }
 
+/* 🔥 تحسين الكلمة */
 .en {
   color: #38bdf8;
   font-weight: bold;
   cursor: pointer;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* 👇 تصغير تلقائي */
+.en.small {
+  font-size: 14px;
+}
+
+.en.smaller {
+  font-size: 13px;
 }
 
 .ar {
@@ -144,7 +148,7 @@ h3 {
 
 <div class="container">
 
-<h2>🎥 تعلم من الفيديو بذكاء </h2>
+<h2>🎥 تعلم من الفيديو بالذكاء الاصطناعي</h2>
 
 <input type="text" id="url" placeholder="ضع رابط YouTube">
 <br>
@@ -233,12 +237,16 @@ function show(data) {
       const word = w.en || w.word || "";
       const arabic = w.ar || w.arabic || "";
 
+      let sizeClass = "";
+      if (word.length > 10) sizeClass = "small";
+      if (word.length > 14) sizeClass = "smaller";
+
       const shortExample = (w.example || "").split(".")[0];
       const highlighted = highlightWord(shortExample, word);
 
       html += `
         <tr>
-          <td class="en" onclick="speak('${word}')">${word}</td>
+          <td class="en ${sizeClass}" onclick="speak('${word}')">${word}</td>
           <td class="ar">${arabic}</td>
           <td onclick="goToTime(${w.time || 0})" style="cursor:pointer;">
             <div class="example">${highlighted}</div>
@@ -257,6 +265,13 @@ function show(data) {
 function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "en-US";
+  msg.rate = 0.85; // 🔥 أبطأ شوي
+
+  // محاولة صوت رجالي
+  const voices = speechSynthesis.getVoices();
+  const maleVoice = voices.find(v => v.name.toLowerCase().includes("male"));
+  if (maleVoice) msg.voice = maleVoice;
+
   speechSynthesis.speak(msg);
 }
 

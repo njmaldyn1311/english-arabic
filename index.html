@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,52 +7,65 @@
 
 <style>
 body {
-  font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
   margin: 0;
-  padding: 20px;
+  font-family: "Cairo", sans-serif;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
   display: flex;
   justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
 .container {
-  width: 100%;
-  max-width: 500px;
-  background: #fff;
-  border-radius: 25px;
-  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  background: #eee;
+  border-radius: 30px;
+  overflow: hidden;
   text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
-/* Profile */
-.cover {
-  height: 150px;
-  background: linear-gradient(135deg, #4facfe, #00c6ff);
-  border-radius: 20px;
+.header {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  height: 140px;
+  position: relative;
 }
 
 .profile-img {
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
-  margin-top: -50px;
-  border: 4px solid #fff;
+  border: 5px solid white;
+  position: absolute;
+  bottom: -55px;
+  left: 50%;
+  transform: translateX(-50%);
   object-fit: cover;
 }
 
-h2 {
+.content {
+  padding: 70px 20px 20px;
+}
+
+h1 {
   margin: 10px 0;
 }
 
-.students {
-  color: #0099cc;
-  font-weight: bold;
+.subtitle {
+  color: #555;
 }
 
-/* Buttons */
+.students {
+  color: #0072ff;
+  font-weight: bold;
+  margin: 15px 0;
+  font-size: 18px;
+}
+
 .card {
-  background: #f1f1f1;
-  border-radius: 15px;
+  background: #ddd;
+  border-radius: 20px;
   padding: 15px;
   margin: 10px 0;
   display: flex;
@@ -61,31 +74,13 @@ h2 {
 }
 
 button {
-  background: #00c6ff;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
   border: none;
+  color: white;
   padding: 10px 20px;
   border-radius: 20px;
-  color: white;
   cursor: pointer;
-}
-
-/* Input */
-input {
-  width: 90%;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-}
-
-/* Result */
-#result {
-  margin-top: 20px;
-  text-align: left;
   font-size: 14px;
-  background: #f9f9f9;
-  padding: 10px;
-  border-radius: 10px;
 }
 </style>
 </head>
@@ -94,88 +89,67 @@ input {
 
 <div class="container">
 
-  <div class="cover"></div>
-  <img src="me.jpeg" class="profile-img">
-
-  <h2>إنجلش بالعربي</h2>
-  <p>تعلم الإنجليزية بطريقة ذكية 🚀</p>
-
-  <p class="students">👨‍🎓 أكثر من 129 طالب</p>
-
-  <!-- YouTube -->
-  <div class="card">
-    <span>📺 تحليل فيديو يوتيوب</span>
-    <button onclick="goYoutube()">ابدأ</button>
+  <div class="header">
+    <img src="me.jpeg" class="profile-img">
   </div>
 
-  <!-- PDF -->
-  <div class="card">
-    <span>📄 تحليل كتاب PDF</span>
-    <button onclick="goPDF()">ابدأ</button>
+  <div class="content">
+    <h1>إنجلش بالعربي</h1>
+    <div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
+
+    <div class="students" id="students">
+      👨‍🎓 أكثر من 120 طالب
+    </div>
+
+    <div class="card">
+      <span>📺 تحليل فيديو يوتيوب</span>
+      <button onclick="goYoutube()">ابدأ</button>
+    </div>
+
+    <div class="card">
+      <span>📄 تحليل كتاب PDF</span>
+      <button onclick="goPDF()">ابدأ</button>
+    </div>
+
+    <div class="card">
+      <span>🔍 البحث عن كلمة</span>
+      <button onclick="goSearch()">ابدأ</button>
+    </div>
+
   </div>
-
-  <!-- Search -->
-  <div class="card">
-    <span>🔍 البحث عن كلمة</span>
-    <button onclick="goSearch()">ابدأ</button>
-  </div>
-
-  <!-- Inputs -->
-  <input id="youtubeUrl" placeholder="ضع رابط يوتيوب هنا">
-  <input id="searchWord" placeholder="اكتب كلمة للبحث">
-
-  <!-- Result -->
-  <div id="result"></div>
-
 </div>
 
 <script>
 
-// 🔹 YouTube
-async function goYoutube() {
-  const url = document.getElementById("youtubeUrl").value;
+// ✅ عداد الطلاب (محفوظ)
+let count = localStorage.getItem("studentsCount");
 
-  if (!url) return alert("حط رابط الفيديو");
-
-  const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/video-ai", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ url })
-  });
-
-  const data = await res.json();
-  document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+if (!count) {
+  count = 120;
 }
 
-// 🔹 PDF
-async function goPDF() {
-
-  const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
-    method: "POST"
-  });
-
-  const data = await res.json();
-  document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+function updateStudents() {
+  count = parseInt(count) + Math.floor(Math.random() * 2); // زيادة بسيطة واقعية
+  document.getElementById("students").innerText =
+    "👨‍🎓 أكثر من " + count + " طالب";
+  localStorage.setItem("studentsCount", count);
 }
 
-// 🔹 Search
-async function goSearch() {
-  const word = document.getElementById("searchWord").value;
+updateStudents();
+setInterval(updateStudents, 8000);
 
-  if (!word) return alert("اكتب كلمة");
 
-  const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/69c0fd9b-1072-4c11-93f0-aa96f41ed012", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ word })
-  });
+// ✅ التنقل بين الصفحات
+function goYoutube() {
+  window.location.href = "youtube.html";
+}
 
-  const data = await res.json();
-  document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+function goPDF() {
+  window.location.href = "pdf.html";
+}
+
+function goSearch() {
+  window.location.href = "search.html";
 }
 
 </script>

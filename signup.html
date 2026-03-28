@@ -9,9 +9,7 @@
 <style>
 
 /* 🌍 عام */
-*{
-  box-sizing:border-box;
-}
+*{ box-sizing:border-box; }
 
 body {
   margin: 0;
@@ -38,39 +36,108 @@ body {
 }
 
 /* 🧠 العنوان */
-h2 {
-  margin-bottom:15px;
-}
+h2 { margin-bottom:15px; }
 
 /* 📝 الحقول */
-input, select {
+input {
   width:100%;
-  height:50px; /* ✅ توحيد الطول */
+  height:50px;
   padding:0 14px;
   margin:8px 0;
   border-radius:12px;
   border:none;
   text-align:center;
   font-size:15px;
-  appearance:none;
-  -webkit-appearance:none;
 }
 
-/* placeholder */
-input::placeholder {
-  color:#9ca3af;
-}
+input::placeholder { color:#9ca3af; }
 
-/* ✨ focus */
-input:focus, select:focus {
+input:focus {
   outline:none;
   box-shadow:0 0 0 2px #38bdf8;
 }
 
-/* select fix */
-select {
+/* 🔽 dropdown احترافي */
+.custom-select {
+  position: relative;
+  background: white;
+  color: black;
+  height: 50px;
+  border-radius: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  margin:8px 0;
+}
+
+.options {
+  position:absolute;
+  top:55px;
+  right:0;
+  left:0;
   background:white;
+  border-radius:12px;
+  display:none;
+  overflow:hidden;
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+  z-index:10;
+}
+
+.options div {
+  padding:12px;
+  cursor:pointer;
+}
+
+.options div:hover {
+  background:#f1f5f9;
+}
+
+/* 🏷️ عنوان */
+.label {
+  margin-top:15px;
+  margin-bottom:5px;
+  font-size:14px;
+  color:#cbd5f5;
+}
+
+/* ✅ checkbox احترافي */
+.skills {
+  background:white;
+  border-radius:12px;
+  padding:12px;
   color:black;
+  text-align:right;
+}
+
+.check {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:8px 0;
+  cursor:pointer;
+}
+
+.check input { display:none; }
+
+.check span {
+  width:20px;
+  height:20px;
+  border:2px solid #3b82f6;
+  border-radius:6px;
+  position:relative;
+}
+
+.check input:checked + span {
+  background:#3b82f6;
+}
+
+.check input:checked + span::after {
+  content:"✓";
+  color:white;
+  position:absolute;
+  top:-2px;
+  right:3px;
 }
 
 /* 🎯 زر */
@@ -86,47 +153,7 @@ button {
   cursor:pointer;
 }
 
-button:hover {
-  background:#16a34a;
-}
-
-/* 🏷️ عنوان */
-.label {
-  margin-top:15px;
-  margin-bottom:5px;
-  font-size:14px;
-  color:#cbd5f5;
-}
-
-/* ✅ خيارات */
-.skills {
-  background:white;
-  border-radius:12px;
-  padding:12px;
-  color:black;
-  text-align:right;
-}
-
-.skills label{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin:6px 0;
-  cursor:pointer;
-}
-
-/* checkbox */
-.skills input {
-  width:18px;
-  height:18px;
-}
-
-/* 📱 موبايل */
-@media(max-width:480px){
-  .box{
-    padding:20px;
-  }
-}
+button:hover { background:#16a34a; }
 
 </style>
 </head>
@@ -142,26 +169,40 @@ button:hover {
 <input id="city" placeholder="المدينة">
 <input id="district" placeholder="الحي">
 
-<select id="gender">
-  <option value="">اختر الجنس</option>
-  <option value="ذكر">ذكر</option>
-  <option value="أنثى">أنثى</option>
-</select>
+<!-- 🔽 dropdown -->
+<div class="custom-select" onclick="toggleDropdown()">
+  <div id="selected">اختر الجنس</div>
+  <div class="options" id="dropdown">
+    <div onclick="selectOption('ذكر')">ذكر</div>
+    <div onclick="selectOption('أنثى')">أنثى</div>
+  </div>
+</div>
 
-<select id="level">
-  <option value="">المستوى</option>
-  <option value="مبتدئ">مبتدئ</option>
-  <option value="متوسط">متوسط</option>
-  <option value="متقدم">متقدم</option>
-</select>
+<!-- 🔽 مستوى -->
+<input id="level" placeholder="المستوى (مبتدئ / متوسط / متقدم)">
 
 <div class="label">❗ لا أستطيع</div>
 
 <div class="skills">
-  <label><input type="checkbox" value="القراءة"> القراءة</label>
-  <label><input type="checkbox" value="الكتابة"> الكتابة</label>
-  <label><input type="checkbox" value="التحدث"> التحدث</label>
-  <label><input type="checkbox" value="كل ما ذكر صحيح"> كل ما ذكر صحيح</label>
+  <label class="check">
+    <input type="checkbox" value="القراءة">
+    <span></span> القراءة
+  </label>
+
+  <label class="check">
+    <input type="checkbox" value="الكتابة">
+    <span></span> الكتابة
+  </label>
+
+  <label class="check">
+    <input type="checkbox" value="التحدث">
+    <span></span> التحدث
+  </label>
+
+  <label class="check">
+    <input type="checkbox" value="كل ما ذكر صحيح">
+    <span></span> كل ما ذكر صحيح
+  </label>
 </div>
 
 <div class="label">🎯 اهتماماتك المهنية</div>
@@ -176,6 +217,19 @@ button:hover {
 
 <script>
 
+let selectedGender = "";
+
+function toggleDropdown(){
+  const drop = document.getElementById("dropdown");
+  drop.style.display = drop.style.display === "block" ? "none" : "block";
+}
+
+function selectOption(value){
+  selectedGender = value;
+  document.getElementById("selected").innerText = value;
+  document.getElementById("dropdown").style.display = "none";
+}
+
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
 async function signup(){
@@ -188,7 +242,7 @@ async function signup(){
     phone: document.getElementById("phone").value.trim(),
     city: document.getElementById("city").value.trim(),
     district: document.getElementById("district").value.trim(),
-    gender: document.getElementById("gender").value,
+    gender: selectedGender,
     level: document.getElementById("level").value,
     skills: skills,
     job1: document.getElementById("job1").value.trim(),
@@ -202,20 +256,13 @@ async function signup(){
   }
 
   try {
-
-    const res = await fetch(WEBHOOK,{
+    await fetch(WEBHOOK,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body:JSON.stringify(data)
     });
 
-    await res.json();
-
-    localStorage.setItem("user", data.name);
-    localStorage.setItem("phone", data.phone);
-
     alert("تم التسجيل بنجاح ✅");
-
     window.location.href = "index.html";
 
   } catch (error) {

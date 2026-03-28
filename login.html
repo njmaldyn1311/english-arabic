@@ -7,48 +7,61 @@
 <title>دخول الطالب</title>
 
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body {
   margin:0;
-  height:100vh;
+  min-height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
   font-family:Arial;
   background: linear-gradient(135deg,#0f172a,#1e3a8a);
+  padding:15px;
 }
 
-/* خلفية خفيفة */
+/* خلفية */
 body::before{
   content:"";
-  position:absolute;
+  position:fixed;
   width:100%;
   height:100%;
   background:url("https://images.unsplash.com/photo-1522202176988-66273c2fd55f") center/cover;
   opacity:0.1;
+  z-index:-1;
 }
 
 /* الكرت */
 .box {
+  width:100%;
+  max-width:400px;
+  padding:25px;
+  border-radius:20px;
+  text-align:center;
+  color:white;
   backdrop-filter: blur(15px);
   background: rgba(255,255,255,0.05);
   border:1px solid rgba(255,255,255,0.1);
-  padding:30px;
-  border-radius:20px;
-  width:90%;
-  max-width:400px;
-  text-align:center;
-  color:white;
   box-shadow:0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* موبايل */
+@media (max-width:480px){
+  .box{
+    padding:20px;
+  }
+}
+
+.logo{
+  width:70px;
+  margin-bottom:10px;
 }
 
 h2 {
   margin-bottom:20px;
-}
-
-/* صورة */
-.logo{
-  width:80px;
-  margin-bottom:10px;
+  font-size:20px;
 }
 
 input {
@@ -109,29 +122,44 @@ const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/login";
 
 async function login(){
 
-  const phone = document.getElementById("phone").value;
+  const phone = document.getElementById("phone").value.trim();
 
-  if(!phone) return alert("اكتب رقم الجوال");
+  if(!phone){
+    alert("اكتب رقم الجوال");
+    return;
+  }
 
-  const res = await fetch(WEBHOOK,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ phone })
-  });
+  try{
 
-  const data = await res.json();
+    const res = await fetch(WEBHOOK,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ phone })
+    });
 
-  if(data.status === "ok"){
+    const data = await res.json();
 
-    localStorage.setItem("user", data.user.name);
-    localStorage.setItem("user_id", data.user.id);
-    localStorage.setItem("phone", data.user.phone);
+    console.log("🔥 RESPONSE:", data);
 
-    alert("تم تسجيل الدخول ✅");
+    // ✅ التحقق الصحيح
+    if(!data || !data.user_id){
+      alert("❌ الرقم غير مسجل");
+      return;
+    }
+
+    // ✅ التخزين
+    localStorage.setItem("user_id", data.user_id);
+    localStorage.setItem("user", data.name);
+    localStorage.setItem("phone", data.phone);
+
+    alert("✅ تم تسجيل الدخول");
+
+    // ✅ تحويل
     window.location.href = "index.html";
 
-  } else {
-    alert("❌ الرقم غير مسجل");
+  }catch(err){
+    console.error(err);
+    alert("❌ خطأ في الاتصال");
   }
 }
 

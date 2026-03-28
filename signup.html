@@ -9,6 +9,10 @@
 <style>
 
 /* 🌍 عام */
+*{
+  box-sizing:border-box;
+}
+
 body {
   margin: 0;
   font-family: "Cairo", sans-serif;
@@ -41,12 +45,20 @@ h2 {
 /* 📝 الحقول */
 input, select {
   width:100%;
-  padding:14px;
+  height:50px; /* ✅ توحيد الطول */
+  padding:0 14px;
   margin:8px 0;
   border-radius:12px;
   border:none;
   text-align:center;
   font-size:15px;
+  appearance:none;
+  -webkit-appearance:none;
+}
+
+/* placeholder */
+input::placeholder {
+  color:#9ca3af;
 }
 
 /* ✨ focus */
@@ -55,10 +67,16 @@ input:focus, select:focus {
   box-shadow:0 0 0 2px #38bdf8;
 }
 
+/* select fix */
+select {
+  background:white;
+  color:black;
+}
+
 /* 🎯 زر */
 button {
   width:100%;
-  padding:14px;
+  height:50px;
   margin-top:15px;
   border:none;
   border-radius:12px;
@@ -84,18 +102,26 @@ button:hover {
 .skills {
   background:white;
   border-radius:12px;
-  padding:10px;
+  padding:12px;
   color:black;
   text-align:right;
 }
 
 .skills label{
-  display:block;
-  margin:5px 0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:6px 0;
   cursor:pointer;
 }
 
-/* 📱 */
+/* checkbox */
+.skills input {
+  width:18px;
+  height:18px;
+}
+
+/* 📱 موبايل */
 @media(max-width:480px){
   .box{
     padding:20px;
@@ -154,7 +180,6 @@ const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
 async function signup(){
 
-  // ✅ جمع checkbox
   const skills = [...document.querySelectorAll(".skills input:checked")]
     .map(el => el.value);
 
@@ -184,7 +209,7 @@ async function signup(){
       body:JSON.stringify(data)
     });
 
-    const result = await res.json();
+    await res.json();
 
     localStorage.setItem("user", data.name);
     localStorage.setItem("phone", data.phone);

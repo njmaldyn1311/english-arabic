@@ -8,27 +8,29 @@
 
 <style>
 
-/* 🌍 إعداد عام */
+/* 🌍 عام */
 body {
   margin: 0;
   font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg,#0f172a,#1e293b);
+  background: linear-gradient(135deg,#0f172a,#1e3a8a);
   display:flex;
   justify-content:center;
   align-items:center;
   min-height:100vh;
-  padding: 15px;
+  padding:15px;
 }
 
-/* 📦 الصندوق */
+/* 📦 الكرت */
 .box {
-  background:#1e293b;
-  padding:25px;
-  border-radius:20px;
   width:100%;
   max-width:420px;
+  padding:25px;
+  border-radius:20px;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(15px);
+  box-shadow:0 10px 40px rgba(0,0,0,0.5);
   text-align:center;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  color:white;
 }
 
 /* 🧠 العنوان */
@@ -47,58 +49,56 @@ input, select {
   font-size:15px;
 }
 
-/* ✨ تحسين الشكل */
+/* ✨ focus */
 input:focus, select:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px #38bdf8;
+  outline:none;
+  box-shadow:0 0 0 2px #38bdf8;
 }
 
 /* 🎯 زر */
 button {
   width:100%;
   padding:14px;
-  margin-top:12px;
+  margin-top:15px;
   border:none;
   border-radius:12px;
   background:#22c55e;
   color:white;
   font-size:16px;
   cursor:pointer;
-  transition:0.3s;
 }
 
 button:hover {
   background:#16a34a;
 }
 
-/* 🏷️ النصوص */
-label {
-  display:block;
-  margin-top:10px;
+/* 🏷️ عنوان */
+.label {
+  margin-top:15px;
+  margin-bottom:5px;
   font-size:14px;
   color:#cbd5f5;
 }
 
-/* 📱 موبايل */
-@media (max-width: 480px) {
-  .box {
-    padding:20px;
-  }
-
-  input, select {
-    padding:12px;
-    font-size:14px;
-  }
-
-  button {
-    font-size:14px;
-  }
+/* ✅ خيارات */
+.skills {
+  background:white;
+  border-radius:12px;
+  padding:10px;
+  color:black;
+  text-align:right;
 }
 
-/* 💻 شاشات كبيرة */
-@media (min-width: 768px) {
-  .box {
-    max-width:450px;
+.skills label{
+  display:block;
+  margin:5px 0;
+  cursor:pointer;
+}
+
+/* 📱 */
+@media(max-width:480px){
+  .box{
+    padding:20px;
   }
 }
 
@@ -129,16 +129,16 @@ label {
   <option value="متقدم">متقدم</option>
 </select>
 
-<label>ما الذي تريد تحسينه؟</label>
+<div class="label">❗ لا أستطيع</div>
 
-<select id="skills" multiple>
-  <option value="القراءة">القراءة</option>
-  <option value="الكتابة">الكتابة</option>
-  <option value="التحدث">التحدث</option>
-  <option value="كل ما ذكر صحيح">كل ما ذكر صحيح</option>
-</select>
+<div class="skills">
+  <label><input type="checkbox" value="القراءة"> القراءة</label>
+  <label><input type="checkbox" value="الكتابة"> الكتابة</label>
+  <label><input type="checkbox" value="التحدث"> التحدث</label>
+  <label><input type="checkbox" value="كل ما ذكر صحيح"> كل ما ذكر صحيح</label>
+</div>
 
-<h4>🎯 اهتماماتك المهنية</h4>
+<div class="label">🎯 اهتماماتك المهنية</div>
 
 <input id="job1" placeholder="مثال: طبيب - مهندس">
 <input id="job2" placeholder="مثال: برمجة - تجارة">
@@ -154,8 +154,9 @@ const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
 async function signup(){
 
-  const skillsSelect = document.getElementById("skills");
-  const skills = [...skillsSelect.selectedOptions].map(o => o.value);
+  // ✅ جمع checkbox
+  const skills = [...document.querySelectorAll(".skills input:checked")]
+    .map(el => el.value);
 
   const data = {
     name: document.getElementById("name").value.trim(),
@@ -175,8 +176,6 @@ async function signup(){
     return;
   }
 
-  console.log("📤 البيانات:", data);
-
   try {
 
     const res = await fetch(WEBHOOK,{
@@ -190,12 +189,11 @@ async function signup(){
     localStorage.setItem("user", data.name);
     localStorage.setItem("phone", data.phone);
 
-    alert(result.message || "تم التسجيل بنجاح ✅");
+    alert("تم التسجيل بنجاح ✅");
 
     window.location.href = "index.html";
 
   } catch (error) {
-    console.error(error);
     alert("خطأ في الاتصال ❌");
   }
 }

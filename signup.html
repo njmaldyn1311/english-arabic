@@ -170,7 +170,7 @@ button:hover { background:#16a34a; }
 <input id="district" placeholder="الحي">
 
 <!-- 🔽 الجنس -->
-<div class="custom-select" onclick="toggleDropdown()">
+<div class="custom-select" onclick="event.stopPropagation(); toggleDropdown()">
   <div id="selected">اختر الجنس</div>
   <div class="options" id="dropdown">
     <div onclick="selectOption(event,'ذكر')">ذكر</div>
@@ -179,7 +179,7 @@ button:hover { background:#16a34a; }
 </div>
 
 <!-- 🔽 المستوى -->
-<div class="custom-select" onclick="toggleLevelDropdown()">
+<div class="custom-select" onclick="event.stopPropagation(); toggleLevelDropdown()">
   <div id="selectedLevel">المستوى</div>
   <div class="options" id="levelDropdown">
     <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>

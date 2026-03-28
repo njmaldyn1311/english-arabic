@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,51 +7,101 @@
 <title>تسجيل طالب</title>
 
 <style>
+
+/* 🌍 إعداد عام */
 body {
+  margin: 0;
+  font-family: "Cairo", sans-serif;
   background: linear-gradient(135deg,#0f172a,#1e293b);
-  color: white;
-  font-family: Arial;
   display:flex;
   justify-content:center;
   align-items:center;
   min-height:100vh;
+  padding: 15px;
 }
 
+/* 📦 الصندوق */
 .box {
   background:#1e293b;
-  padding:20px;
-  border-radius:15px;
-  width:95%;
-  max-width:450px;
+  padding:25px;
+  border-radius:20px;
+  width:100%;
+  max-width:420px;
   text-align:center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
 }
 
+/* 🧠 العنوان */
+h2 {
+  margin-bottom:15px;
+}
+
+/* 📝 الحقول */
 input, select {
   width:100%;
-  padding:12px;
-  margin:6px 0;
-  border-radius:10px;
+  padding:14px;
+  margin:8px 0;
+  border-radius:12px;
   border:none;
   text-align:center;
+  font-size:15px;
 }
 
+/* ✨ تحسين الشكل */
+input:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #38bdf8;
+}
+
+/* 🎯 زر */
 button {
   width:100%;
-  padding:12px;
-  margin-top:10px;
+  padding:14px;
+  margin-top:12px;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   background:#22c55e;
   color:white;
+  font-size:16px;
   cursor:pointer;
+  transition:0.3s;
 }
 
+button:hover {
+  background:#16a34a;
+}
+
+/* 🏷️ النصوص */
 label {
   display:block;
   margin-top:10px;
   font-size:14px;
   color:#cbd5f5;
 }
+
+/* 📱 موبايل */
+@media (max-width: 480px) {
+  .box {
+    padding:20px;
+  }
+
+  input, select {
+    padding:12px;
+    font-size:14px;
+  }
+
+  button {
+    font-size:14px;
+  }
+}
+
+/* 💻 شاشات كبيرة */
+@media (min-width: 768px) {
+  .box {
+    max-width:450px;
+  }
+}
+
 </style>
 </head>
 
@@ -79,7 +129,7 @@ label {
   <option value="متقدم">متقدم</option>
 </select>
 
-<label>لا أستطيع</label>
+<label>ما الذي تريد تحسينه؟</label>
 
 <select id="skills" multiple>
   <option value="القراءة">القراءة</option>
@@ -88,11 +138,11 @@ label {
   <option value="كل ما ذكر صحيح">كل ما ذكر صحيح</option>
 </select>
 
-<h4>🎯 اكتب أسماء الوظائف المهتم بها</h4>
+<h4>🎯 اهتماماتك المهنية</h4>
 
-<input id="job1" placeholder="مثال: طبيب - مهندس - مدرس">
-<input id="job2" placeholder="مثال: برمجة - تجارة - تسويق">
-<input id="job3" placeholder="مثال: سفر - مقابلات - أعمال">
+<input id="job1" placeholder="مثال: طبيب - مهندس">
+<input id="job2" placeholder="مثال: برمجة - تجارة">
+<input id="job3" placeholder="مثال: سفر - مقابلات">
 
 <button onclick="signup()">تسجيل</button>
 
@@ -104,11 +154,9 @@ const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
 async function signup(){
 
-  // 🟢 skills (array)
   const skillsSelect = document.getElementById("skills");
   const skills = [...skillsSelect.selectedOptions].map(o => o.value);
 
-  // 🟢 البيانات
   const data = {
     name: document.getElementById("name").value.trim(),
     phone: document.getElementById("phone").value.trim(),
@@ -122,7 +170,6 @@ async function signup(){
     job3: document.getElementById("job3").value.trim()
   };
 
-  // 🛑 تحقق بسيط
   if(!data.name || !data.phone){
     alert("يرجى إدخال الاسم ورقم الجوال ⚠️");
     return;
@@ -140,7 +187,6 @@ async function signup(){
 
     const result = await res.json();
 
-    // ✅ تخزين المستخدم
     localStorage.setItem("user", data.name);
     localStorage.setItem("phone", data.phone);
 

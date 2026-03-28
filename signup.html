@@ -68,28 +68,26 @@ label {
 
 <select id="gender">
   <option value="">اختر الجنس</option>
-  <option>ذكر</option>
-  <option>أنثى</option>
+  <option value="ذكر">ذكر</option>
+  <option value="أنثى">أنثى</option>
 </select>
 
 <select id="level">
   <option value="">المستوى</option>
-  <option>مبتدئ</option>
-  <option>متوسط</option>
-  <option>متقدم</option>
+  <option value="مبتدئ">مبتدئ</option>
+  <option value="متوسط">متوسط</option>
+  <option value="متقدم">متقدم</option>
 </select>
 
-<!-- ✅ العنوان الجديد -->
 <label>لا أستطيع</label>
 
 <select id="skills" multiple>
-  <option>القراءة</option>
-  <option>الكتابة</option>
-  <option>التحدث</option>
-  <option>كل ما ذكر صحيح</option>
+  <option value="القراءة">القراءة</option>
+  <option value="الكتابة">الكتابة</option>
+  <option value="التحدث">التحدث</option>
+  <option value="كل ما ذكر صحيح">كل ما ذكر صحيح</option>
 </select>
 
-<!-- ✅ النص الجديد -->
 <h4>🎯 اكتب أسماء الوظائف المهتم بها</h4>
 
 <input id="job1" placeholder="مثال: طبيب - مهندس - مدرس">
@@ -106,38 +104,53 @@ const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
 async function signup(){
 
+  // 🟢 skills (array)
   const skillsSelect = document.getElementById("skills");
   const skills = [...skillsSelect.selectedOptions].map(o => o.value);
 
+  // 🟢 البيانات
   const data = {
-    name: document.getElementById("name").value,
-    phone: document.getElementById("phone").value,
-    city: document.getElementById("city").value,
-    district: document.getElementById("district").value,
+    name: document.getElementById("name").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    city: document.getElementById("city").value.trim(),
+    district: document.getElementById("district").value.trim(),
     gender: document.getElementById("gender").value,
     level: document.getElementById("level").value,
     skills: skills,
-    job1: document.getElementById("job1").value,
-    job2: document.getElementById("job2").value,
-    job3: document.getElementById("job3").value
+    job1: document.getElementById("job1").value.trim(),
+    job2: document.getElementById("job2").value.trim(),
+    job3: document.getElementById("job3").value.trim()
   };
 
-  const res = await fetch(WEBHOOK,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify(data)
-  });
+  // 🛑 تحقق بسيط
+  if(!data.name || !data.phone){
+    alert("يرجى إدخال الاسم ورقم الجوال ⚠️");
+    return;
+  }
 
-  const result = await res.json();
+  console.log("📤 البيانات:", data);
 
-  if(result.status === "ok"){
+  try {
+
+    const res = await fetch(WEBHOOK,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify(data)
+    });
+
+    const result = await res.json();
+
+    // ✅ تخزين المستخدم
     localStorage.setItem("user", data.name);
     localStorage.setItem("phone", data.phone);
 
-    alert("تم التسجيل ✅");
+    alert(result.message || "تم التسجيل بنجاح ✅");
+
     window.location.href = "index.html";
-  } else {
-    alert("في خطأ ❌");
+
+  } catch (error) {
+    console.error(error);
+    alert("خطأ في الاتصال ❌");
   }
 }
 

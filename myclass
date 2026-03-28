@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>📚 الفصل الذكي</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg,#0f172a,#1e293b);
+  color: white;
+  margin: 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+  text-align: center;
+}
+
+/* الهيدر */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1e293b;
+  padding: 10px 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.username { color: #38bdf8; font-weight: bold; }
+.count { color: #fbbf24; }
+
+.review-btn {
+  background: #6366f1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* العنوان الرئيسي */
+.main-title {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+/* ⭐ عنوان الدرس الجديد */
+.lesson-title {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #94a3b8;
+}
+
+/* الكارد */
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+/* inputs */
+input, textarea, select {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  margin: 8px 0;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 15px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  text-align: center;
+}
+
+button {
+  background: #22c55e;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* جدول */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table td {
+  padding: 10px;
+  border-bottom: 1px solid #334155;
+  word-break: break-word;
+}
+
+.en { color:#38bdf8; font-weight:bold; }
+.ar { color:#f87171; }
+
+.save {
+  background:#fbbf24;
+  border-radius:8px;
+  padding:6px;
+  cursor:pointer;
+  width:100%;
+}
+
+.example {
+  font-size:14px;
+  color:#e2e8f0;
+  margin-top:5px;
+}
+
+.loading {
+  text-align:center;
+  margin:20px;
+}
+
+.hidden {
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- الهيدر -->
+<div class="header">
+  <div class="username" id="username">👤 Ahmed</div>
+  <div class="count">⭐ كلماتك: <span id="wordCount">0</span></div>
+  <div class="review-btn" onclick="goReview()">📖 مراجعة اليوم</div>
+</div>
+
+<!-- العنوان -->
+<div class="main-title">📚 الفصل الدراسي الذكي</div>
+
+<!-- ⭐ عنوان الدرس -->
+<h3 id="lessonTitle" class="lesson-title">📘 عنوان الدرس</h3>
+
+<div class="card">
+
+<select id="type" onchange="changeType()">
+  <option value="text">📝 نص</option>
+  <option value="pdf">📄 PDF</option>
+  <option value="link">🔗 رابط</option>
+</select>
+
+<textarea id="textInput" placeholder="اكتب النص هنا..."></textarea>
+
+<input type="file" id="pdfInput" class="hidden">
+
+<input type="text" id="linkInput" class="hidden" placeholder="ضع الرابط هنا">
+
+<button onclick="generateLesson()">🚀 إنشاء الدرس</button>
+
+</div>
+
+<div id="lesson"></div>
+
+</div>
+
+<script>
+
+const WEBHOOK_LESSON = "https://n8n.srv1495053.hstgr.cloud/webhook/lesson";
+const WEBHOOK_SAVE = "https://n8n.srv1495053.hstgr.cloud/webhook/save-word";
+const WEBHOOK_COUNT = "https://n8n.srv1495053.hstgr.cloud/webhook/count";
+
+let userId = localStorage.getItem("user") || "Ahmed";
+
+window.onload = () => {
+  document.getElementById("username").innerText = "👤 " + userId;
+  loadCount();
+};
+
+async function loadCount(){
+  try{
+    const res = await fetch(WEBHOOK_COUNT,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ user_id:userId })
+    });
+
+    const data = await res.json();
+    document.getElementById("wordCount").innerText = data.count || 0;
+  }catch(e){}
+}
+
+function goReview(){
+  window.location.href = "review.html";
+}
+
+function changeType(){
+  const type = document.getElementById("type").value;
+
+  document.getElementById("textInput").classList.add("hidden");
+  document.getElementById("pdfInput").classList.add("hidden");
+  document.getElementById("linkInput").classList.add("hidden");
+
+  if(type === "text") document.getElementById("textInput").classList.remove("hidden");
+  if(type === "pdf") document.getElementById("pdfInput").classList.remove("hidden");
+  if(type === "link") document.getElementById("linkInput").classList.remove("hidden");
+}
+
+async function generateLesson(){
+
+  document.getElementById("lesson").innerHTML =
+  `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;
+
+  const type = document.getElementById("type").value;
+
+  // ⭐ تحديث عنوان الدرس
+  let titleText = "📘 درس جديد";
+
+  if(type === "text"){
+    const txt = document.getElementById("textInput").value;
+    titleText = txt.slice(0,40) || "📘 درس نصي";
+  }
+  if(type === "link"){
+    titleText = "🎥 درس من فيديو";
+  }
+  if(type === "pdf"){
+    titleText = "📄 درس من PDF";
+  }
+
+  document.getElementById("lessonTitle").innerText = titleText;
+
+  let content = "";
+
+  if(type === "text") content = document.getElementById("textInput").value;
+  if(type === "link") content = document.getElementById("linkInput").value;
+
+  if(type === "pdf"){
+    const file = document.getElementById("pdfInput").files[0];
+    if(!file) return alert("ارفع PDF");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(WEBHOOK_LESSON,{
+      method:"POST",
+      body: formData
+    });
+
+    const data = await res.json();
+    render(data);
+    return;
+  }
+
+  const res = await fetch(WEBHOOK_LESSON,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ content, type })
+  });
+
+  const data = await res.json();
+  render(data);
+}
+
+function render(data){
+
+  let html = `
+  <div class="card">
+    <p>${data.story}</p>
+    <hr>
+    <p>${data.translation}</p>
+  </div>
+  `;
+
+  for(let cat in data.words){
+
+    html += `
+    <div class="card">
+      <h3>${cat}</h3>
+      <table class="table">
+    `;
+
+    data.words[cat].forEach(w => {
+
+      html += `
+      <tr>
+        <td class="en">${w.en}</td>
+        <td class="ar">${w.ar}</td>
+        <td>
+          <button class="save"
+          onclick="saveWord('${w.en}','${w.ar}')">⭐</button>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" class="example">${w.example || ""}</td>
+      </tr>
+      `;
+    });
+
+    html += `</table></div>`;
+  }
+
+  document.getElementById("lesson").innerHTML = html;
+}
+
+async function saveWord(word, ar){
+
+  await fetch(WEBHOOK_SAVE,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      user_id:userId,
+      word:word,
+      translation:ar
+    })
+  });
+
+  loadCount();
+  alert("تم الحفظ ⭐");
+}
+
+</script>
+
+</body>
+</html>

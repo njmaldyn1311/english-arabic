@@ -21,7 +21,6 @@ body {
   text-align: center;
 }
 
-/* الهيدر */
 .header {
   display: flex;
   justify-content: space-between;
@@ -42,35 +41,32 @@ body {
   cursor: pointer;
 }
 
-/* العنوان */
 .main-title {
   font-size: 24px;
   margin-bottom: 10px;
 }
 
 .lesson-title {
+  text-align: center;
   font-size: 18px;
   margin-bottom: 15px;
   color: #94a3b8;
 }
 
-/* الكارد */
 .card {
-  background: rgba(30,41,59,0.7);
-  backdrop-filter: blur(10px);
-  border:1px solid rgba(255,255,255,0.1);
+  background: #1e293b;
   padding: 20px;
   border-radius: 15px;
   margin-bottom: 15px;
 }
 
-/* inputs */
 input, textarea, select {
   width: 100%;
   padding: 14px;
   border-radius: 10px;
   border: none;
   margin: 8px 0;
+  box-sizing: border-box;
   text-align: center;
   font-size: 15px;
 }
@@ -85,7 +81,6 @@ button {
   width: 100%;
 }
 
-/* جدول */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -104,15 +99,17 @@ button {
   border-radius:8px;
   padding:6px;
   cursor:pointer;
-}
-
-.save:hover{
-  background:#f59e0b;
+  width:100%;
 }
 
 .example {
   font-size:14px;
   color:#e2e8f0;
+}
+
+.loading {
+  text-align:center;
+  margin:20px;
 }
 
 .hidden {
@@ -128,10 +125,11 @@ button {
 <div class="header">
   <div class="username" id="username">👤</div>
   <div class="count">⭐ كلماتك: <span id="wordCount">0</span></div>
-  <div class="review-btn" onclick="goReview()">📖 مراجعة اليوم</div>
+  <div class="review-btn" onclick="goReview()">📖 مراجعة</div>
 </div>
 
-<div class="main-title">📚 الفصل الدراسي الذكي</div>
+<div class="main-title">📚 الفصل الذكي</div>
+
 <h3 id="lessonTitle" class="lesson-title">📘 عنوان الدرس</h3>
 
 <div class="card">
@@ -145,6 +143,7 @@ button {
 <textarea id="textInput" placeholder="اكتب النص هنا..."></textarea>
 
 <input type="file" id="pdfInput" class="hidden">
+
 <input type="text" id="linkInput" class="hidden" placeholder="ضع الرابط هنا">
 
 <button onclick="generateLesson()">🚀 إنشاء الدرس</button>
@@ -161,22 +160,17 @@ const WEBHOOK_LESSON = "https://n8n.srv1495053.hstgr.cloud/webhook/lesson";
 const WEBHOOK_SAVE = "https://n8n.srv1495053.hstgr.cloud/webhook/save-word";
 const WEBHOOK_COUNT = "https://n8n.srv1495053.hstgr.cloud/webhook/count";
 
-/* 🔒 حماية الصفحة */
-if(!localStorage.getItem("user_id")){
+//// 🔐 حماية الصفحة
+const userId = localStorage.getItem("user_id");
+const username = localStorage.getItem("user") || "طالب";
+
+if(!userId){
   window.location.href = "login.html";
 }
 
-/* 🧠 بيانات المستخدم */
-let userId = localStorage.getItem("user_id");
-let username = localStorage.getItem("user") || "طالب";
+document.getElementById("username").innerText = "👤 " + username;
 
-/* تحميل الصفحة */
-window.onload = () => {
-  document.getElementById("username").innerText = "👤 " + username;
-  loadCount();
-};
-
-/* تحميل عدد الكلمات */
+//// 📊 تحميل عدد الكلمات
 async function loadCount(){
   try{
     const res = await fetch(WEBHOOK_COUNT,{
@@ -190,10 +184,9 @@ async function loadCount(){
   }catch(e){}
 }
 
-function goReview(){
-  window.location.href = "review.html";
-}
+window.onload = loadCount;
 
+//// 🔄 تغيير نوع الإدخال
 function changeType(){
   const type = document.getElementById("type").value;
 
@@ -206,28 +199,23 @@ function changeType(){
   if(type === "link") document.getElementById("linkInput").classList.remove("hidden");
 }
 
+//// 🚀 إنشاء الدرس
 async function generateLesson(){
 
   document.getElementById("lesson").innerHTML =
-  `<p>⏳ جاري إنشاء الدرس...</p>`;
+  `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;
 
   const type = document.getElementById("type").value;
-
-  let titleText = "📘 درس جديد";
-
-  if(type === "text"){
-    const txt = document.getElementById("textInput").value;
-    titleText = txt.slice(0,40) || "📘 درس نصي";
-  }
-  if(type === "link") titleText = "🎥 درس من فيديو";
-  if(type === "pdf") titleText = "📄 درس من PDF";
-
-  document.getElementById("lessonTitle").innerText = titleText;
 
   let content = "";
 
   if(type === "text") content = document.getElementById("textInput").value;
   if(type === "link") content = document.getElementById("linkInput").value;
+
+  // 🎯 تحديث العنوان
+  let title = "📘 درس جديد";
+  if(content) title = content.slice(0,40);
+  document.getElementById("lessonTitle").innerText = title;
 
   const res = await fetch(WEBHOOK_LESSON,{
     method:"POST",
@@ -235,7 +223,7 @@ async function generateLesson(){
     body:JSON.stringify({
       content,
       type,
-      user_id:userId
+      user_id: userId   // 🔥 أهم إضافة
     })
   });
 
@@ -243,6 +231,7 @@ async function generateLesson(){
   render(data);
 }
 
+//// 🎨 عرض الدرس
 function render(data){
 
   let html = `
@@ -284,6 +273,7 @@ function render(data){
   document.getElementById("lesson").innerHTML = html;
 }
 
+//// ⭐ حفظ كلمة
 async function saveWord(word, ar){
 
   await fetch(WEBHOOK_SAVE,{
@@ -298,6 +288,11 @@ async function saveWord(word, ar){
 
   loadCount();
   alert("تم الحفظ ⭐");
+}
+
+//// 🔗 مراجعة
+function goReview(){
+  window.location.href = "review.html";
 }
 
 </script>

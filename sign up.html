@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>تسجيل طالب</title>
+
+<style>
+body {
+  background: linear-gradient(135deg,#0f172a,#1e293b);
+  color: white;
+  font-family: Arial;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
+
+.box {
+  background:#1e293b;
+  padding:20px;
+  border-radius:15px;
+  width:95%;
+  max-width:450px;
+  text-align:center;
+}
+
+input, select {
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border-radius:10px;
+  border:none;
+  text-align:center;
+}
+
+button {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  color:white;
+  cursor:pointer;
+}
+
+label {
+  display:block;
+  margin-top:10px;
+  font-size:14px;
+  color:#cbd5f5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>🚀 تسجيل طالب جديد</h2>
+
+<input id="name" placeholder="اسم الطالب">
+<input id="phone" placeholder="رقم الجوال">
+<input id="city" placeholder="المدينة">
+<input id="district" placeholder="الحي">
+
+<select id="gender">
+  <option value="">اختر الجنس</option>
+  <option>ذكر</option>
+  <option>أنثى</option>
+</select>
+
+<select id="level">
+  <option value="">المستوى</option>
+  <option>مبتدئ</option>
+  <option>متوسط</option>
+  <option>متقدم</option>
+</select>
+
+<!-- ✅ العنوان الجديد -->
+<label>لا أستطيع</label>
+
+<select id="skills" multiple>
+  <option>القراءة</option>
+  <option>الكتابة</option>
+  <option>التحدث</option>
+  <option>كل ما ذكر صحيح</option>
+</select>
+
+<!-- ✅ النص الجديد -->
+<h4>🎯 اكتب أسماء الوظائف المهتم بها</h4>
+
+<input id="job1" placeholder="مثال: طبيب - مهندس - مدرس">
+<input id="job2" placeholder="مثال: برمجة - تجارة - تسويق">
+<input id="job3" placeholder="مثال: سفر - مقابلات - أعمال">
+
+<button onclick="signup()">تسجيل</button>
+
+</div>
+
+<script>
+
+const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
+
+async function signup(){
+
+  const skillsSelect = document.getElementById("skills");
+  const skills = [...skillsSelect.selectedOptions].map(o => o.value);
+
+  const data = {
+    name: document.getElementById("name").value,
+    phone: document.getElementById("phone").value,
+    city: document.getElementById("city").value,
+    district: document.getElementById("district").value,
+    gender: document.getElementById("gender").value,
+    level: document.getElementById("level").value,
+    skills: skills,
+    job1: document.getElementById("job1").value,
+    job2: document.getElementById("job2").value,
+    job3: document.getElementById("job3").value
+  };
+
+  const res = await fetch(WEBHOOK,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify(data)
+  });
+
+  const result = await res.json();
+
+  if(result.status === "ok"){
+    localStorage.setItem("user", data.name);
+    localStorage.setItem("phone", data.phone);
+
+    alert("تم التسجيل ✅");
+    window.location.href = "index.html";
+  } else {
+    alert("في خطأ ❌");
+  }
+}
+
+</script>
+
+</body>
+</html>

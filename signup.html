@@ -57,7 +57,7 @@ input:focus {
   box-shadow:0 0 0 2px #38bdf8;
 }
 
-/* 🔽 dropdown احترافي */
+/* 🔽 dropdown */
 .custom-select {
   position: relative;
   background: white;
@@ -101,7 +101,7 @@ input:focus {
   color:#cbd5f5;
 }
 
-/* ✅ checkbox احترافي */
+/* ✅ checkbox */
 .skills {
   background:white;
   border-radius:12px;
@@ -169,7 +169,7 @@ button:hover { background:#16a34a; }
 <input id="city" placeholder="المدينة">
 <input id="district" placeholder="الحي">
 
-<!-- 🔽 dropdown -->
+<!-- 🔽 الجنس -->
 <div class="custom-select" onclick="toggleDropdown()">
   <div id="selected">اختر الجنس</div>
   <div class="options" id="dropdown">
@@ -178,8 +178,15 @@ button:hover { background:#16a34a; }
   </div>
 </div>
 
-<!-- 🔽 مستوى -->
-<input id="level" placeholder="المستوى (مبتدئ / متوسط / متقدم)">
+<!-- 🔽 المستوى -->
+<div class="custom-select" onclick="toggleLevelDropdown()">
+  <div id="selectedLevel">المستوى</div>
+  <div class="options" id="levelDropdown">
+    <div onclick="selectLevel('مبتدئ')">مبتدئ</div>
+    <div onclick="selectLevel('متوسط')">متوسط</div>
+    <div onclick="selectLevel('متقدم')">متقدم</div>
+  </div>
+</div>
 
 <div class="label">❗ لا أستطيع</div>
 
@@ -218,8 +225,11 @@ button:hover { background:#16a34a; }
 <script>
 
 let selectedGender = "";
+let selectedLevel = "";
 
+/* 🔽 الجنس */
 function toggleDropdown(){
+  document.getElementById("levelDropdown").style.display = "none";
   const drop = document.getElementById("dropdown");
   drop.style.display = drop.style.display === "block" ? "none" : "block";
 }
@@ -230,6 +240,20 @@ function selectOption(value){
   document.getElementById("dropdown").style.display = "none";
 }
 
+/* 🔽 المستوى */
+function toggleLevelDropdown(){
+  document.getElementById("dropdown").style.display = "none";
+  const drop = document.getElementById("levelDropdown");
+  drop.style.display = drop.style.display === "block" ? "none" : "block";
+}
+
+function selectLevel(value){
+  selectedLevel = value;
+  document.getElementById("selectedLevel").innerText = value;
+  document.getElementById("levelDropdown").style.display = "none";
+}
+
+/* 🚀 إرسال */
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
 async function signup(){
@@ -243,7 +267,7 @@ async function signup(){
     city: document.getElementById("city").value.trim(),
     district: document.getElementById("district").value.trim(),
     gender: selectedGender,
-    level: document.getElementById("level").value,
+    level: selectedLevel,
     skills: skills,
     job1: document.getElementById("job1").value.trim(),
     job2: document.getElementById("job2").value.trim(),

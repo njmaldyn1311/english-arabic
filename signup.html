@@ -173,8 +173,8 @@ button:hover { background:#16a34a; }
 <div class="custom-select" onclick="toggleDropdown()">
   <div id="selected">اختر الجنس</div>
   <div class="options" id="dropdown">
-    <div onclick="selectOption('ذكر')">ذكر</div>
-    <div onclick="selectOption('أنثى')">أنثى</div>
+    <div onclick="selectOption(event,'ذكر')">ذكر</div>
+    <div onclick="selectOption(event,'أنثى')">أنثى</div>
   </div>
 </div>
 
@@ -182,9 +182,9 @@ button:hover { background:#16a34a; }
 <div class="custom-select" onclick="toggleLevelDropdown()">
   <div id="selectedLevel">المستوى</div>
   <div class="options" id="levelDropdown">
-    <div onclick="selectLevel('مبتدئ')">مبتدئ</div>
-    <div onclick="selectLevel('متوسط')">متوسط</div>
-    <div onclick="selectLevel('متقدم')">متقدم</div>
+    <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
+    <div onclick="selectLevel(event,'متوسط')">متوسط</div>
+    <div onclick="selectLevel(event,'متقدم')">متقدم</div>
   </div>
 </div>
 
@@ -234,7 +234,8 @@ function toggleDropdown(){
   drop.style.display = drop.style.display === "block" ? "none" : "block";
 }
 
-function selectOption(value){
+function selectOption(e, value){
+  e.stopPropagation();
   selectedGender = value;
   document.getElementById("selected").innerText = value;
   document.getElementById("dropdown").style.display = "none";
@@ -247,11 +248,18 @@ function toggleLevelDropdown(){
   drop.style.display = drop.style.display === "block" ? "none" : "block";
 }
 
-function selectLevel(value){
+function selectLevel(e, value){
+  e.stopPropagation();
   selectedLevel = value;
   document.getElementById("selectedLevel").innerText = value;
   document.getElementById("levelDropdown").style.display = "none";
 }
+
+/* 🔒 إغلاق عند الضغط خارج */
+document.addEventListener("click", function(){
+  document.getElementById("dropdown").style.display = "none";
+  document.getElementById("levelDropdown").style.display = "none";
+});
 
 /* 🚀 إرسال */
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
@@ -276,6 +284,11 @@ async function signup(){
 
   if(!data.name || !data.phone){
     alert("يرجى إدخال الاسم ورقم الجوال ⚠️");
+    return;
+  }
+
+  if(!selectedGender || !selectedLevel){
+    alert("اختر الجنس والمستوى ⚠️");
     return;
   }
 

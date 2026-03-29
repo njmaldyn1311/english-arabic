@@ -3,11 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>الفصل الذكي</title>
 
 <style>
-
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
@@ -15,7 +13,6 @@ body{
   color:white;
 }
 
-/* الهيدر */
 .top{
   display:flex;
   justify-content:space-between;
@@ -23,36 +20,13 @@ body{
   padding:15px;
 }
 
-.user{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  color:#38bdf8;
-}
+.user{ display:flex; gap:8px; color:#38bdf8; }
+.points{ color:#FFD700; }
+.review{ background:#6366f1; padding:10px 15px; border-radius:12px; }
 
-.points{
-  color:#FFD700;
-}
+.title{text-align:center;}
+.subtitle{text-align:center;color:#94a3b8;}
 
-.review{
-  background:#6366f1;
-  padding:10px 15px;
-  border-radius:12px;
-}
-
-/* العنوان */
-.title{
-  text-align:center;
-  margin-top:10px;
-}
-
-.subtitle{
-  text-align:center;
-  color:#94a3b8;
-  margin-bottom:15px;
-}
-
-/* الكرت */
 .card{
   background:#1e293b;
   margin:20px;
@@ -60,7 +34,6 @@ body{
   border-radius:20px;
 }
 
-/* اختيار */
 .select{
   background:#e5e7eb;
   color:black;
@@ -68,38 +41,32 @@ body{
   border-radius:15px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
   cursor:pointer;
 }
 
-/* القائمة */
 .options{
   display:none;
-  margin-top:10px;
   background:white;
   border-radius:15px;
-  overflow:hidden;
+  margin-top:10px;
 }
 
 .option{
   padding:15px;
   border-bottom:1px solid #ddd;
-  cursor:pointer;
   color:black;
+  cursor:pointer;
 }
 
-/* input */
 .input{
   width:100%;
   padding:15px;
   border:none;
   border-radius:15px;
   margin-top:10px;
-  font-size:16px;
-  box-sizing: border-box;
+  box-sizing:border-box;
 }
 
-/* زر */
 .btn{
   width:100%;
   padding:15px;
@@ -107,133 +74,147 @@ body{
   border-radius:15px;
   background:#22c55e;
   color:white;
-  font-size:18px;
   margin-top:10px;
-  cursor:pointer;
+  font-size:18px;
 }
 
-.loading{
-  text-align:center;
-  margin-top:20px;
-  color:#ccc;
-}
+.loading{text-align:center;margin-top:20px;color:#ccc;}
 
+/* 🔥 عرض الكلمات */
+.word{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px solid #334155;
+}
+.en{color:#38bdf8;}
+.ar{color:#f87171;}
 </style>
 </head>
 
 <body>
 
-<!-- الهيدر -->
 <div class="top">
   <div class="user">👤 نجم</div>
   <div class="points">⭐ كلماتك: 0</div>
   <div class="review">📖 مراجعة</div>
 </div>
 
-<!-- العنوان -->
 <h2 class="title">📚 الفصل الذكي</h2>
 <p class="subtitle">📘 عنوان الدرس</p>
 
-<!-- الكرت -->
 <div class="card">
 
-  <!-- اختيار -->
   <div class="select" onclick="toggleOptions()">
     <span id="typeText">📝 نص</span>
     <span>▼</span>
   </div>
 
-  <!-- الخيارات -->
   <div class="options" id="options">
     <div class="option" onclick="selectType('text')">📝 نص</div>
     <div class="option" onclick="selectType('link')">🔗 رابط</div>
     <div class="option" onclick="selectType('pdf')">📄 PDF</div>
   </div>
 
-  <!-- الإدخال -->
   <input id="textInput" class="input" placeholder="... اكتب النص هنا">
 
-  <!-- الزر -->
   <button class="btn" onclick="generateLesson()">🚀 إنشاء الدرس</button>
 
 </div>
 
-<!-- النتيجة -->
 <div id="lesson"></div>
 
 <script>
 
-/* ✅ user_id ثابت */
+/* user id */
 let user_id = localStorage.getItem("user_id");
-
 if(!user_id){
   user_id = "user_" + Math.random().toString(36).substring(2,10);
   localStorage.setItem("user_id", user_id);
 }
 
-let selectedType = "text";
+let selectedType="text";
 
-/* القائمة */
 function toggleOptions(){
-  let box = document.getElementById("options");
-  box.style.display = box.style.display === "block" ? "none" : "block";
+  let o=document.getElementById("options");
+  o.style.display=o.style.display==="block"?"none":"block";
 }
 
-/* اختيار النوع */
 function selectType(type){
+  selectedType=type;
+  document.getElementById("options").style.display="none";
 
-  selectedType = type;
+  let text="📝 نص";
+  if(type==="link") text="🔗 رابط";
+  if(type==="pdf") text="📄 PDF";
 
-  let text = "📝 نص";
-  if(type === "link") text = "🔗 رابط";
-  if(type === "pdf") text = "📄 PDF";
-
-  document.getElementById("typeText").innerText = text;
-  document.getElementById("options").style.display = "none";
+  document.getElementById("typeText").innerText=text;
 }
 
-/* إنشاء الدرس */
+/* 🔥 عرض الكلمات */
+function renderWords(words){
+
+  let html="";
+
+  for(let section in words){
+
+    html += `<h3>${section}</h3>`;
+
+    words[section].forEach(w=>{
+      html+=`
+        <div class="word">
+          <div class="en">${w.en}</div>
+          <div class="ar">${w.ar}</div>
+        </div>
+      `;
+    });
+
+  }
+
+  return html;
+}
+
 async function generateLesson(){
 
-  let input = document.getElementById("textInput").value;
+  let input=document.getElementById("textInput").value;
 
   if(!input){
     alert("اكتب شي");
     return;
   }
 
-  document.getElementById("lesson").innerHTML = `
-    <div class="loading">⏳ جاري إنشاء الدرس...</div>
-  `;
+  /* ✅ فضي الحقل */
+  document.getElementById("textInput").value="";
+
+  document.getElementById("lesson").innerHTML=
+    `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;
 
   try{
 
-    let res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/lesson",{
+    let res=await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/lesson",{
       method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
+      headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
-        inputPart: input,
-        type: selectedType,
-        user_id: user_id   // 🔥 الإضافة الوحيدة
+        inputPart:input,
+        type:selectedType,
+        user_id:user_id
       })
     });
 
-    let data = await res.json();
+    let data=await res.json();
 
-    document.getElementById("lesson").innerHTML = `
+    document.getElementById("lesson").innerHTML=`
       <div class="card">
         <p>${data.story || ""}</p>
         <hr>
         <p>${data.translation || ""}</p>
+        ${data.words ? renderWords(data.words) : ""}
       </div>
     `;
 
   }catch(e){
-    document.getElementById("lesson").innerHTML = `
-      <div class="loading" style="color:red;">❌ خطأ</div>
-    `;
+    document.getElementById("lesson").innerHTML=
+      `<div class="loading" style="color:red;">❌ خطأ</div>`;
   }
 
 }

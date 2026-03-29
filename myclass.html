@@ -1,7 +1,12 @@
-<!DOCTYPE html><html lang="ar" dir="rtl">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>الفصل الذكي</title><style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>الفصل الذكي</title>
+
+<style>
 
 body{
   margin:0;
@@ -85,15 +90,13 @@ body{
 
 /* input */
 .input{
-width:100%;
-padding:15px;
-border:none;
-border-radius:15px;
-margin-top:10px;
-font-size:16px;
-
-/* 🔥 الحل */
-box-sizing: border-box;
+  width:100%;
+  padding:15px;
+  border:none;
+  border-radius:15px;
+  margin-top:10px;
+  font-size:16px;
+  box-sizing: border-box;
 }
 
 /* زر */
@@ -115,33 +118,77 @@ box-sizing: border-box;
   color:#ccc;
 }
 
-</style></head>
-<body><!-- الهيدر --><div class="top">
+</style>
+</head>
+
+<body>
+
+<!-- الهيدر -->
+<div class="top">
   <div class="user">👤 نجم</div>
   <div class="points">⭐ كلماتك: 0</div>
   <div class="review">📖 مراجعة</div>
-</div><!-- العنوان --><h2 class="title">📚 الفصل الذكي</h2>
-<p class="subtitle">📘 عنوان الدرس</p><!-- الكرت --><div class="card">  <!-- اختيار -->  <div class="select" onclick="toggleOptions()">
+</div>
+
+<!-- العنوان -->
+<h2 class="title">📚 الفصل الذكي</h2>
+<p class="subtitle">📘 عنوان الدرس</p>
+
+<!-- الكرت -->
+<div class="card">
+
+  <!-- اختيار -->
+  <div class="select" onclick="toggleOptions()">
     <span id="typeText">📝 نص</span>
     <span>▼</span>
-  </div>  <!-- الخيارات -->  <div class="options" id="options">
+  </div>
+
+  <!-- الخيارات -->
+  <div class="options" id="options">
     <div class="option" onclick="selectType('text')">📝 نص</div>
     <div class="option" onclick="selectType('link')">🔗 رابط</div>
     <div class="option" onclick="selectType('pdf')">📄 PDF</div>
-  </div>  <!-- الإدخال -->  <input id="textInput" class="input" placeholder="... اكتب النص هنا">  <!-- الزر --><button class="btn" onclick="generateLesson()">🚀 إنشاء الدرس</button>
+  </div>
 
-</div><!-- النتيجة --><div id="lesson"></div><script>
+  <!-- الإدخال -->
+  <input id="textInput" class="input" placeholder="... اكتب النص هنا">
 
-let selectedType = "نص";
+  <!-- الزر -->
+  <button class="btn" onclick="generateLesson()">🚀 إنشاء الدرس</button>
 
+</div>
+
+<!-- النتيجة -->
+<div id="lesson"></div>
+
+<script>
+
+/* ✅ user_id ثابت */
+let user_id = localStorage.getItem("user_id");
+
+if(!user_id){
+  user_id = "user_" + Math.random().toString(36).substring(2,10);
+  localStorage.setItem("user_id", user_id);
+}
+
+let selectedType = "text";
+
+/* القائمة */
 function toggleOptions(){
   let box = document.getElementById("options");
   box.style.display = box.style.display === "block" ? "none" : "block";
 }
 
+/* اختيار النوع */
 function selectType(type){
+
   selectedType = type;
-  document.getElementById("typeText").innerText = type;
+
+  let text = "📝 نص";
+  if(type === "link") text = "🔗 رابط";
+  if(type === "pdf") text = "📄 PDF";
+
+  document.getElementById("typeText").innerText = text;
   document.getElementById("options").style.display = "none";
 }
 
@@ -155,7 +202,6 @@ async function generateLesson(){
     return;
   }
 
-  // ✅ لودينق بدون تخريب التصميم
   document.getElementById("lesson").innerHTML = `
     <div class="loading">⏳ جاري إنشاء الدرس...</div>
   `;
@@ -169,7 +215,8 @@ async function generateLesson(){
       },
       body:JSON.stringify({
         inputPart: input,
-        type: selectedType
+        type: selectedType,
+        user_id: user_id   // 🔥 الإضافة الوحيدة
       })
     });
 
@@ -177,9 +224,9 @@ async function generateLesson(){
 
     document.getElementById("lesson").innerHTML = `
       <div class="card">
-        <p>${data.story}</p>
+        <p>${data.story || ""}</p>
         <hr>
-        <p>${data.translation}</p>
+        <p>${data.translation || ""}</p>
       </div>
     `;
 
@@ -191,5 +238,7 @@ async function generateLesson(){
 
 }
 
-</script></body>
+</script>
+
+</body>
 </html>

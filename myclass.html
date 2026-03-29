@@ -6,6 +6,7 @@
 <title>الفصل الذكي</title>
 
 <style>
+
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
@@ -13,16 +14,10 @@ body{
   color:white;
 }
 
-.top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px;
-}
-
-.user{ display:flex; gap:8px; color:#38bdf8; }
-.points{ color:#FFD700; }
-.review{ background:#6366f1; padding:10px 15px; border-radius:12px; }
+.top{display:flex;justify-content:space-between;padding:15px;}
+.user{color:#38bdf8;}
+.points{color:#FFD700;}
+.review{background:#6366f1;padding:10px;border-radius:12px;}
 
 .title{text-align:center;}
 .subtitle{text-align:center;color:#94a3b8;}
@@ -44,19 +39,8 @@ body{
   cursor:pointer;
 }
 
-.options{
-  display:none;
-  background:white;
-  border-radius:15px;
-  margin-top:10px;
-}
-
-.option{
-  padding:15px;
-  border-bottom:1px solid #ddd;
-  color:black;
-  cursor:pointer;
-}
+.options{display:none;background:white;border-radius:15px;margin-top:10px;}
+.option{padding:15px;border-bottom:1px solid #ddd;color:black;}
 
 .input{
   width:100%;
@@ -75,20 +59,43 @@ body{
   background:#22c55e;
   color:white;
   margin-top:10px;
-  font-size:18px;
 }
 
-.loading{text-align:center;margin-top:20px;color:#ccc;}
+.loading{text-align:center;margin-top:20px;}
 
-/* 🔥 عرض الكلمات */
+/* القصة */
+.story{
+  line-height:1.8;
+  margin-bottom:15px;
+}
+
+/* الكلمات */
+.section-title{
+  margin-top:20px;
+  font-weight:bold;
+  font-size:20px;
+}
+
 .word{
   display:flex;
   justify-content:space-between;
-  padding:10px 0;
+  align-items:center;
+  padding:12px 0;
   border-bottom:1px solid #334155;
 }
+
 .en{color:#38bdf8;}
 .ar{color:#f87171;}
+
+.actions{
+  display:flex;
+  gap:10px;
+}
+
+.icon{
+  cursor:pointer;
+}
+
 </style>
 </head>
 
@@ -151,20 +158,43 @@ function selectType(type){
   document.getElementById("typeText").innerText=text;
 }
 
-/* 🔥 عرض الكلمات */
+/* 🔊 نطق */
+function speak(text){
+  let utter = new SpeechSynthesisUtterance(text);
+  utter.lang="en-US";
+  speechSynthesis.speak(utter);
+}
+
+/* ⭐ حفظ */
+function saveWord(en,ar){
+  let saved = JSON.parse(localStorage.getItem("words") || "[]");
+  saved.push({en,ar});
+  localStorage.setItem("words",JSON.stringify(saved));
+  alert("تم الحفظ ⭐");
+}
+
+/* عرض الكلمات */
 function renderWords(words){
 
   let html="";
 
   for(let section in words){
 
-    html += `<h3>${section}</h3>`;
+    html+=`<div class="section-title">${section}</div>`;
 
     words[section].forEach(w=>{
       html+=`
         <div class="word">
-          <div class="en">${w.en}</div>
+          
           <div class="ar">${w.ar}</div>
+
+          <div class="actions">
+            <span class="icon" onclick="speak('${w.en}')">🔊</span>
+            <span class="icon" onclick="saveWord('${w.en}','${w.ar}')">⭐</span>
+          </div>
+
+          <div class="en">${w.en}</div>
+
         </div>
       `;
     });
@@ -183,7 +213,6 @@ async function generateLesson(){
     return;
   }
 
-  /* ✅ فضي الحقل */
   document.getElementById("textInput").value="";
 
   document.getElementById("lesson").innerHTML=
@@ -205,10 +234,13 @@ async function generateLesson(){
 
     document.getElementById("lesson").innerHTML=`
       <div class="card">
-        <p>${data.story || ""}</p>
+        
+        <div class="story">${(data.story || "").replace(/\n/g,"<br>")}</div>
         <hr>
-        <p>${data.translation || ""}</p>
+        <div class="story">${(data.translation || "⚠️ لا توجد ترجمة")}</div>
+
         ${data.words ? renderWords(data.words) : ""}
+
       </div>
     `;
 

@@ -18,6 +18,17 @@ body {
   padding: 15px;
 }
 
+/* 🔥 overlay خفيف عند فتح القائمة */
+.overlay {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: rgba(0,0,0,0.3);
+  display: none;
+}
+
 /* 🔥 الهيدر */
 .header {
   display: flex;
@@ -78,11 +89,12 @@ button {
   cursor: pointer;
 }
 
-/* 🔥 DROPDOWN احترافي */
+/* 🔥 dropdown */
 .dropdown {
   position: relative;
 }
 
+/* 🔥 زر dropdown + سهم */
 .dropdown-btn {
   background: #fff;
   color: #000;
@@ -90,8 +102,24 @@ button {
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
+  position: relative;
 }
 
+/* السهم */
+.dropdown-btn::after {
+  content: "▼";
+  position: absolute;
+  left: 15px;
+  font-size: 12px;
+  transition: 0.3s;
+}
+
+/* دوران السهم */
+.dropdown.active .dropdown-btn::after {
+  transform: rotate(180deg);
+}
+
+/* القائمة */
 .dropdown-menu {
   position: absolute;
   top: 55px;
@@ -101,6 +129,7 @@ button {
   border-radius: 12px;
   display: none;
   overflow: hidden;
+  z-index: 10;
 }
 
 .dropdown-menu div {
@@ -112,68 +141,70 @@ button {
   background: #eee;
 }
 
-/* 🔥 القصة */
-.story {
-  white-space: pre-line;
-  line-height: 1.8;
-}
-
-.translation {
-  direction: rtl;
-  text-align: right;
-}
-
 .hidden { display:none; }
 
-</style></head><body><div class="container"><div class="header">
+</style></head><body><div class="overlay" id="overlay" onclick="closeMenu()"></div><div class="container"><div class="header">
   <div class="username" id="username">👤</div>
   <div class="count">⭐ كلماتك: 0</div>
   <div class="review-btn">📖 مراجعة</div>
 </div><div class="main-title">📚 الفصل الذكي</div>
-<div class="lesson-title">📘 عنوان الدرس</div><div class="card"><!-- 🔥 dropdown جديد --><div class="dropdown">
-  <div class="dropdown-btn" onclick="toggleMenu()" id="selectedType">📝 نص</div>
-  <div class="dropdown-menu" id="menu">
+<div class="lesson-title">📘 عنوان الدرس</div><div class="card"><!-- 🔥 dropdown --><div class="dropdown" id="dropdown">
+  <div class="dropdown-btn" onclick="toggleMenu()" id="selectedType">📝 نص</div>  <div class="dropdown-menu" id="menu">
     <div onclick="selectType('text','📝 نص')">📝 نص</div>
     <div onclick="selectType('link','🔗 رابط')">🔗 رابط</div>
+    <div onclick="selectType('pdf','📄 PDF')">📄 PDF</div>
   </div>
-</div><textarea id="textInput" placeholder="اكتب النص هنا..."></textarea><input type="text" id="linkInput" class="hidden" placeholder="ضع الرابط هنا"><button onclick="generateLesson()">🚀 إنشاء الدرس</button>
+</div><textarea id="textInput" placeholder="اكتب النص هنا..."></textarea><input type="text" id="linkInput" class="hidden" placeholder="ضع الرابط هنا">
+<input type="file" id="pdfInput" class="hidden"><button onclick="generateLesson()">🚀 إنشاء الدرس</button>
 
 </div><div id="lesson"></div></div><script>
 
-/* 🔥 الاسم الأول فقط */
+/* 🔥 الاسم الأول */
 const fullName = localStorage.getItem("user") || "طالب";
-const firstName = fullName.split(" ")[0];
-document.getElementById("username").innerText = "👤 " + firstName;
+document.getElementById("username").innerText =
+"👤 " + fullName.split(" ")[0];
 
-/* 🔥 dropdown */
 let currentType = "text";
 
+/* 🔥 فتح/إغلاق */
 function toggleMenu(){
   const menu = document.getElementById("menu");
-  menu.style.display = menu.style.display === "block" ? "none" : "block";
+  const overlay = document.getElementById("overlay");
+  const dropdown = document.getElementById("dropdown");
+
+  menu.style.display = "block";
+  overlay.style.display = "block";
+  dropdown.classList.add("active");
 }
 
-function selectType(type, label){
-  currentType = type;
-  document.getElementById("selectedType").innerText = label;
+function closeMenu(){
   document.getElementById("menu").style.display = "none";
+  document.getElementById("overlay").style.display = "none";
+  document.getElementById("dropdown").classList.remove("active");
+}
+
+/* 🔥 اختيار */
+function selectType(type,label){
+  currentType = type;
+
+  document.getElementById("selectedType").innerText = label;
+  closeMenu();
 
   document.getElementById("textInput").classList.add("hidden");
   document.getElementById("linkInput").classList.add("hidden");
+  document.getElementById("pdfInput").classList.add("hidden");
 
   if(type === "text") document.getElementById("textInput").classList.remove("hidden");
   if(type === "link") document.getElementById("linkInput").classList.remove("hidden");
+  if(type === "pdf") document.getElementById("pdfInput").classList.remove("hidden");
 }
 
-/* 🔥 إنشاء درس */
+/* 🔥 تجربة */
 function generateLesson(){
   document.getElementById("lesson").innerHTML = `
-    <div class="card">
-      <p class="story">This is a demo story...</p>
-      <hr>
-      <p class="translation">هذه ترجمة...</p>
-    </div>
-  `;
+  <div class="card">
+    <p>This is demo content...</p>
+  </div>`;
 }
 
 </script></body>

@@ -159,7 +159,7 @@ async function generateLesson(){
 
   try{
 
-    let res = await fetch("YOUR_WEBHOOK_URL",{
+    let res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/lesson",{
       method:"POST",
       headers:{
         "Content-Type":"application/json"

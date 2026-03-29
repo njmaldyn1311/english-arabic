@@ -7,8 +7,6 @@
 <title>تسجيل طالب</title>
 
 <style>
-
-/* 🌍 عام */
 *{ box-sizing:border-box; }
 
 body {
@@ -35,8 +33,19 @@ body {
   color:white;
 }
 
+/* 🔥 تسويق */
+.stats{
+  margin-bottom:10px;
+  font-size:14px;
+  color:#cbd5f5;
+}
+.stats strong{
+  color:#22c55e;
+  font-size:18px;
+}
+
 /* 🧠 العنوان */
-h2 { margin-bottom:15px; }
+h2 { margin-bottom:10px; }
 
 /* 📝 الحقول */
 input {
@@ -155,6 +164,38 @@ button {
 
 button:hover { background:#16a34a; }
 
+/* ✅ popup */
+.popup{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.popup-box{
+  background:white;
+  color:black;
+  padding:20px;
+  border-radius:15px;
+  width:90%;
+  max-width:300px;
+  text-align:center;
+}
+
+.popup-box button{
+  margin-top:15px;
+  padding:8px 15px;
+  border:none;
+  background:#22c55e;
+  color:white;
+  border-radius:8px;
+}
 </style>
 </head>
 
@@ -164,12 +205,16 @@ button:hover { background:#16a34a; }
 
 <h2>🚀 تسجيل طالب جديد</h2>
 
+<div class="stats">
+  انضم لأكثر من <strong>+1,200 طالب</strong> وابدأ رحلتك الآن ✨
+</div>
+
 <input id="name" placeholder="اسم الطالب">
 <input id="phone" placeholder="رقم الجوال">
 <input id="city" placeholder="المدينة">
 <input id="district" placeholder="الحي">
 
-<!-- 🔽 الجنس -->
+<!-- الجنس -->
 <div class="custom-select" onclick="event.stopPropagation(); toggleDropdown()">
   <div id="selected">اختر الجنس</div>
   <div class="options" id="dropdown">
@@ -178,7 +223,7 @@ button:hover { background:#16a34a; }
   </div>
 </div>
 
-<!-- 🔽 المستوى -->
+<!-- المستوى -->
 <div class="custom-select" onclick="event.stopPropagation(); toggleLevelDropdown()">
   <div id="selectedLevel">المستوى</div>
   <div class="options" id="levelDropdown">
@@ -191,35 +236,28 @@ button:hover { background:#16a34a; }
 <div class="label">❗ لا أستطيع</div>
 
 <div class="skills">
-  <label class="check">
-    <input type="checkbox" value="القراءة">
-    <span></span> القراءة
-  </label>
-
-  <label class="check">
-    <input type="checkbox" value="الكتابة">
-    <span></span> الكتابة
-  </label>
-
-  <label class="check">
-    <input type="checkbox" value="التحدث">
-    <span></span> التحدث
-  </label>
-
-  <label class="check">
-    <input type="checkbox" value="كل ما ذكر صحيح">
-    <span></span> كل ما ذكر صحيح
-  </label>
+  <label class="check"><input type="checkbox" value="القراءة"><span></span> القراءة</label>
+  <label class="check"><input type="checkbox" value="الكتابة"><span></span> الكتابة</label>
+  <label class="check"><input type="checkbox" value="التحدث"><span></span> التحدث</label>
+  <label class="check"><input type="checkbox" value="كل ما ذكر صحيح"><span></span> كل ما ذكر صحيح</label>
 </div>
 
 <div class="label">🎯 اهتماماتك المهنية</div>
 
-<input id="job1" placeholder="مثال: طبيب - مهندس">
-<input id="job2" placeholder="مثال: برمجة - تجارة">
-<input id="job3" placeholder="مثال: سفر - مقابلات">
+<input id="job1">
+<input id="job2">
+<input id="job3">
 
 <button onclick="signup()">تسجيل</button>
 
+</div>
+
+<!-- popup -->
+<div id="popup" class="popup">
+  <div class="popup-box">
+    <p id="popupText"></p>
+    <button onclick="closePopup()">حسناً</button>
+  </div>
 </div>
 
 <script>
@@ -227,7 +265,15 @@ button:hover { background:#16a34a; }
 let selectedGender = "";
 let selectedLevel = "";
 
-/* 🔽 الجنس */
+function showPopup(msg){
+  document.getElementById("popupText").innerText = msg;
+  document.getElementById("popup").style.display = "flex";
+}
+
+function closePopup(){
+  document.getElementById("popup").style.display = "none";
+}
+
 function toggleDropdown(){
   document.getElementById("levelDropdown").style.display = "none";
   const drop = document.getElementById("dropdown");
@@ -241,7 +287,6 @@ function selectOption(e, value){
   document.getElementById("dropdown").style.display = "none";
 }
 
-/* 🔽 المستوى */
 function toggleLevelDropdown(){
   document.getElementById("dropdown").style.display = "none";
   const drop = document.getElementById("levelDropdown");
@@ -255,13 +300,11 @@ function selectLevel(e, value){
   document.getElementById("levelDropdown").style.display = "none";
 }
 
-/* 🔒 إغلاق عند الضغط خارج */
 document.addEventListener("click", function(){
   document.getElementById("dropdown").style.display = "none";
   document.getElementById("levelDropdown").style.display = "none";
 });
 
-/* 🚀 إرسال */
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
 async function signup(){
@@ -283,12 +326,12 @@ async function signup(){
   };
 
   if(!data.name || !data.phone){
-    alert("يرجى إدخال الاسم ورقم الجوال ⚠️");
+    showPopup("يرجى إدخال الاسم ورقم الجوال ⚠️");
     return;
   }
 
   if(!selectedGender || !selectedLevel){
-    alert("اختر الجنس والمستوى ⚠️");
+    showPopup("اختر الجنس والمستوى ⚠️");
     return;
   }
 
@@ -299,11 +342,14 @@ async function signup(){
       body:JSON.stringify(data)
     });
 
-    alert("تم التسجيل بنجاح ✅");
-    window.location.href = "index.html";
+    showPopup("تم التسجيل بنجاح ✅");
+
+    setTimeout(()=>{
+      window.location.href = "index.html";
+    },1000);
 
   } catch (error) {
-    alert("خطأ في الاتصال ❌");
+    showPopup("خطأ في الاتصال ❌");
   }
 }
 

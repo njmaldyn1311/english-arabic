@@ -10,108 +10,90 @@ body {
   margin: 0;
 }
 
+/* 🔥 إصلاح الانحراف */
+* {
+  box-sizing: border-box;
+}
+
 .container {
   max-width: 900px;
   margin: auto;
-  padding: 20px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
+/* 🔥 الهيدر */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: #1e293b;
-  padding: 10px 15px;
+  padding: 12px;
   border-radius: 12px;
 }
 
-.username { color: #38bdf8; font-weight: bold; }
+.username { color: #38bdf8; }
 .count { color: #fbbf24; }
 
 .review-btn {
   background: #6366f1;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 10px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
+/* 🔥 العنوان */
 .main-title {
-  font-size: 24px;
   text-align: center;
+  font-size: 22px;
 }
 
 .lesson-title {
   text-align: center;
-  font-size: 18px;
   color: #94a3b8;
 }
 
+/* 🔥 الكارد */
 .card {
   background: #1e293b;
-  padding: 20px;
+  padding: 15px;
   border-radius: 15px;
 }
 
+/* 🔥 أهم إصلاح للمشكلة */
 input, textarea, select {
   width: 100%;
   padding: 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: none;
   margin: 8px 0;
   text-align: center;
+  font-size: 15px;
 }
 
+/* 🔥 إصلاح textarea */
+textarea {
+  resize: none;
+}
+
+/* 🔥 زر */
 button {
   background: #22c55e;
   border: none;
   padding: 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   color: white;
+  width: 100%;
   cursor: pointer;
-  width: 100%;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table td {
-  padding: 10px;
-  border-bottom: 1px solid #334155;
-}
-
-.en { color:#38bdf8; font-weight:bold; }
-.ar { color:#f87171; }
-
-.save {
-  background:#fbbf24;
-  border-radius:8px;
-  padding:6px;
-  cursor:pointer;
-}
-
-.example {
-  font-size:14px;
-  color:#e2e8f0;
-}
-
-.loading {
-  text-align:center;
-}
-
-.hidden {
-  display:none;
-}
-
-/* 🔥 تنسيق القصة */
+/* 🔥 القصة */
 .story {
   line-height: 1.8;
-  white-space: pre-line;
   text-align: left;
+  white-space: pre-line;
 }
 
 .translation {
@@ -120,19 +102,30 @@ button {
   line-height: 1.8;
 }
 
+.hidden {
+  display: none;
+}
+
+/* 🔥 تحسين select للجوال */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #fff;
+  color: #000;
+  font-weight: bold;
+}
+
 </style></head><body><div class="container"><div class="header">
-  <div class="username" id="username">👤</div>
-  <div class="count">⭐ كلماتك: <span id="wordCount">0</span></div>
-  <div class="review-btn" onclick="goReview()">📖 مراجعة</div>
+  <div class="username">👤 أحمد</div>
+  <div class="count">⭐ كلماتك: 0</div>
+  <div class="review-btn">📖 مراجعة</div>
 </div><div class="main-title">📚 الفصل الذكي</div>
-<div class="lesson-title" id="lessonTitle">📘 عنوان الدرس</div><!-- 🔥 صندوق واحد فقط --><div class="card"><select id="type" onchange="changeType()">
+<div class="lesson-title">📘 عنوان الدرس</div><div class="card"><select id="type" onchange="changeType()">
   <option value="text">📝 نص</option>
   <option value="link">🔗 رابط</option>
 </select><textarea id="textInput" placeholder="اكتب النص هنا..."></textarea><input type="text" id="linkInput" class="hidden" placeholder="ضع الرابط هنا"><button onclick="generateLesson()">🚀 إنشاء الدرس</button>
 
 </div><div id="lesson"></div></div><script>
-
-const WEBHOOK_LESSON = "YOUR_WEBHOOK";
 
 function changeType(){
   const type = document.getElementById("type").value;
@@ -144,78 +137,14 @@ function changeType(){
   if(type === "link") document.getElementById("linkInput").classList.remove("hidden");
 }
 
-async function generateLesson(){
-
-  document.getElementById("lesson").innerHTML =
-  `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;
-
-  const type = document.getElementById("type").value;
-
-  let content = "";
-  if(type === "text") content = document.getElementById("textInput").value;
-  if(type === "link") content = document.getElementById("linkInput").value;
-
-  document.getElementById("lessonTitle").innerText = content.slice(0,40);
-
-  const res = await fetch(WEBHOOK_LESSON,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ content, type })
-  });
-
-  const data = await res.json();
-  render(data);
-}
-
-function render(data){
-
-  let html = `
-  <div class="card">
-    <p class="story">${formatText(data.story)}</p>
-    <hr>
-    <p class="translation">${formatText(data.translation)}</p>
-  </div>
-  `;
-
-  for(let cat in data.words){
-
-    html += `
+function generateLesson(){
+  document.getElementById("lesson").innerHTML = `
     <div class="card">
-      <h3>${cat}</h3>
-      <table class="table">
-    `;
-
-    data.words[cat].forEach(w => {
-
-      html += `
-      <tr>
-        <td class="en">${w.en}</td>
-        <td class="ar">${w.ar}</td>
-        <td>
-          <button class="save" onclick="saveWord('${w.en}','${w.ar}')">⭐</button>
-        </td>
-      </tr>
-      `;
-    });
-
-    html += `</table></div>`;
-  }
-
-  document.getElementById("lesson").innerHTML = html;
-}
-
-function formatText(text){
-  return text
-    .replace(/\n/g, "<br><br>")
-    .replace(/\. /g, ".<br>");
-}
-
-function saveWord(word, ar){
-  alert("تم الحفظ ⭐");
-}
-
-function goReview(){
-  alert("صفحة المراجعة");
+      <p class="story">This is a sample story...</p>
+      <hr>
+      <p class="translation">هذه ترجمة تجريبية...</p>
+    </div>
+  `;
 }
 
 </script></body>

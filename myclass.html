@@ -10,18 +10,12 @@ body {
   margin: 0;
 }
 
-/* 🔥 إصلاح الانحراف */
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 .container {
   max-width: 900px;
   margin: auto;
   padding: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
 }
 
 /* 🔥 الهيدر */
@@ -41,18 +35,19 @@ body {
   background: #6366f1;
   padding: 10px;
   border-radius: 10px;
-  cursor: pointer;
 }
 
 /* 🔥 العنوان */
 .main-title {
   text-align: center;
   font-size: 22px;
+  margin-top: 15px;
 }
 
 .lesson-title {
   text-align: center;
   color: #94a3b8;
+  margin-bottom: 15px;
 }
 
 /* 🔥 الكارد */
@@ -62,20 +57,14 @@ body {
   border-radius: 15px;
 }
 
-/* 🔥 أهم إصلاح للمشكلة */
-input, textarea, select {
+/* 🔥 INPUT */
+input, textarea {
   width: 100%;
   padding: 14px;
   border-radius: 12px;
   border: none;
   margin: 8px 0;
   text-align: center;
-  font-size: 15px;
-}
-
-/* 🔥 إصلاح textarea */
-textarea {
-  resize: none;
 }
 
 /* 🔥 زر */
@@ -89,46 +78,85 @@ button {
   cursor: pointer;
 }
 
+/* 🔥 DROPDOWN احترافي */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-btn {
+  background: #fff;
+  color: #000;
+  padding: 14px;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 55px;
+  width: 100%;
+  background: white;
+  color: black;
+  border-radius: 12px;
+  display: none;
+  overflow: hidden;
+}
+
+.dropdown-menu div {
+  padding: 12px;
+  cursor: pointer;
+}
+
+.dropdown-menu div:hover {
+  background: #eee;
+}
+
 /* 🔥 القصة */
 .story {
-  line-height: 1.8;
-  text-align: left;
   white-space: pre-line;
+  line-height: 1.8;
 }
 
 .translation {
   direction: rtl;
   text-align: right;
-  line-height: 1.8;
 }
 
-.hidden {
-  display: none;
-}
-
-/* 🔥 تحسين select للجوال */
-select {
-  appearance: none;
-  -webkit-appearance: none;
-  background: #fff;
-  color: #000;
-  font-weight: bold;
-}
+.hidden { display:none; }
 
 </style></head><body><div class="container"><div class="header">
-  <div class="username">👤 أحمد</div>
+  <div class="username" id="username">👤</div>
   <div class="count">⭐ كلماتك: 0</div>
   <div class="review-btn">📖 مراجعة</div>
 </div><div class="main-title">📚 الفصل الذكي</div>
-<div class="lesson-title">📘 عنوان الدرس</div><div class="card"><select id="type" onchange="changeType()">
-  <option value="text">📝 نص</option>
-  <option value="link">🔗 رابط</option>
-</select><textarea id="textInput" placeholder="اكتب النص هنا..."></textarea><input type="text" id="linkInput" class="hidden" placeholder="ضع الرابط هنا"><button onclick="generateLesson()">🚀 إنشاء الدرس</button>
+<div class="lesson-title">📘 عنوان الدرس</div><div class="card"><!-- 🔥 dropdown جديد --><div class="dropdown">
+  <div class="dropdown-btn" onclick="toggleMenu()" id="selectedType">📝 نص</div>
+  <div class="dropdown-menu" id="menu">
+    <div onclick="selectType('text','📝 نص')">📝 نص</div>
+    <div onclick="selectType('link','🔗 رابط')">🔗 رابط</div>
+  </div>
+</div><textarea id="textInput" placeholder="اكتب النص هنا..."></textarea><input type="text" id="linkInput" class="hidden" placeholder="ضع الرابط هنا"><button onclick="generateLesson()">🚀 إنشاء الدرس</button>
 
 </div><div id="lesson"></div></div><script>
 
-function changeType(){
-  const type = document.getElementById("type").value;
+/* 🔥 الاسم الأول فقط */
+const fullName = localStorage.getItem("user") || "طالب";
+const firstName = fullName.split(" ")[0];
+document.getElementById("username").innerText = "👤 " + firstName;
+
+/* 🔥 dropdown */
+let currentType = "text";
+
+function toggleMenu(){
+  const menu = document.getElementById("menu");
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
+function selectType(type, label){
+  currentType = type;
+  document.getElementById("selectedType").innerText = label;
+  document.getElementById("menu").style.display = "none";
 
   document.getElementById("textInput").classList.add("hidden");
   document.getElementById("linkInput").classList.add("hidden");
@@ -137,12 +165,13 @@ function changeType(){
   if(type === "link") document.getElementById("linkInput").classList.remove("hidden");
 }
 
+/* 🔥 إنشاء درس */
 function generateLesson(){
   document.getElementById("lesson").innerHTML = `
     <div class="card">
-      <p class="story">This is a sample story...</p>
+      <p class="story">This is a demo story...</p>
       <hr>
-      <p class="translation">هذه ترجمة تجريبية...</p>
+      <p class="translation">هذه ترجمة...</p>
     </div>
   `;
 }

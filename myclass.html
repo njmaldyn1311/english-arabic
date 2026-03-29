@@ -1,12 +1,8 @@
-<!DOCTYPE html>
-<html lang="ar">
+<!DOCTYPE html><html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>📚 الفصل الذكي</title><style>
 
-<title>📚 الفصل الذكي</title>
-
-<style>
 body {
   font-family: Arial;
   background: linear-gradient(135deg,#0f172a,#1e293b);
@@ -18,138 +14,186 @@ body {
   max-width: 900px;
   margin: auto;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1e293b;
+  padding: 10px 15px;
+  border-radius: 12px;
+}
+
+.username { color: #38bdf8; font-weight: bold; }
+.count { color: #fbbf24; }
+
+.review-btn {
+  background: #6366f1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.main-title {
+  font-size: 24px;
   text-align: center;
+}
+
+.lesson-title {
+  text-align: center;
+  font-size: 18px;
+  color: #94a3b8;
 }
 
 .card {
   background: #1e293b;
   padding: 20px;
   border-radius: 15px;
-  margin-bottom: 15px;
 }
 
-.story {
-  text-align: left;
-  line-height: 1.8;
-  white-space: pre-line;
-}
-
-.translation {
-  text-align: right;
-  line-height: 1.8;
-  white-space: pre-line;
-}
-
-.en {
-  color:#38bdf8;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.ar {
-  color:#f87171;
+input, textarea, select {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  margin: 8px 0;
+  text-align: center;
 }
 
 button {
-  background:#22c55e;
-  border:none;
-  padding:12px;
-  border-radius:10px;
-  color:white;
+  background: #22c55e;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table td {
+  padding: 10px;
+  border-bottom: 1px solid #334155;
+}
+
+.en { color:#38bdf8; font-weight:bold; }
+.ar { color:#f87171; }
+
+.save {
+  background:#fbbf24;
+  border-radius:8px;
+  padding:6px;
   cursor:pointer;
-  width:100%;
-  margin-top:10px;
 }
 
-table {
-  width:100%;
-}
-td {
-  padding:8px;
-  border-bottom:1px solid #334155;
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-<h2>📚 الفصل الذكي</h2>
-
-<textarea id="textInput" placeholder="اكتب النص هنا..."></textarea>
-<button onclick="generateLesson()">🚀 إنشاء الدرس</button>
-
-<div id="lesson"></div>
-
-</div>
-
-<script>
-
-const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/lesson";
-
-//// 🔊 صوت
-function speak(word){
-  const u = new SpeechSynthesisUtterance(word);
-  u.lang = "en-US";
-  speechSynthesis.speak(u);
+.example {
+  font-size:14px;
+  color:#e2e8f0;
 }
 
-//// 🚀 إنشاء الدرس
+.loading {
+  text-align:center;
+}
+
+.hidden {
+  display:none;
+}
+
+/* 🔥 تنسيق القصة */
+.story {
+  line-height: 1.8;
+  white-space: pre-line;
+  text-align: left;
+}
+
+.translation {
+  direction: rtl;
+  text-align: right;
+  line-height: 1.8;
+}
+
+</style></head><body><div class="container"><div class="header">
+  <div class="username" id="username">👤</div>
+  <div class="count">⭐ كلماتك: <span id="wordCount">0</span></div>
+  <div class="review-btn" onclick="goReview()">📖 مراجعة</div>
+</div><div class="main-title">📚 الفصل الذكي</div>
+<div class="lesson-title" id="lessonTitle">📘 عنوان الدرس</div><!-- 🔥 صندوق واحد فقط --><div class="card"><select id="type" onchange="changeType()">
+  <option value="text">📝 نص</option>
+  <option value="link">🔗 رابط</option>
+</select><textarea id="textInput" placeholder="اكتب النص هنا..."></textarea><input type="text" id="linkInput" class="hidden" placeholder="ضع الرابط هنا"><button onclick="generateLesson()">🚀 إنشاء الدرس</button>
+
+</div><div id="lesson"></div></div><script>
+
+const WEBHOOK_LESSON = "YOUR_WEBHOOK";
+
+function changeType(){
+  const type = document.getElementById("type").value;
+
+  document.getElementById("textInput").classList.add("hidden");
+  document.getElementById("linkInput").classList.add("hidden");
+
+  if(type === "text") document.getElementById("textInput").classList.remove("hidden");
+  if(type === "link") document.getElementById("linkInput").classList.remove("hidden");
+}
+
 async function generateLesson(){
 
-  const content = document.getElementById("textInput").value;
+  document.getElementById("lesson").innerHTML =
+  `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;
 
-  document.getElementById("lesson").innerHTML = "⏳ جاري التحميل...";
+  const type = document.getElementById("type").value;
 
-  const res = await fetch(WEBHOOK,{
+  let content = "";
+  if(type === "text") content = document.getElementById("textInput").value;
+  if(type === "link") content = document.getElementById("linkInput").value;
+
+  document.getElementById("lessonTitle").innerText = content.slice(0,40);
+
+  const res = await fetch(WEBHOOK_LESSON,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      content,
-      type:"text"
-    })
+    body:JSON.stringify({ content, type })
   });
 
   const data = await res.json();
   render(data);
 }
 
-//// 🎨 عرض الدرس
 function render(data){
-
-  // ✨ ترتيب القصة
-  const storyLines = data.story
-    .replace(/\./g, ".\n")
-    .split("\n")
-    .filter(l => l.trim() !== "")
-    .map(l => `<div>${l}</div>`).join("");
-
-  const transLines = data.translation
-    .replace(/\./g, ".\n")
-    .split("\n")
-    .filter(l => l.trim() !== "")
-    .map(l => `<div>${l}</div>`).join("");
 
   let html = `
   <div class="card">
-    <div class="story">${storyLines}</div>
+    <p class="story">${formatText(data.story)}</p>
     <hr>
-    <div class="translation">${transLines}</div>
+    <p class="translation">${formatText(data.translation)}</p>
   </div>
   `;
 
-  // الكلمات
   for(let cat in data.words){
 
-    html += `<div class="card"><h3>${cat}</h3><table>`;
+    html += `
+    <div class="card">
+      <h3>${cat}</h3>
+      <table class="table">
+    `;
 
     data.words[cat].forEach(w => {
 
       html += `
       <tr>
-        <td class="en" onclick="speak('${w.en}')">🔊 ${w.en}</td>
+        <td class="en">${w.en}</td>
         <td class="ar">${w.ar}</td>
+        <td>
+          <button class="save" onclick="saveWord('${w.en}','${w.ar}')">⭐</button>
+        </td>
       </tr>
       `;
     });
@@ -160,7 +204,19 @@ function render(data){
   document.getElementById("lesson").innerHTML = html;
 }
 
-</script>
+function formatText(text){
+  return text
+    .replace(/\n/g, "<br><br>")
+    .replace(/\. /g, ".<br>");
+}
 
-</body>
+function saveWord(word, ar){
+  alert("تم الحفظ ⭐");
+}
+
+function goReview(){
+  alert("صفحة المراجعة");
+}
+
+</script></body>
 </html>

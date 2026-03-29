@@ -18,7 +18,7 @@ body {
   padding: 15px;
 }
 
-/* 🔥 overlay خفيف عند فتح القائمة */
+/* 🔥 Overlay */
 .overlay {
   position: fixed;
   top:0;
@@ -29,7 +29,7 @@ body {
   display: none;
 }
 
-/* 🔥 الهيدر */
+/* 🔥 Header */
 .header {
   display: flex;
   justify-content: space-between;
@@ -48,7 +48,7 @@ body {
   border-radius: 10px;
 }
 
-/* 🔥 العنوان */
+/* 🔥 Titles */
 .main-title {
   text-align: center;
   font-size: 22px;
@@ -61,14 +61,14 @@ body {
   margin-bottom: 15px;
 }
 
-/* 🔥 الكارد */
+/* 🔥 Card */
 .card {
   background: #1e293b;
   padding: 15px;
   border-radius: 15px;
 }
 
-/* 🔥 INPUT */
+/* 🔥 Inputs */
 input, textarea {
   width: 100%;
   padding: 14px;
@@ -76,9 +76,10 @@ input, textarea {
   border: none;
   margin: 8px 0;
   text-align: center;
+  font-size: 15px;
 }
 
-/* 🔥 زر */
+/* 🔥 Button */
 button {
   background: #22c55e;
   border: none;
@@ -89,58 +90,75 @@ button {
   cursor: pointer;
 }
 
-/* 🔥 dropdown */
+/* ===================== */
+/* 🔥 Dropdown احترافي */
+/* ===================== */
+
 .dropdown {
   position: relative;
 }
 
-/* 🔥 زر dropdown + سهم */
+/* 🔥 زر الاختيار */
 .dropdown-btn {
-  background: #fff;
+  background: linear-gradient(135deg,#ffffff,#f1f5f9);
   color: #000;
   padding: 14px;
-  border-radius: 12px;
+  border-radius: 14px;
   text-align: center;
   cursor: pointer;
+  font-weight: bold;
   position: relative;
-}
 
-/* السهم */
-.dropdown-btn::after {
-  content: "▼";
-  position: absolute;
-  left: 15px;
-  font-size: 12px;
+  /* تأثير */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   transition: 0.3s;
 }
 
-/* دوران السهم */
+/* 🔥 Hover */
+.dropdown-btn:hover {
+  transform: scale(1.02);
+}
+
+/* 🔥 السهم */
+.dropdown-btn::after {
+  content: "⌄";
+  position: absolute;
+  left: 15px;
+  font-size: 18px;
+  transition: 0.3s;
+}
+
+/* 🔥 دوران السهم */
 .dropdown.active .dropdown-btn::after {
   transform: rotate(180deg);
 }
 
-/* القائمة */
+/* 🔥 القائمة */
 .dropdown-menu {
   position: absolute;
-  top: 55px;
+  top: 60px;
   width: 100%;
   background: white;
   color: black;
-  border-radius: 12px;
+  border-radius: 14px;
   display: none;
   overflow: hidden;
   z-index: 10;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
 .dropdown-menu div {
-  padding: 12px;
+  padding: 14px;
   cursor: pointer;
+  font-weight: bold;
 }
 
 .dropdown-menu div:hover {
-  background: #eee;
+  background: #e2e8f0;
 }
 
+/* 🔥 hidden */
 .hidden { display:none; }
 
 </style></head><body><div class="overlay" id="overlay" onclick="closeMenu()"></div><div class="container"><div class="header">
@@ -148,13 +166,13 @@ button {
   <div class="count">⭐ كلماتك: 0</div>
   <div class="review-btn">📖 مراجعة</div>
 </div><div class="main-title">📚 الفصل الذكي</div>
-<div class="lesson-title">📘 عنوان الدرس</div><div class="card"><!-- 🔥 dropdown --><div class="dropdown" id="dropdown">
-  <div class="dropdown-btn" onclick="toggleMenu()" id="selectedType">📝 نص</div>  <div class="dropdown-menu" id="menu">
+<div class="lesson-title">📘 عنوان الدرس</div><div class="card"><!-- 🔥 Dropdown --><div class="dropdown" id="dropdown">  <div class="dropdown-btn" onclick="toggleMenu()" id="selectedType">
+    📝 نص
+  </div>  <div class="dropdown-menu" id="menu">
     <div onclick="selectType('text','📝 نص')">📝 نص</div>
     <div onclick="selectType('link','🔗 رابط')">🔗 رابط</div>
     <div onclick="selectType('pdf','📄 PDF')">📄 PDF</div>
-  </div>
-</div><textarea id="textInput" placeholder="اكتب النص هنا..."></textarea><input type="text" id="linkInput" class="hidden" placeholder="ضع الرابط هنا">
+  </div></div><textarea id="textInput" placeholder="اكتب النص هنا..."></textarea><input type="text" id="linkInput" class="hidden" placeholder="ضع الرابط هنا">
 <input type="file" id="pdfInput" class="hidden"><button onclick="generateLesson()">🚀 إنشاء الدرس</button>
 
 </div><div id="lesson"></div></div><script>
@@ -166,28 +184,27 @@ document.getElementById("username").innerText =
 
 let currentType = "text";
 
-/* 🔥 فتح/إغلاق */
+/* فتح */
 function toggleMenu(){
-  const menu = document.getElementById("menu");
-  const overlay = document.getElementById("overlay");
-  const dropdown = document.getElementById("dropdown");
-
-  menu.style.display = "block";
-  overlay.style.display = "block";
-  dropdown.classList.add("active");
+  document.getElementById("menu").style.display = "block";
+  document.getElementById("overlay").style.display = "block";
+  document.getElementById("dropdown").classList.add("active");
 }
 
+/* إغلاق */
 function closeMenu(){
   document.getElementById("menu").style.display = "none";
   document.getElementById("overlay").style.display = "none";
   document.getElementById("dropdown").classList.remove("active");
 }
 
-/* 🔥 اختيار */
+/* اختيار */
 function selectType(type,label){
+
   currentType = type;
 
   document.getElementById("selectedType").innerText = label;
+
   closeMenu();
 
   document.getElementById("textInput").classList.add("hidden");
@@ -199,11 +216,11 @@ function selectType(type,label){
   if(type === "pdf") document.getElementById("pdfInput").classList.remove("hidden");
 }
 
-/* 🔥 تجربة */
+/* تجربة */
 function generateLesson(){
   document.getElementById("lesson").innerHTML = `
   <div class="card">
-    <p>This is demo content...</p>
+    <p>🔥 جاهز للربط مع n8n</p>
   </div>`;
 }
 

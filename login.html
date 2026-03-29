@@ -47,21 +47,26 @@ body::before{
   box-shadow:0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* موبايل */
-@media (max-width:480px){
-  .box{
-    padding:20px;
-  }
-}
-
 .logo{
   width:70px;
   margin-bottom:10px;
 }
 
 h2 {
-  margin-bottom:20px;
+  margin-bottom:15px;
   font-size:20px;
+}
+
+/* 🔥 عدد الطلاب */
+.stats{
+  margin-bottom:15px;
+  font-size:14px;
+  color:#d1d5db;
+}
+
+.stats strong{
+  color:#22c55e;
+  font-size:18px;
 }
 
 input {
@@ -97,6 +102,39 @@ button:hover{
   color:#38bdf8;
   cursor:pointer;
 }
+
+/* ✅ popup */
+.popup{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.popup-box{
+  background:white;
+  color:black;
+  padding:20px;
+  border-radius:15px;
+  width:90%;
+  max-width:300px;
+  text-align:center;
+}
+
+.popup-box button{
+  margin-top:15px;
+  padding:8px 15px;
+  border:none;
+  background:#22c55e;
+  color:white;
+  border-radius:8px;
+}
 </style>
 </head>
 
@@ -108,6 +146,11 @@ button:hover{
 
 <h2>🔐 دخول الطالب</h2>
 
+<!-- 🔥 تسويق -->
+<div class="stats">
+  أكثر من <strong>+1,200 طالب</strong> يتعلم معنا يومياً 🚀
+</div>
+
 <input id="phone" placeholder="📱 رقم الجوال">
 
 <button onclick="login()">دخول</button>
@@ -116,16 +159,33 @@ button:hover{
 
 </div>
 
+<!-- ✅ popup -->
+<div id="popup" class="popup">
+  <div class="popup-box">
+    <p id="popupText"></p>
+    <button onclick="closePopup()">حسناً</button>
+  </div>
+</div>
+
 <script>
 
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/login";
+
+function showPopup(msg){
+  document.getElementById("popupText").innerText = msg;
+  document.getElementById("popup").style.display = "flex";
+}
+
+function closePopup(){
+  document.getElementById("popup").style.display = "none";
+}
 
 async function login(){
 
   const phone = document.getElementById("phone").value.trim();
 
   if(!phone){
-    alert("اكتب رقم الجوال");
+    showPopup("اكتب رقم الجوال");
     return;
   }
 
@@ -141,25 +201,24 @@ async function login(){
 
     console.log("🔥 RESPONSE:", data);
 
-    // ✅ التحقق الصحيح
     if(!data || !data.user_id){
-      alert("❌ الرقم غير مسجل");
+      showPopup("❌ الرقم غير مسجل");
       return;
     }
 
-    // ✅ التخزين
     localStorage.setItem("user_id", data.user_id);
     localStorage.setItem("user", data.name);
     localStorage.setItem("phone", data.phone);
 
-    alert("✅ تم تسجيل الدخول");
+    showPopup("✅ تم تسجيل الدخول");
 
-    // ✅ تحويل
-    window.location.href = "index.html";
+    setTimeout(()=>{
+      window.location.href = "index.html";
+    },1000);
 
   }catch(err){
     console.error(err);
-    alert("❌ خطأ في الاتصال");
+    showPopup("❌ خطأ في الاتصال");
   }
 }
 

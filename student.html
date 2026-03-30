@@ -3,209 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>المراجعة الذكية</title>
+
+<title>اختبار Supabase</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-
 body{
-  margin:0;
-  font-family:"Cairo";
-  background:linear-gradient(135deg,#0f172a,#1e293b);
+  font-family:"Cairo", sans-serif;
+  background:#0f172a;
   color:white;
-}
-
-.top{
-  display:flex;
-  justify-content:space-between;
-  padding:15px;
+  text-align:center;
+  padding:20px;
 }
 
 .card{
   background:#1e293b;
-  margin:20px;
   padding:20px;
-  border-radius:20px;
+  border-radius:15px;
+  margin-top:20px;
 }
 
-.question{
-  font-size:20px;
-  margin-bottom:15px;
+.word{
+  display:flex;
+  justify-content:space-between;
+  border-bottom:1px solid #334155;
+  padding:10px;
 }
 
-.option{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  border:none;
-  border-radius:10px;
-  background:#334155;
-  color:white;
-  cursor:pointer;
-}
-
-.correct{background:#22c55e;}
-.wrong{background:#ef4444;}
-
-.empty{
-  text-align:center;
-  font-size:18px;
-  padding:20px;
-  color:#94a3b8;
-}
+.en{color:#38bdf8;}
+.ar{color:#facc15;}
 
 </style>
+
 </head>
 
 <body>
 
-<div class="top">
-  <div>🔁 مراجعة ذكية</div>
-  <div onclick="goHome()" style="cursor:pointer;">🏠</div>
-</div>
+<h2>🔌 اختبار الاتصال مع Supabase</h2>
 
-<div class="card">
-  <div id="quiz"></div>
-</div>
+<div id="status">⏳ جاري الاتصال...</div>
+
+<div id="result" class="card"></div>
 
 <script>
 
+/* ✅ بيانات Supabase */
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"; // 👈 حط مفتاحك هنا
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let user_id = localStorage.getItem("user_id");
 
-let words = [];
-let questions = [];
-let current = 0;
-
-/* تحميل */
+/* 🚀 تحميل البيانات */
 async function load(){
 
-  const { data, error } = await supabaseClient
-    .from("words")
-    .select("*")
-    .eq("user_id", user_id);
+  try{
 
-  if(error){
-    document.getElementById("quiz").innerHTML = "❌ خطأ في الاتصال";
-    return;
-  }
-
-  words = data || [];
-
-  buildReview();
-}
-
-/* بناء المراجعة */
-function buildReview(){
-
-  let now = new Date();
-
-  let ready = words.filter(w=>{
-    if(!w.next_review) return true;
-    return new Date(w.next_review) <= now;
-  });
-
-  if(ready.length === 0){
-    document.getElementById("quiz").innerHTML =
-      `<div class="empty">🎉 لا توجد مراجعة الآن</div>`;
-    return;
-  }
-
-  questions = ready.sort(()=>0.5-Math.random()).slice(0,5);
-
-  current = 0;
-
-  show();
-}
-
-/* عرض */
-function show(){
-
-  if(current >= questions.length){
-    document.getElementById("quiz").innerHTML =
-      `<div class="empty">🎉 خلصت مراجعتك</div>`;
-    return;
-  }
-
-  let q = questions[current];
-
-  let options = words.sort(()=>0.5-Math.random()).slice(0,3);
-  options.push(q);
-  options = options.sort(()=>0.5-Math.random());
-
-  let html = `
-    <div class="question">ما معنى: ${q.en} ؟</div>
-  `;
-
-  options.forEach(o=>{
-    html += `
-      <button class="option"
-      onclick='check(this,"${q.ar}","${o.ar}", ${JSON.stringify(q)})'>
-      ${o.ar}
-      </button>
-    `;
-  });
-
-  document.getElementById("quiz").innerHTML = html;
-}
-
-/* تحقق */
-async function check(btn, correct, ans, word){
-
-  let buttons = document.querySelectorAll(".option");
-  buttons.forEach(b=>b.disabled=true);
-
-  if(ans === correct){
-
-    btn.classList.add("correct");
-
-    let review = (word.review_count || 0) + 1;
-
-    let next = new Date();
-    next.setHours(next.getHours() + review * 2);
-
-    await supabaseClient
+    const { data, error } = await supabaseClient
       .from("words")
-      .update({
-        review_count: review,
-        next_review: next
-      })
-      .eq("id", word.id);
+      .select("*")
+      .limit(20);
 
-  }else{
+    console.log("DATA:", data);
+    console.log("ERROR:", error);
 
-    btn.classList.add("wrong");
+    if(error){
+      document.getElementById("status").innerHTML =
+        "❌ خطأ: " + error.message;
+      return;
+    }
 
-    let next = new Date();
-    next.setMinutes(next.getMinutes() + 1);
+    document.getElementById("status").innerHTML =
+      "✅ تم الاتصال بنجاح";
 
-    await supabaseClient
-      .from("words")
-      .update({
-        wrong_count: (word.wrong_count || 0) + 1,
-        next_review: next
-      })
-      .eq("id", word.id);
+    if(!data || data.length === 0){
+      document.getElementById("result").innerHTML =
+        "⚠️ لا توجد بيانات";
+      return;
+    }
 
+    let html = "";
+
+    data.forEach(w=>{
+      html += `
+        <div class="word">
+          <div class="ar">${w.ar || "-"}</div>
+          <div class="en">${w.en || "-"}</div>
+        </div>
+      `;
+    });
+
+    document.getElementById("result").innerHTML = html;
+
+  }catch(e){
+    document.getElementById("status").innerHTML =
+      "❌ خطأ قوي: " + e.message;
   }
 
-  setTimeout(()=>{
-    current++;
-    show();
-  },800);
 }
 
-/* رجوع */
-function goHome(){
-  window.location.href="index.html";
-}
-
-/* تشغيل */
+/* 🔥 تشغيل */
 load();
 
 </script>

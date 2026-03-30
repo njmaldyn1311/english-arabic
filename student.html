@@ -3,55 +3,94 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>📚 مراجعة ذكية</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<title>حسابي</title>
 
 <style>
+
+*{box-sizing:border-box;}
 
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
   background:linear-gradient(135deg,#0f172a,#1e293b);
   color:white;
-  text-align:center;
 }
 
+/* 🔝 الأعلى */
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.user{color:#38bdf8;font-size:14px;}
+.points{color:#FFD700;font-size:14px;}
+
+.review{
+  background:#6366f1;
+  padding:8px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:14px;
+}
+
+/* 📦 كروت */
 .card{
   background:#1e293b;
-  margin:20px;
-  padding:20px;
-  border-radius:20px;
+  margin:15px;
+  padding:18px;
+  border-radius:18px;
 }
 
+/* 📱 استجابة */
+@media (max-width:480px){
+  .card{margin:12px;}
+  .top{padding:10px;}
+}
+
+/* ⭐ الكلمات */
 .word{
-  font-size:28px;
-  margin:20px 0;
+  display:flex;
+  justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px solid #334155;
 }
 
-.answer{
-  font-size:22px;
-  color:#facc15;
-  display:none;
+.en{color:#38bdf8;}
+.ar{color:#f87171;}
+
+/* 📝 الملاحظات */
+textarea{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  margin-top:10px;
+  resize:none;
+  height:80px;
+  font-family:"Cairo";
 }
 
+/* زر */
 button{
-  padding:12px 20px;
+  margin-top:10px;
+  padding:10px 15px;
   border:none;
   border-radius:10px;
-  margin:5px;
+  background:#22c55e;
+  color:white;
   cursor:pointer;
-  font-size:16px;
 }
 
-.show{background:#38bdf8;}
-.correct{background:#22c55e;}
-.wrong{background:#ef4444;}
-
-.status{
-  margin-top:20px;
-  font-size:18px;
+/* 🧠 اختبار */
+.quiz button{
+  display:block;
+  width:100%;
+  margin-top:6px;
+  background:#334155;
 }
 
 </style>
@@ -59,124 +98,146 @@ button{
 
 <body>
 
-<h2>📚 مراجعة ذكية</h2>
+<div class="top">
+  <div class="user" id="username">👤</div>
+  <div class="points">⭐ كلماتك: <span id="count">0</span></div>
+  <div class="review" onclick="goHome()">🏠 الرئيسية</div>
+</div>
 
+<!-- ⭐ الكلمات -->
 <div class="card">
+  <h3>⭐ الكلمات المحفوظة</h3>
+  <div id="words"></div>
+</div>
 
-  <div id="word" class="word">...</div>
-  <div id="answer" class="answer">...</div>
+<!-- 📝 الملاحظات -->
+<div class="card">
+  <h3>📝 ملاحظاتي</h3>
 
-  <button class="show" onclick="showAnswer()">👀 إظهار</button>
-  <br>
+  <div id="oldNotes" style="color:#cbd5f5;margin-bottom:10px;"></div>
 
-  <button class="correct" onclick="answer(true)">✅ صح</button>
-  <button class="wrong" onclick="answer(false)">❌ غلط</button>
+  <textarea id="noteInput" placeholder="اكتب ملاحظة جديدة..."></textarea>
 
-  <div id="status" class="status"></div>
+  <button onclick="addNote()">➕ إضافة</button>
+</div>
 
+<!-- 🧠 اختبار -->
+<div class="card">
+  <h3>🧠 اختبار سريع</h3>
+  <div id="quiz"></div>
 </div>
 
 <script>
 
-// 🔗 بياناتك
-const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"; // 🔴 حط المفتاح هنا
+/* 👤 الاسم (أول + ثاني فقط) */
+let fullName = localStorage.getItem("user") || "طالب";
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let parts = fullName.split(" ");
+let shortName = parts[0] + (parts[1] ? " " + parts[1] : "");
 
-let user_id = localStorage.getItem("user_id") || "user_test";
+document.getElementById("username").innerText = "👤 " + shortName;
 
-let words = [];
-let current = 0;
 
-// 🧠 تحميل الكلمات
-async function load(){
+/* ⭐ الكلمات */
+let words = JSON.parse(localStorage.getItem("words") || "[]");
+document.getElementById("count").innerText = words.length;
 
-  document.getElementById("status").innerText = "⏳ جاري التحميل...";
+function renderWords(){
+  let html="";
+  words.forEach(w=>{
+    html+=`
+      <div class="word">
+        <div class="ar">${w.ar}</div>
+        <div class="en">${w.en}</div>
+      </div>
+    `;
+  });
+  document.getElementById("words").innerHTML = html || "لا توجد كلمات";
+}
+renderWords();
 
-  let { data, error } = await supabase
-    .from("words")
-    .select("*")
-    .eq("user_id", user_id)
-    .lte("next_review", new Date().toISOString());
 
-  if(error){
-    document.getElementById("status").innerText = "❌ خطأ في الاتصال";
-    console.log(error);
+/* 📝 الملاحظات */
+function loadNotes(){
+  let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+
+  let html="";
+  notes.forEach(n=>{
+    html+=`<div>• ${n}</div>`;
+  });
+
+  document.getElementById("oldNotes").innerHTML =
+    html || "لا توجد ملاحظات";
+}
+
+function addNote(){
+  let input = document.getElementById("noteInput").value.trim();
+  if(!input) return;
+
+  let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+  notes.push(input);
+
+  localStorage.setItem("notes", JSON.stringify(notes));
+
+  document.getElementById("noteInput").value = "";
+
+  loadNotes();
+}
+
+loadNotes();
+
+
+/* 🧠 اختبار */
+function generateQuiz(){
+
+  if(words.length < 3){
+    document.getElementById("quiz").innerHTML = "أضف كلمات أولاً ⭐";
     return;
   }
 
-  if(!data || data.length === 0){
-    document.getElementById("status").innerText = "🎉 خلصت المراجعة اليوم!";
-    return;
-  }
+  let random = words.sort(()=>0.5-Math.random()).slice(0,3);
 
-  words = data.sort(()=>0.5 - Math.random());
-  current = 0;
+  let html="";
 
-  showWord();
+  random.forEach(q=>{
+
+    let options = words.sort(()=>0.5-Math.random()).slice(0,3);
+    options.push(q);
+    options = options.sort(()=>0.5-Math.random());
+
+    html+=`<div class="quiz">
+      <p>ما معنى: <strong>${q.en}</strong>؟</p>
+    `;
+
+    options.forEach(opt=>{
+      html+=`
+        <button onclick="checkAnswer('${q.ar}','${opt.ar}')">
+          ${opt.ar}
+        </button>
+      `;
+    });
+
+    html+=`</div><hr>`;
+  });
+
+  document.getElementById("quiz").innerHTML = html;
 }
 
-// 🎯 عرض كلمة
-function showWord(){
-
-  let w = words[current];
-
-  let en = w.en || w.word || "-";
-  let ar = w.ar || w.arabic || "-";
-
-  document.getElementById("word").innerText = en;
-  document.getElementById("answer").innerText = ar;
-  document.getElementById("answer").style.display = "none";
-
-}
-
-// 👀 إظهار
-function showAnswer(){
-  document.getElementById("answer").style.display = "block";
-}
-
-// ✅❌ الإجابة
-async function answer(correct){
-
-  let w = words[current];
-
-  let review_count = w.review_count || 0;
-  let wrong_count = w.wrong_count || 0;
-
-  let next_review;
-
-  if(correct){
-    review_count++;
-    next_review = new Date(Date.now() + 86400000 * review_count); // يتباعد
+function checkAnswer(correct, answer){
+  if(correct === answer){
+    alert("✅ صحيح");
   }else{
-    wrong_count++;
-    next_review = new Date(Date.now() + 60000); // بعد دقيقة
+    alert("❌ خطأ");
   }
-
-  await supabase
-    .from("words")
-    .update({
-      review_count,
-      wrong_count,
-      next_review
-    })
-    .eq("id", w.id);
-
-  current++;
-
-  if(current >= words.length){
-    document.getElementById("status").innerText = "🎉 انتهت المراجعة!";
-    document.getElementById("word").innerText = "";
-    document.getElementById("answer").innerText = "";
-    return;
-  }
-
-  showWord();
 }
 
-// 🚀 تشغيل
-load();
+generateQuiz();
+
+
+/* 🔙 رجوع */
+function goHome(){
+  window.location.href="index.html";
+}
 
 </script>
 

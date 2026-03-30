@@ -98,9 +98,15 @@ body{
   border-bottom:1px solid #334155;
 }
 
-.en{color:#38bdf8;}
-.ar{color:#facc15;}
+.en{
+  color:#38bdf8;
+}
 
+.ar{
+  color:#facc15;
+}
+
+/* تحسين الأزرار */
 .actions{
   display:flex;
   gap:15px;
@@ -156,15 +162,18 @@ body{
 
 <script>
 
+/* اسم المستخدم (الأول + الثاني) */
 const fullName = localStorage.getItem("user") || "";
 const nameParts = fullName.split(" ");
 const shortName = nameParts.slice(0,2).join(" ");
 document.getElementById("username").innerText = "👤 " + shortName;
 
+/* الانتقال للحساب */
 function goProfile(){
   window.location.href = "student.html";
 }
 
+/* user id */
 let user_id = localStorage.getItem("user_id");
 if(!user_id){
   user_id = "user_" + Math.random().toString(36).substring(2,10);
@@ -189,22 +198,19 @@ function selectType(type){
   document.getElementById("typeText").innerText=text;
 }
 
+/* نطق */
 function speak(text){
   let utter = new SpeechSynthesisUtterance(text);
   utter.lang="en-US";
   speechSynthesis.speak(utter);
 }
 
-/* ⭐ حفظ + تغيير الشكل */
-function saveWord(el,en,ar){
-
+/* حفظ */
+function saveWord(en,ar){
   let saved = JSON.parse(localStorage.getItem("words") || "[]");
   saved.push({en,ar});
   localStorage.setItem("words",JSON.stringify(saved));
-
-  el.innerText = "✅";
-  el.style.background = "#22c55e";
-
+  alert("تم الحفظ ⭐");
 }
 
 /* عرض الكلمات */
@@ -219,7 +225,7 @@ function renderWords(words){
 
           <div class="actions">
             <div class="icon" onclick="speak('${w.en}')">🔊</div>
-            <div class="icon" onclick="saveWord(this,'${w.en}','${w.ar}')">⭐</div>
+            <div class="icon" onclick="saveWord('${w.en}','${w.ar}')">⭐</div>
           </div>
 
           <div class="en">${w.en}</div>
@@ -230,7 +236,7 @@ function renderWords(words){
   return html;
 }
 
-/* 🚀 إنشاء الدرس */
+/* إنشاء الدرس */
 async function generateLesson(){
 
   let input=document.getElementById("textInput").value;
@@ -249,16 +255,13 @@ async function generateLesson(){
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({
-        inputPart: input,
+        inputPart: input,   /* ✅ رجعناه زي ما كان */
         type: selectedType,
         user_id: user_id
       })
     });
 
     let data = await res.json();
-
-    /* 🔥 تفريغ الحقل بعد الإرسال */
-    document.getElementById("textInput").value = "";
 
     document.getElementById("lesson").innerHTML=`
       <div class="card">

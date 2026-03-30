@@ -17,12 +17,6 @@ body{
 .top{display:flex;justify-content:space-between;padding:15px;}
 .user{color:#38bdf8;}
 .points{color:#FFD700;}
-.review{
-  background:#6366f1;
-  padding:10px;
-  border-radius:12px;
-  cursor:pointer;
-}
 
 .title{text-align:center;}
 .subtitle{text-align:center;color:#94a3b8;}
@@ -34,27 +28,19 @@ body{
   border-radius:20px;
 }
 
-/* INPUT */
-.select{
-  background:#e5e7eb;
-  color:black;
-  padding:15px;
-  border-radius:15px;
-  display:flex;
-  justify-content:space-between;
-  cursor:pointer;
-}
-
-.options{display:none;background:white;border-radius:15px;margin-top:10px;}
-.option{padding:15px;border-bottom:1px solid #ddd;color:black;}
-
-.input{
+.input, .select{
   width:100%;
   padding:15px;
   border:none;
   border-radius:15px;
   margin-top:10px;
   box-sizing:border-box;
+}
+
+.select{
+  background:#e5e7eb;
+  color:black;
+  cursor:pointer;
 }
 
 .btn{
@@ -69,35 +55,13 @@ body{
 
 .loading{text-align:center;margin-top:20px;}
 
-/* STORY */
-.story{
-  line-height:2;
-  font-size:17px;
-  margin-bottom:15px;
-}
-
-.story-en{
-  direction:ltr;
-  text-align:justify;
-}
-
-.story-ar{
-  direction:rtl;
-  text-align:justify;
-}
-
-/* WORDS */
-.section-title{
-  margin-top:20px;
-  font-weight:bold;
-  font-size:20px;
-}
+.story-en{direction:ltr;}
+.story-ar{direction:rtl;}
 
 .word{
   display:flex;
   justify-content:space-between;
-  align-items:center;
-  padding:14px 0;
+  padding:10px 0;
   border-bottom:1px solid #334155;
 }
 
@@ -106,33 +70,17 @@ body{
 
 .actions{
   display:flex;
-  gap:15px;
+  gap:10px;
 }
 
 .icon{
   cursor:pointer;
-  background:#0f172a;
-  padding:10px;
-  border-radius:10px;
-  font-size:18px;
 }
 
-/* VIDEO */
 iframe{
   width:100%;
   height:220px;
   border-radius:15px;
-  margin-bottom:15px;
-}
-
-.example{
-  color:#e2e8f0;
-  font-size:14px;
-}
-
-.example-ar{
-  color:#94a3b8;
-  font-size:13px;
 }
 
 </style>
@@ -141,30 +89,23 @@ iframe{
 <body>
 
 <div class="top">
-  <div class="user" id="username">👤</div>
-  <div class="points">⭐ كلماتك: 0</div>
-  <div class="review" onclick="goProfile()">👤 حسابي</div>
+  <div class="user">👤</div>
+  <div class="points">⭐ 0</div>
 </div>
 
 <h2 class="title">📚 الفصل الذكي</h2>
-<p class="subtitle">📘 عنوان الدرس</p>
 
 <div class="card">
 
-  <div class="select" onclick="toggleOptions()">
-    <span id="typeText">📝 نص</span>
-    <span>▼</span>
-  </div>
+<select id="type" class="select">
+  <option value="text">📝 نص</option>
+  <option value="link">🔗 رابط</option>
+  <option value="pdf">📄 PDF</option>
+</select>
 
-  <div class="options" id="options">
-    <div class="option" onclick="selectType('text')">📝 نص</div>
-    <div class="option" onclick="selectType('link')">🔗 رابط</div>
-    <div class="option" onclick="selectType('pdf')">📄 PDF</div>
-  </div>
+<input id="textInput" class="input" placeholder="اكتب هنا">
 
-  <input id="textInput" class="input" placeholder="... اكتب النص هنا">
-
-  <button class="btn" onclick="generateLesson()">🚀 إنشاء الدرس</button>
+<button class="btn" onclick="generateLesson()">🚀 إنشاء</button>
 
 </div>
 
@@ -172,68 +113,26 @@ iframe{
 
 <script>
 
-const fullName = localStorage.getItem("user") || "";
-const nameParts = fullName.split(" ");
-const shortName = nameParts.slice(0,2).join(" ");
-document.getElementById("username").innerText = "👤 " + shortName;
+let isLoading = false;
 
-function goProfile(){
-  window.location.href = "student.html";
-}
-
-let user_id = localStorage.getItem("user_id");
-if(!user_id){
-  user_id = "user_" + Math.random().toString(36).substring(2,10);
-  localStorage.setItem("user_id", user_id);
-}
-
-let selectedType="text";
-
-function toggleOptions(){
-  let o=document.getElementById("options");
-  o.style.display=o.style.display==="block"?"none":"block";
-}
-
-function selectType(type){
-  selectedType=type;
-  document.getElementById("options").style.display="none";
-
-  let text="📝 نص";
-  if(type==="link") text="🔗 رابط";
-  if(type==="pdf") text="📄 PDF";
-
-  document.getElementById("typeText").innerText=text;
-}
-
+/* صوت */
 function speak(text){
-  let utter = new SpeechSynthesisUtterance(text);
-  utter.lang="en-US";
-  speechSynthesis.speak(utter);
+  let u = new SpeechSynthesisUtterance(text);
+  u.lang="en-US";
+  speechSynthesis.speak(u);
 }
 
-function saveWord(el,en,ar){
-  let saved = JSON.parse(localStorage.getItem("words") || "[]");
-  saved.push({en,ar});
-  localStorage.setItem("words",JSON.stringify(saved));
-  el.innerText="✅";
-  el.style.background="#22c55e";
-}
-
-/* كلمات النص */
+/* كلمات */
 function renderWords(words){
   let html="";
-  for(let section in words){
-    html+=`<div class="section-title">${section}</div>`;
-    words[section].forEach(w=>{
+  for(let k in words){
+    words[k].forEach(w=>{
       html+=`
         <div class="word">
           <div class="ar">${w.ar}</div>
-
           <div class="actions">
-            <div class="icon" onclick="speak('${w.en}')">🔊</div>
-            <div class="icon" onclick="saveWord(this,'${w.en}','${w.ar}')">⭐</div>
+            <span class="icon" onclick="speak('${w.en}')">🔊</span>
           </div>
-
           <div class="en">${w.en}</div>
         </div>
       `;
@@ -242,44 +141,52 @@ function renderWords(words){
   return html;
 }
 
-/* كلمات الفيديو */
-function renderVideoWords(data){
-  let html="";
-  if(!data.verbs) return "";
+/* فيديو */
+function renderVideo(data){
+  let html = `
+    <iframe src="https://www.youtube.com/embed/${data.videoID}" allowfullscreen></iframe>
+  `;
 
-  data.verbs.forEach(w=>{
-    html+=`
-      <div class="word">
-        <div class="ar">${w.ar}</div>
-
-        <div class="actions">
-          <div class="icon" onclick="speak('${w.en}')">🔊</div>
-          <div class="icon" onclick="saveWord(this,'${w.en}','${w.ar}')">⭐</div>
+  if(data.verbs){
+    data.verbs.forEach(w=>{
+      html+=`
+        <div class="word">
+          <div class="ar">${w.ar}</div>
+          <div class="actions">
+            <span class="icon" onclick="speak('${w.en}')">🔊</span>
+          </div>
+          <div class="en">${w.en}</div>
         </div>
-
-        <div class="en">${w.en}</div>
-      </div>
-
-      <div class="example">${w.example || ""}</div>
-      <div class="example-ar">${w.example_ar || ""}</div>
-    `;
-  });
+        <div>${w.example||""}</div>
+      `;
+    });
+  }
 
   return html;
+}
+
+/* PDF */
+function renderPDF(data){
+  return renderWords(data);
 }
 
 /* 🚀 */
 async function generateLesson(){
 
-  let input=document.getElementById("textInput").value;
+  if(isLoading) return;
+
+  let input = document.getElementById("textInput").value;
+  let type = document.getElementById("type").value;
 
   if(!input){
     alert("اكتب شي");
     return;
   }
 
-  document.getElementById("lesson").innerHTML=
-    `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;
+  isLoading = true;
+
+  document.getElementById("lesson").innerHTML =
+    `<div class="loading">⏳ جاري التحميل...</div>`;
 
   try{
 
@@ -288,54 +195,55 @@ async function generateLesson(){
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({
         inputPart: input,
-        type: selectedType,
-        user_id: user_id
+        type: type,
+        user_id: "user_test"
       })
     });
 
-    let data = await res.json();
-    document.getElementById("textInput").value="";
+    if(!res.ok){
+      throw new Error("Server error");
+    }
 
-    /* 📝 TEXT */
-    if(selectedType==="text"){
+    let data = await res.json();
+
+    /* TEXT */
+    if(type==="text"){
       document.getElementById("lesson").innerHTML=`
         <div class="card">
-          <div class="section-title">📖 القصة</div>
-          <div class="story story-en">${(data.story||"").replace(/\n/g,"<br>")}</div>
-
+          <div class="story-en">${data.story||""}</div>
           <hr>
-
-          <div class="section-title">🌍 الترجمة</div>
-          <div class="story story-ar">${data.translation||""}</div>
-
+          <div class="story-ar">${data.translation||""}</div>
           ${data.words ? renderWords(data.words) : ""}
         </div>
       `;
     }
 
-    /* 🔗 VIDEO */
-    else if(selectedType==="link"){
+    /* VIDEO */
+    else if(type==="link"){
       document.getElementById("lesson").innerHTML=`
         <div class="card">
-          <iframe src="https://www.youtube.com/embed/${data.videoID}" allowfullscreen></iframe>
-          ${renderVideoWords(data)}
+          ${renderVideo(data)}
         </div>
       `;
     }
 
-    /* 📄 PDF */
-    else if(selectedType==="pdf"){
+    /* PDF */
+    else if(type==="pdf"){
       document.getElementById("lesson").innerHTML=`
         <div class="card">
-          ${data.verbs ? renderWords(data) : "لا يوجد بيانات"}
+          ${renderPDF(data)}
         </div>
       `;
     }
+
+    document.getElementById("textInput").value="";
 
   }catch(e){
-    document.getElementById("lesson").innerHTML=
-      `<div class="loading" style="color:red;">❌ خطأ</div>`;
+    document.getElementById("lesson").innerHTML =
+      `<div style="color:red;">❌ خطأ: تأكد من webhook</div>`;
   }
+
+  isLoading = false;
 }
 
 </script>

@@ -74,7 +74,6 @@ body{
   margin-bottom:15px;
 }
 
-/* 🔥 الاتجاه + توزيع النص */
 .story-en {
   direction: ltr;
   text-align: justify;
@@ -95,20 +94,41 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:12px 0;
+  padding:14px 0;
   border-bottom:1px solid #334155;
 }
 
-.en{color:#38bdf8;}
-.ar{color:#f87171;}
+.en{
+  color:#38bdf8;
+  font-size:16px;
+}
 
+.ar{
+  color:#facc15; /* ⭐ أصفر بدل الأحمر */
+  font-size:16px;
+}
+
+/* 🔥 تحسين الأزرار */
 .actions{
   display:flex;
-  gap:10px;
+  gap:15px; /* مسافة واضحة */
 }
 
 .icon{
   cursor:pointer;
+  background:#0f172a;
+  padding:10px;
+  border-radius:10px;
+  font-size:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:0.2s;
+}
+
+.icon:hover{
+  transform:scale(1.1);
+  background:#1e293b;
 }
 
 </style>
@@ -148,18 +168,15 @@ body{
 
 <script>
 
-/* 👤 اسم مختصر */
 const fullName = localStorage.getItem("user") || "";
 const nameParts = fullName.split(" ");
 const shortName = nameParts.slice(0,2).join(" ");
 document.getElementById("username").innerText = "👤 " + shortName;
 
-/* 🔗 */
 function goProfile(){
   window.location.href = "student.html";
 }
 
-/* user id */
 let user_id = localStorage.getItem("user_id");
 if(!user_id){
   user_id = "user_" + Math.random().toString(36).substring(2,10);
@@ -184,14 +201,12 @@ function selectType(type){
   document.getElementById("typeText").innerText=text;
 }
 
-/* 🔊 */
 function speak(text){
   let utter = new SpeechSynthesisUtterance(text);
   utter.lang="en-US";
   speechSynthesis.speak(utter);
 }
 
-/* ⭐ */
 function saveWord(en,ar){
   let saved = JSON.parse(localStorage.getItem("words") || "[]");
   saved.push({en,ar});
@@ -199,7 +214,6 @@ function saveWord(en,ar){
   alert("تم الحفظ ⭐");
 }
 
-/* كلمات */
 function renderWords(words){
   let html="";
   for(let section in words){
@@ -208,10 +222,12 @@ function renderWords(words){
       html+=`
         <div class="word">
           <div class="ar">${w.ar}</div>
+
           <div class="actions">
-            <span class="icon" onclick="speak('${w.en}')">🔊</span>
-            <span class="icon" onclick="saveWord('${w.en}','${w.ar}')">⭐</span>
+            <div class="icon" onclick="speak('${w.en}')">🔊</div>
+            <div class="icon" onclick="saveWord('${w.en}','${w.ar}')">⭐</div>
           </div>
+
           <div class="en">${w.en}</div>
         </div>
       `;
@@ -238,7 +254,7 @@ async function generateLesson(){
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body:JSON.stringify({
-        input: input, // 🔥 FIX المشكلة هنا
+        input: input,
         type:selectedType,
         user_id:user_id
       })

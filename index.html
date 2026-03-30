@@ -57,9 +57,7 @@ h1 {
 }
 
 .username {
-  color: #0072ff;
-  font-weight: bold;
-  margin-bottom: 5px;
+  display: none; /* ❌ اخفينا الاسم */
 }
 
 .students {
@@ -135,7 +133,6 @@ button {
       <button onclick="goSearch()">ابدأ</button>
     </div>
 
-    <!-- 🔥 الكرت الجديد -->
     <div class="card">
       <span>👤 حسابي (مراجعة + اختبار)</span>
       <button onclick="goProfile()">فتح</button>
@@ -148,15 +145,13 @@ button {
 
 <script>
 
-const user = localStorage.getItem("user");
 const userId = localStorage.getItem("user_id");
 
 if(!userId){
   window.location.href = "login.html";
 }
 
-
-
+//// 👨‍🎓 عداد الطلاب (🔥 ثابت حتى بعد تسجيل الخروج)
 let count = localStorage.getItem("studentsCount");
 
 if (!count) {
@@ -173,6 +168,7 @@ function updateStudents() {
 updateStudents();
 setInterval(updateStudents, 8000);
 
+//// 🔗 التنقل
 function goClass() {
   window.location.href = "myclass.html";
 }
@@ -189,13 +185,18 @@ function goSearch() {
   window.location.href = "search.html";
 }
 
-/* 🔥 الجديد */
 function goProfile(){
   window.location.href = "student.html";
 }
 
+//// 🚪 تسجيل خروج (🔥 بدون حذف عداد الطلاب)
 function logout(){
-  localStorage.clear();
+  const studentsCount = localStorage.getItem("studentsCount"); // حفظه
+
+  localStorage.clear(); // مسح كل شيء
+
+  localStorage.setItem("studentsCount", studentsCount); // رجعه
+
   window.location.href = "login.html";
 }
 

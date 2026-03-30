@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>حسابي</title>
+<title>الاختبار الذكي</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <style>
-
-*{box-sizing:border-box;}
 
 body{
   margin:0;
@@ -16,81 +16,53 @@ body{
   color:white;
 }
 
-/* 🔝 الأعلى */
 .top{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   padding:15px;
-  flex-wrap:wrap;
-  gap:10px;
 }
 
-.user{color:#38bdf8;font-size:14px;}
-.points{color:#FFD700;font-size:14px;}
-
-.review{
-  background:#6366f1;
-  padding:8px 14px;
-  border-radius:12px;
-  cursor:pointer;
-  font-size:14px;
-}
-
-/* 📦 كروت */
 .card{
   background:#1e293b;
-  margin:15px;
-  padding:18px;
-  border-radius:18px;
+  margin:20px;
+  padding:20px;
+  border-radius:20px;
 }
 
-/* 📱 استجابة */
-@media (max-width:480px){
-  .card{margin:12px;}
-  .top{padding:10px;}
-}
-
-/* ⭐ الكلمات */
-.word{
+.stats{
   display:flex;
   justify-content:space-between;
-  padding:10px 0;
-  border-bottom:1px solid #334155;
+  margin-bottom:15px;
 }
 
-.en{color:#38bdf8;}
-.ar{color:#f87171;}
+.question{
+  font-size:20px;
+  margin-bottom:15px;
+}
 
-/* 📝 الملاحظات */
-textarea{
+.option{
   width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  margin-top:10px;
-  resize:none;
-  height:80px;
-  font-family:"Cairo";
-}
-
-/* زر */
-button{
-  margin-top:10px;
-  padding:10px 15px;
+  padding:12px;
+  margin:6px 0;
   border:none;
   border-radius:10px;
-  background:#22c55e;
+  background:#334155;
   color:white;
   cursor:pointer;
 }
 
-/* 🧠 اختبار */
-.quiz button{
-  display:block;
+.correct{ background:#22c55e !important; }
+.wrong{ background:#ef4444 !important; }
+
+.btn{
   width:100%;
-  margin-top:6px;
-  background:#334155;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:12px;
+  background:#22c55e;
+  color:white;
+  cursor:pointer;
 }
 
 </style>
@@ -99,145 +71,174 @@ button{
 <body>
 
 <div class="top">
-  <div class="user" id="username">👤</div>
-  <div class="points">⭐ كلماتك: <span id="count">0</span></div>
-  <div class="review" onclick="goHome()">🏠 الرئيسية</div>
+  <div>🧠 اختبارك</div>
+  <div onclick="goHome()" style="cursor:pointer;">🏠 الرئيسية</div>
 </div>
 
-<!-- ⭐ الكلمات -->
 <div class="card">
-  <h3>⭐ الكلمات المحفوظة</h3>
-  <div id="words"></div>
-</div>
 
-<!-- 📝 الملاحظات -->
-<div class="card">
-  <h3>📝 ملاحظاتي</h3>
+  <div class="stats">
+    <div>⭐ XP: <span id="xp">0</span></div>
+    <div>🏆 Level: <span id="level">1</span></div>
+  </div>
 
-  <div id="oldNotes" style="color:#cbd5f5;margin-bottom:10px;"></div>
+  <div id="quizBox"></div>
 
-  <textarea id="noteInput" placeholder="اكتب ملاحظة جديدة..."></textarea>
+  <button class="btn" onclick="startQuiz()">🔁 إعادة</button>
 
-  <button onclick="addNote()">➕ إضافة</button>
-</div>
-
-<!-- 🧠 اختبار -->
-<div class="card">
-  <h3>🧠 اختبار سريع</h3>
-  <div id="quiz"></div>
 </div>
 
 <script>
 
-/* 👤 الاسم (أول + ثاني فقط) */
-let fullName = localStorage.getItem("user") || "طالب";
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "__n8n_BLANK_VALUE_e5362baf-c777-4d57-a609-6eaf1f9e87f6";
 
-let parts = fullName.split(" ");
-let shortName = parts[0] + (parts[1] ? " " + parts[1] : "");
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-document.getElementById("username").innerText = "👤 " + shortName;
+let user_id = localStorage.getItem("user_id");
 
+let words = [];
+let questions = [];
+let current = 0;
+let score = 0;
 
-/* ⭐ الكلمات */
-let words = JSON.parse(localStorage.getItem("words") || "[]");
-document.getElementById("count").innerText = words.length;
+let xp = 0;
+let level = 1;
 
-function renderWords(){
-  let html="";
-  words.forEach(w=>{
-    html+=`
-      <div class="word">
-        <div class="ar">${w.ar}</div>
-        <div class="en">${w.en}</div>
-      </div>
-    `;
-  });
-  document.getElementById("words").innerHTML = html || "لا توجد كلمات";
-}
-renderWords();
+/* تحميل البيانات */
+async function loadData(){
 
+  // كلمات
+  let { data: w } = await supabaseClient
+    .from("words")
+    .select("*")
+    .eq("user_id", user_id);
 
-/* 📝 الملاحظات */
-function loadNotes(){
-  let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+  words = w || [];
 
-  let html="";
-  notes.forEach(n=>{
-    html+=`<div>• ${n}</div>`;
-  });
+  // progress
+  let { data: p } = await supabaseClient
+    .from("progress")
+    .select("*")
+    .eq("user_id", user_id)
+    .single();
 
-  document.getElementById("oldNotes").innerHTML =
-    html || "لا توجد ملاحظات";
-}
+  if(!p){
+    await supabaseClient.from("progress").insert([{
+      user_id,
+      xp:0,
+      level:1,
+      total_tests:0
+    }]);
+  }else{
+    xp = p.xp;
+    level = p.level;
+  }
 
-function addNote(){
-  let input = document.getElementById("noteInput").value.trim();
-  if(!input) return;
-
-  let notes = JSON.parse(localStorage.getItem("notes") || "[]");
-  notes.push(input);
-
-  localStorage.setItem("notes", JSON.stringify(notes));
-
-  document.getElementById("noteInput").value = "";
-
-  loadNotes();
+  updateUI();
+  startQuiz();
 }
 
-loadNotes();
+/* تحديث */
+function updateUI(){
+  document.getElementById("xp").innerText = xp;
+  document.getElementById("level").innerText = level;
+}
 
+/* بدء */
+function startQuiz(){
 
-/* 🧠 اختبار */
-function generateQuiz(){
-
-  if(words.length < 3){
-    document.getElementById("quiz").innerHTML = "أضف كلمات أولاً ⭐";
+  if(words.length < 4){
+    document.getElementById("quizBox").innerHTML =
+      "❌ تحتاج كلمات";
     return;
   }
 
-  let random = words.sort(()=>0.5-Math.random()).slice(0,3);
+  current = 0;
+  score = 0;
 
-  let html="";
+  questions = [...words].sort(()=>0.5-Math.random()).slice(0,5);
 
-  random.forEach(q=>{
+  showQuestion();
+}
 
-    let options = words.sort(()=>0.5-Math.random()).slice(0,3);
-    options.push(q);
-    options = options.sort(()=>0.5-Math.random());
+/* عرض */
+function showQuestion(){
 
-    html+=`<div class="quiz">
-      <p>ما معنى: <strong>${q.en}</strong>؟</p>
+  if(current >= questions.length){
+    finishQuiz();
+    return;
+  }
+
+  let q = questions[current];
+
+  let options = [...words].sort(()=>0.5-Math.random()).slice(0,3);
+  options.push(q);
+  options = options.sort(()=>0.5-Math.random());
+
+  let html = `<div class="question">ما معنى: ${q.en} ؟</div>`;
+
+  options.forEach(opt=>{
+    html += `
+      <button class="option"
+      onclick="answer(this,'${q.ar}','${opt.ar}')">
+      ${opt.ar}
+      </button>
     `;
-
-    options.forEach(opt=>{
-      html+=`
-        <button onclick="checkAnswer('${q.ar}','${opt.ar}')">
-          ${opt.ar}
-        </button>
-      `;
-    });
-
-    html+=`</div><hr>`;
   });
 
-  document.getElementById("quiz").innerHTML = html;
+  document.getElementById("quizBox").innerHTML = html;
 }
 
-function checkAnswer(correct, answer){
-  if(correct === answer){
-    alert("✅ صحيح");
+/* إجابة */
+function answer(btn, correct, ans){
+
+  let buttons = document.querySelectorAll(".option");
+
+  buttons.forEach(b=>b.disabled=true);
+
+  if(ans === correct){
+    btn.classList.add("correct");
+    score++;
+    xp += 10;
   }else{
-    alert("❌ خطأ");
+    btn.classList.add("wrong");
   }
+
+  setTimeout(()=>{
+    current++;
+    showQuestion();
+  },800);
 }
 
-generateQuiz();
+/* نهاية */
+async function finishQuiz(){
 
+  xp += 20;
 
-/* 🔙 رجوع */
+  level = Math.floor(xp / 100) + 1;
+
+  await supabaseClient
+    .from("progress")
+    .update({
+      xp,
+      level,
+      total_tests:1
+    })
+    .eq("user_id", user_id);
+
+  updateUI();
+
+  document.getElementById("quizBox").innerHTML =
+    `🎉 نتيجتك: ${score} / ${questions.length}`;
+}
+
+/* رجوع */
 function goHome(){
   window.location.href="index.html";
 }
+
+loadData();
 
 </script>
 

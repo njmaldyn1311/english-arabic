@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حساب الطالب</title>
+
+<style>
+
+body{
+  margin:0;
+  font-family:"Cairo", sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+}
+
+.top{display:flex;justify-content:space-between;padding:15px;}
+.user{color:#38bdf8;}
+.points{color:#FFD700;}
+.review{background:#6366f1;padding:10px;border-radius:12px;cursor:pointer;}
+
+.title{text-align:center;}
+.subtitle{text-align:center;color:#94a3b8;}
+
+.card{
+  background:#1e293b;
+  margin:20px;
+  padding:20px;
+  border-radius:20px;
+}
+
+.word{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px solid #334155;
+}
+
+.en{color:#38bdf8;}
+.ar{color:#f87171;}
+
+textarea{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  margin-top:10px;
+}
+
+button{
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  color:white;
+  cursor:pointer;
+}
+
+.quiz{
+  margin-top:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="top">
+  <div class="user" id="username">👤</div>
+  <div class="points">⭐ كلماتك: <span id="count">0</span></div>
+  <div class="review" onclick="goHome()">🏠 الرئيسية</div>
+</div>
+
+<h2 class="title">👤 حساب الطالب</h2>
+<p class="subtitle">📊 تعلمك وتقدمك</p>
+
+<!-- الكلمات -->
+<div class="card">
+  <h3>⭐ الكلمات المحفوظة</h3>
+  <div id="words"></div>
+</div>
+
+<!-- الملاحظات -->
+<div class="card">
+  <h3>📝 ملاحظاتي</h3>
+  <textarea id="notes" placeholder="اكتب ملاحظاتك هنا..."></textarea>
+  <button onclick="saveNotes()">💾 حفظ</button>
+</div>
+
+<!-- الاختبار -->
+<div class="card">
+  <h3>🧠 اختبار سريع</h3>
+  <div id="quiz"></div>
+</div>
+
+</body>
+
+<script>
+
+// اسم المستخدم
+const user = localStorage.getItem("user") || "طالب";
+document.getElementById("username").innerText = "👤 " + user;
+
+// تحميل الكلمات
+let saved = JSON.parse(localStorage.getItem("words") || "[]");
+document.getElementById("count").innerText = saved.length;
+
+// عرض الكلمات
+function loadWords(){
+  let html="";
+  saved.forEach(w=>{
+    html+=`
+      <div class="word">
+        <div class="ar">${w.ar}</div>
+        <div class="en">${w.en}</div>
+      </div>
+    `;
+  });
+  document.getElementById("words").innerHTML = html || "لا توجد كلمات";
+}
+loadWords();
+
+
+// ==================
+// 📝 الملاحظات
+// ==================
+document.getElementById("notes").value =
+  localStorage.getItem("notes") || "";
+
+function saveNotes(){
+  localStorage.setItem("notes",
+    document.getElementById("notes").value);
+  alert("تم حفظ الملاحظات ✅");
+}
+
+
+// ==================
+// 🧠 الاختبار
+// ==================
+function generateQuiz(){
+
+  if(saved.length < 3){
+    document.getElementById("quiz").innerHTML =
+      "أضف كلمات أولاً ⭐";
+    return;
+  }
+
+  let random = saved.sort(()=>0.5-Math.random()).slice(0,3);
+
+  let html="";
+
+  random.forEach((q,i)=>{
+
+    let options = saved
+      .sort(()=>0.5-Math.random())
+      .slice(0,3);
+
+    options.push(q);
+    options = options.sort(()=>0.5-Math.random());
+
+    html+=`<div class="quiz">
+      <p>ما معنى: <strong>${q.en}</strong>؟</p>
+    `;
+
+    options.forEach(opt=>{
+      html+=`
+        <button onclick="checkAnswer('${q.ar}','${opt.ar}')">
+          ${opt.ar}
+        </button>
+      `;
+    });
+
+    html+=`</div><hr>`;
+  });
+
+  document.getElementById("quiz").innerHTML = html;
+}
+
+function checkAnswer(correct, answer){
+  if(correct === answer){
+    alert("✅ صحيح");
+  }else{
+    alert("❌ خطأ");
+  }
+}
+
+generateQuiz();
+
+
+// ==================
+function goHome(){
+  window.location.href="index.html";
+}
+
+</script>
+
+</html>

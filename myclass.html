@@ -17,7 +17,12 @@ body{
 .top{display:flex;justify-content:space-between;padding:15px;}
 .user{color:#38bdf8;}
 .points{color:#FFD700;}
-.review{background:#6366f1;padding:10px;border-radius:12px;}
+.review{
+  background:#6366f1;
+  padding:10px;
+  border-radius:12px;
+  cursor:pointer;
+}
 
 .title{text-align:center;}
 .subtitle{text-align:center;color:#94a3b8;}
@@ -63,13 +68,11 @@ body{
 
 .loading{text-align:center;margin-top:20px;}
 
-/* القصة */
 .story{
   line-height:1.8;
   margin-bottom:15px;
 }
 
-/* الكلمات */
 .section-title{
   margin-top:20px;
   font-weight:bold;
@@ -102,9 +105,11 @@ body{
 <body>
 
 <div class="top">
-  <div class="user">👤 نجم</div>
+  <div class="user" id="username">👤</div>
   <div class="points">⭐ كلماتك: 0</div>
-  <div class="review">📖 مراجعة</div>
+
+  <!-- 🔥 حسابي بدل مراجعة -->
+  <div class="review" onclick="goProfile()">👤 حسابي</div>
 </div>
 
 <h2 class="title">📚 الفصل الذكي</h2>
@@ -132,6 +137,18 @@ body{
 <div id="lesson"></div>
 
 <script>
+
+/* 👤 عرض الاسم الأول والثاني فقط */
+const fullName = localStorage.getItem("user") || "";
+const nameParts = fullName.split(" ");
+const shortName = nameParts.slice(0,2).join(" ");
+
+document.getElementById("username").innerText = "👤 " + shortName;
+
+/* 🔗 حسابي */
+function goProfile(){
+  window.location.href = "student.html";
+}
 
 /* user id */
 let user_id = localStorage.getItem("user_id");

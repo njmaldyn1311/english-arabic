@@ -34,6 +34,7 @@ body{
   border-radius:20px;
 }
 
+/* INPUT */
 .select{
   background:#e5e7eb;
   color:black;
@@ -68,6 +69,7 @@ body{
 
 .loading{text-align:center;margin-top:20px;}
 
+/* STORY */
 .story{
   line-height:2;
   font-size:17px;
@@ -84,6 +86,7 @@ body{
   text-align:justify;
 }
 
+/* WORDS */
 .section-title{
   margin-top:20px;
   font-weight:bold;
@@ -112,11 +115,24 @@ body{
   padding:10px;
   border-radius:10px;
   font-size:18px;
-  transition:0.2s;
 }
 
-.icon:hover{
-  transform:scale(1.1);
+/* VIDEO */
+iframe{
+  width:100%;
+  height:220px;
+  border-radius:15px;
+  margin-bottom:15px;
+}
+
+.example{
+  color:#e2e8f0;
+  font-size:14px;
+}
+
+.example-ar{
+  color:#94a3b8;
+  font-size:13px;
 }
 
 </style>
@@ -195,19 +211,15 @@ function speak(text){
   speechSynthesis.speak(utter);
 }
 
-/* ⭐ حفظ + تغيير الشكل */
 function saveWord(el,en,ar){
-
   let saved = JSON.parse(localStorage.getItem("words") || "[]");
   saved.push({en,ar});
   localStorage.setItem("words",JSON.stringify(saved));
-
-  el.innerText = "✅";
-  el.style.background = "#22c55e";
-
+  el.innerText="✅";
+  el.style.background="#22c55e";
 }
 
-/* عرض الكلمات */
+/* كلمات النص */
 function renderWords(words){
   let html="";
   for(let section in words){
@@ -230,7 +242,33 @@ function renderWords(words){
   return html;
 }
 
-/* 🚀 إنشاء الدرس */
+/* كلمات الفيديو */
+function renderVideoWords(data){
+  let html="";
+  if(!data.verbs) return "";
+
+  data.verbs.forEach(w=>{
+    html+=`
+      <div class="word">
+        <div class="ar">${w.ar}</div>
+
+        <div class="actions">
+          <div class="icon" onclick="speak('${w.en}')">🔊</div>
+          <div class="icon" onclick="saveWord(this,'${w.en}','${w.ar}')">⭐</div>
+        </div>
+
+        <div class="en">${w.en}</div>
+      </div>
+
+      <div class="example">${w.example || ""}</div>
+      <div class="example-ar">${w.example_ar || ""}</div>
+    `;
+  });
+
+  return html;
+}
+
+/* 🚀 */
 async function generateLesson(){
 
   let input=document.getElementById("textInput").value;
@@ -240,7 +278,7 @@ async function generateLesson(){
     return;
   }
 
-  document.getElementById("lesson").innerHTML =
+  document.getElementById("lesson").innerHTML=
     `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;
 
   try{
@@ -256,35 +294,48 @@ async function generateLesson(){
     });
 
     let data = await res.json();
+    document.getElementById("textInput").value="";
 
-    /* 🔥 تفريغ الحقل بعد الإرسال */
-    document.getElementById("textInput").value = "";
+    /* 📝 TEXT */
+    if(selectedType==="text"){
+      document.getElementById("lesson").innerHTML=`
+        <div class="card">
+          <div class="section-title">📖 القصة</div>
+          <div class="story story-en">${(data.story||"").replace(/\n/g,"<br>")}</div>
 
-    document.getElementById("lesson").innerHTML=`
-      <div class="card">
+          <hr>
 
-        <div class="section-title">📖 القصة</div>
-        <div class="story story-en">
-          ${(data.story || "").replace(/\n/g,"<br>")}
+          <div class="section-title">🌍 الترجمة</div>
+          <div class="story story-ar">${data.translation||""}</div>
+
+          ${data.words ? renderWords(data.words) : ""}
         </div>
+      `;
+    }
 
-        <hr>
-
-        <div class="section-title">🌍 الترجمة</div>
-        <div class="story story-ar">
-          ${(data.translation || "⚠️ لا توجد ترجمة")}
+    /* 🔗 VIDEO */
+    else if(selectedType==="link"){
+      document.getElementById("lesson").innerHTML=`
+        <div class="card">
+          <iframe src="https://www.youtube.com/embed/${data.videoID}" allowfullscreen></iframe>
+          ${renderVideoWords(data)}
         </div>
+      `;
+    }
 
-        ${data.words ? renderWords(data.words) : ""}
-
-      </div>
-    `;
+    /* 📄 PDF */
+    else if(selectedType==="pdf"){
+      document.getElementById("lesson").innerHTML=`
+        <div class="card">
+          ${data.verbs ? renderWords(data) : "لا يوجد بيانات"}
+        </div>
+      `;
+    }
 
   }catch(e){
-    document.getElementById("lesson").innerHTML =
+    document.getElementById("lesson").innerHTML=
       `<div class="loading" style="color:red;">❌ خطأ</div>`;
   }
-
 }
 
 </script>

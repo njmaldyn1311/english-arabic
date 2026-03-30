@@ -73,6 +73,17 @@ body{
   margin-bottom:15px;
 }
 
+/* 🔥 الجديد */
+.story-en {
+  direction: ltr;
+  text-align: left;
+}
+
+.story-ar {
+  direction: rtl;
+  text-align: right;
+}
+
 .section-title{
   margin-top:20px;
   font-weight:bold;
@@ -107,8 +118,6 @@ body{
 <div class="top">
   <div class="user" id="username">👤</div>
   <div class="points">⭐ كلماتك: 0</div>
-
-  <!-- 🔥 حسابي بدل مراجعة -->
   <div class="review" onclick="goProfile()">👤 حسابي</div>
 </div>
 
@@ -202,16 +211,12 @@ function renderWords(words){
     words[section].forEach(w=>{
       html+=`
         <div class="word">
-          
           <div class="ar">${w.ar}</div>
-
           <div class="actions">
             <span class="icon" onclick="speak('${w.en}')">🔊</span>
             <span class="icon" onclick="saveWord('${w.en}','${w.ar}')">⭐</span>
           </div>
-
           <div class="en">${w.en}</div>
-
         </div>
       `;
     });
@@ -251,10 +256,16 @@ async function generateLesson(){
 
     document.getElementById("lesson").innerHTML=`
       <div class="card">
-        
-        <div class="story">${(data.story || "").replace(/\n/g,"<br>")}</div>
+
+        <div class="story story-en">
+          ${(data.story || "").replace(/\n/g,"<br>")}
+        </div>
+
         <hr>
-        <div class="story">${(data.translation || "⚠️ لا توجد ترجمة")}</div>
+
+        <div class="story story-ar">
+          ${(data.translation || "⚠️ لا توجد ترجمة")}
+        </div>
 
         ${data.words ? renderWords(data.words) : ""}
 

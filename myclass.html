@@ -17,6 +17,12 @@ body{
 .top{display:flex;justify-content:space-between;padding:15px;}
 .user{color:#38bdf8;}
 .points{color:#FFD700;}
+.review{
+  background:#6366f1;
+  padding:10px;
+  border-radius:12px;
+  cursor:pointer;
+}
 
 .title{text-align:center;}
 .subtitle{text-align:center;color:#94a3b8;}
@@ -28,19 +34,26 @@ body{
   border-radius:20px;
 }
 
-.input, .select{
+.select{
+  background:#e5e7eb;
+  color:black;
+  padding:15px;
+  border-radius:15px;
+  display:flex;
+  justify-content:space-between;
+  cursor:pointer;
+}
+
+.options{display:none;background:white;border-radius:15px;margin-top:10px;}
+.option{padding:15px;border-bottom:1px solid #ddd;color:black;}
+
+.input{
   width:100%;
   padding:15px;
   border:none;
   border-radius:15px;
   margin-top:10px;
   box-sizing:border-box;
-}
-
-.select{
-  background:#e5e7eb;
-  color:black;
-  cursor:pointer;
 }
 
 .btn{
@@ -55,13 +68,33 @@ body{
 
 .loading{text-align:center;margin-top:20px;}
 
-.story-en{direction:ltr;}
-.story-ar{direction:rtl;}
+.story{
+  line-height:2;
+  font-size:17px;
+  margin-bottom:15px;
+}
+
+.story-en{
+  direction:ltr;
+  text-align:justify;
+}
+
+.story-ar{
+  direction:rtl;
+  text-align:justify;
+}
+
+.section-title{
+  margin-top:20px;
+  font-weight:bold;
+  font-size:20px;
+}
 
 .word{
   display:flex;
   justify-content:space-between;
-  padding:10px 0;
+  align-items:center;
+  padding:14px 0;
   border-bottom:1px solid #334155;
 }
 
@@ -70,17 +103,20 @@ body{
 
 .actions{
   display:flex;
-  gap:10px;
+  gap:15px;
 }
 
 .icon{
   cursor:pointer;
+  background:#0f172a;
+  padding:10px;
+  border-radius:10px;
+  font-size:18px;
+  transition:0.2s;
 }
 
-iframe{
-  width:100%;
-  height:220px;
-  border-radius:15px;
+.icon:hover{
+  transform:scale(1.1);
 }
 
 </style>
@@ -89,23 +125,30 @@ iframe{
 <body>
 
 <div class="top">
-  <div class="user">👤</div>
-  <div class="points">⭐ 0</div>
+  <div class="user" id="username">👤</div>
+  <div class="points">⭐ كلماتك: 0</div>
+  <div class="review" onclick="goProfile()">👤 حسابي</div>
 </div>
 
 <h2 class="title">📚 الفصل الذكي</h2>
+<p class="subtitle">📘 عنوان الدرس</p>
 
 <div class="card">
 
-<select id="type" class="select">
-  <option value="text">📝 نص</option>
-  <option value="link">🔗 رابط</option>
-  <option value="pdf">📄 PDF</option>
-</select>
+  <div class="select" onclick="toggleOptions()">
+    <span id="typeText">📝 نص</span>
+    <span>▼</span>
+  </div>
 
-<input id="textInput" class="input" placeholder="اكتب هنا">
+  <div class="options" id="options">
+    <div class="option" onclick="selectType('text')">📝 نص</div>
+    <div class="option" onclick="selectType('link')">🔗 رابط</div>
+    <div class="option" onclick="selectType('pdf')">📄 PDF</div>
+  </div>
 
-<button class="btn" onclick="generateLesson()">🚀 إنشاء</button>
+  <input id="textInput" class="input" placeholder="... اكتب النص هنا">
+
+  <button class="btn" onclick="generateLesson()">🚀 إنشاء الدرس</button>
 
 </div>
 
@@ -113,26 +156,72 @@ iframe{
 
 <script>
 
-let isLoading = false;
+const fullName = localStorage.getItem("user") || "";
+const nameParts = fullName.split(" ");
+const shortName = nameParts.slice(0,2).join(" ");
+document.getElementById("username").innerText = "👤 " + shortName;
 
-/* صوت */
-function speak(text){
-  let u = new SpeechSynthesisUtterance(text);
-  u.lang="en-US";
-  speechSynthesis.speak(u);
+function goProfile(){
+  window.location.href = "student.html";
 }
 
-/* كلمات */
+let user_id = localStorage.getItem("user_id");
+if(!user_id){
+  user_id = "user_" + Math.random().toString(36).substring(2,10);
+  localStorage.setItem("user_id", user_id);
+}
+
+let selectedType="text";
+
+function toggleOptions(){
+  let o=document.getElementById("options");
+  o.style.display=o.style.display==="block"?"none":"block";
+}
+
+function selectType(type){
+  selectedType=type;
+  document.getElementById("options").style.display="none";
+
+  let text="📝 نص";
+  if(type==="link") text="🔗 رابط";
+  if(type==="pdf") text="📄 PDF";
+
+  document.getElementById("typeText").innerText=text;
+}
+
+function speak(text){
+  let utter = new SpeechSynthesisUtterance(text);
+  utter.lang="en-US";
+  speechSynthesis.speak(utter);
+}
+
+/* ⭐ حفظ + تغيير الشكل */
+function saveWord(el,en,ar){
+
+  let saved = JSON.parse(localStorage.getItem("words") || "[]");
+  saved.push({en,ar});
+  localStorage.setItem("words",JSON.stringify(saved));
+
+  el.innerText = "✅";
+  el.style.background = "#22c55e";
+
+}
+
+/* عرض الكلمات */
 function renderWords(words){
   let html="";
-  for(let k in words){
-    words[k].forEach(w=>{
+  for(let section in words){
+    html+=`<div class="section-title">${section}</div>`;
+    words[section].forEach(w=>{
       html+=`
         <div class="word">
           <div class="ar">${w.ar}</div>
+
           <div class="actions">
-            <span class="icon" onclick="speak('${w.en}')">🔊</span>
+            <div class="icon" onclick="speak('${w.en}')">🔊</div>
+            <div class="icon" onclick="saveWord(this,'${w.en}','${w.ar}')">⭐</div>
           </div>
+
           <div class="en">${w.en}</div>
         </div>
       `;
@@ -141,52 +230,18 @@ function renderWords(words){
   return html;
 }
 
-/* فيديو */
-function renderVideo(data){
-  let html = `
-    <iframe src="https://www.youtube.com/embed/${data.videoID}" allowfullscreen></iframe>
-  `;
-
-  if(data.verbs){
-    data.verbs.forEach(w=>{
-      html+=`
-        <div class="word">
-          <div class="ar">${w.ar}</div>
-          <div class="actions">
-            <span class="icon" onclick="speak('${w.en}')">🔊</span>
-          </div>
-          <div class="en">${w.en}</div>
-        </div>
-        <div>${w.example||""}</div>
-      `;
-    });
-  }
-
-  return html;
-}
-
-/* PDF */
-function renderPDF(data){
-  return renderWords(data);
-}
-
-/* 🚀 */
+/* 🚀 إنشاء الدرس */
 async function generateLesson(){
 
-  if(isLoading) return;
-
-  let input = document.getElementById("textInput").value;
-  let type = document.getElementById("type").value;
+  let input=document.getElementById("textInput").value;
 
   if(!input){
     alert("اكتب شي");
     return;
   }
 
-  isLoading = true;
-
   document.getElementById("lesson").innerHTML =
-    `<div class="loading">⏳ جاري التحميل...</div>`;
+    `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;
 
   try{
 
@@ -195,55 +250,41 @@ async function generateLesson(){
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({
         inputPart: input,
-        type: type,
-        user_id: "user_test"
+        type: selectedType,
+        user_id: user_id
       })
     });
 
-    if(!res.ok){
-      throw new Error("Server error");
-    }
-
     let data = await res.json();
 
-    /* TEXT */
-    if(type==="text"){
-      document.getElementById("lesson").innerHTML=`
-        <div class="card">
-          <div class="story-en">${data.story||""}</div>
-          <hr>
-          <div class="story-ar">${data.translation||""}</div>
-          ${data.words ? renderWords(data.words) : ""}
-        </div>
-      `;
-    }
+    /* 🔥 تفريغ الحقل بعد الإرسال */
+    document.getElementById("textInput").value = "";
 
-    /* VIDEO */
-    else if(type==="link"){
-      document.getElementById("lesson").innerHTML=`
-        <div class="card">
-          ${renderVideo(data)}
-        </div>
-      `;
-    }
+    document.getElementById("lesson").innerHTML=`
+      <div class="card">
 
-    /* PDF */
-    else if(type==="pdf"){
-      document.getElementById("lesson").innerHTML=`
-        <div class="card">
-          ${renderPDF(data)}
+        <div class="section-title">📖 القصة</div>
+        <div class="story story-en">
+          ${(data.story || "").replace(/\n/g,"<br>")}
         </div>
-      `;
-    }
 
-    document.getElementById("textInput").value="";
+        <hr>
+
+        <div class="section-title">🌍 الترجمة</div>
+        <div class="story story-ar">
+          ${(data.translation || "⚠️ لا توجد ترجمة")}
+        </div>
+
+        ${data.words ? renderWords(data.words) : ""}
+
+      </div>
+    `;
 
   }catch(e){
     document.getElementById("lesson").innerHTML =
-      `<div style="color:red;">❌ خطأ: تأكد من webhook</div>`;
+      `<div class="loading" style="color:red;">❌ خطأ</div>`;
   }
 
-  isLoading = false;
 }
 
 </script>

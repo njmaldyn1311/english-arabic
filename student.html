@@ -42,10 +42,18 @@ body{
   border-radius:10px;
   background:#334155;
   color:white;
+  cursor:pointer;
 }
 
 .correct{background:#22c55e;}
 .wrong{background:#ef4444;}
+
+.empty{
+  text-align:center;
+  font-size:18px;
+  padding:20px;
+  color:#94a3b8;
+}
 
 </style>
 </head>
@@ -74,39 +82,43 @@ let words = [];
 let questions = [];
 let current = 0;
 
-/* 📅 اليوم */
-function isToday(date){
-  let d = new Date(date);
-  let now = new Date();
-  return d.toDateString() === now.toDateString();
-}
-
-/* 🚀 تحميل */
+/* تحميل */
 async function load(){
 
-  let { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("words")
     .select("*")
     .eq("user_id", user_id);
+
+  if(error){
+    document.getElementById("quiz").innerHTML = "❌ خطأ في الاتصال";
+    return;
+  }
 
   words = data || [];
 
   buildReview();
 }
 
-/* 🧠 بناء المراجعة */
+/* بناء المراجعة */
 function buildReview(){
 
-  let today = words.filter(w => isToday(w.created_at));
-  let old = words.filter(w => !isToday(w.created_at));
+  let now = new Date();
 
-  // خذ من اليوم أكثر
-  let mix = [
-    ...today.sort(()=>0.5-Math.random()).slice(0,5),
-    ...old.sort(()=>0.5-Math.random()).slice(0,3)
-  ];
+  let ready = words.filter(w=>{
+    if(!w.next_review) return true;
+    return new Date(w.next_review) <= now;
+  });
 
-  questions = mix.sort(()=>0.5-Math.random());
+  if(ready.length === 0){
+    document.getElementById("quiz").innerHTML =
+      `<div class="empty">🎉 لا توجد مراجعة الآن</div>`;
+    return;
+  }
+
+  questions = ready.sort(()=>0.5-Math.random()).slice(0,5);
+
+  current = 0;
 
   show();
 }
@@ -116,7 +128,7 @@ function show(){
 
   if(current >= questions.length){
     document.getElementById("quiz").innerHTML =
-      "🎉 خلصت المراجعة اليوم!";
+      `<div class="empty">🎉 خلصت مراجعتك</div>`;
     return;
   }
 
@@ -133,7 +145,7 @@ function show(){
   options.forEach(o=>{
     html += `
       <button class="option"
-      onclick="check(this,'${q.ar}','${o.ar}')">
+      onclick='check(this,"${q.ar}","${o.ar}", ${JSON.stringify(q)})'>
       ${o.ar}
       </button>
     `;
@@ -143,22 +155,43 @@ function show(){
 }
 
 /* تحقق */
-function check(btn, correct, ans){
+async function check(btn, correct, ans, word){
 
   let buttons = document.querySelectorAll(".option");
-
   buttons.forEach(b=>b.disabled=true);
 
   if(ans === correct){
+
     btn.classList.add("correct");
+
+    let review = (word.review_count || 0) + 1;
+
+    let next = new Date();
+    next.setHours(next.getHours() + review * 2);
+
+    await supabaseClient
+      .from("words")
+      .update({
+        review_count: review,
+        next_review: next
+      })
+      .eq("id", word.id);
+
   }else{
+
     btn.classList.add("wrong");
 
-    buttons.forEach(b=>{
-      if(b.innerText === correct){
-        b.classList.add("correct");
-      }
-    });
+    let next = new Date();
+    next.setMinutes(next.getMinutes() + 1);
+
+    await supabaseClient
+      .from("words")
+      .update({
+        wrong_count: (word.wrong_count || 0) + 1,
+        next_review: next
+      })
+      .eq("id", word.id);
+
   }
 
   setTimeout(()=>{
@@ -172,6 +205,7 @@ function goHome(){
   window.location.href="index.html";
 }
 
+/* تشغيل */
 load();
 
 </script>

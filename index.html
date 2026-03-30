@@ -101,7 +101,6 @@ button {
 <div class="container">
 
   <div class="header">
-    <!-- لو ما عندك صورة -->
     <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="profile-img">
   </div>
 
@@ -116,7 +115,6 @@ button {
       👨‍🎓 أكثر من 120 طالب
     </div>
 
-    <!-- ⭐ أهم إضافة -->
     <div class="card">
       <span>📚 الفصل الذكي (دروسك)</span>
       <button onclick="goClass()">ابدأ</button>
@@ -137,6 +135,12 @@ button {
       <button onclick="goSearch()">ابدأ</button>
     </div>
 
+    <!-- 🔥 الكرت الجديد -->
+    <div class="card">
+      <span>👤 حسابي (مراجعة + اختبار)</span>
+      <button onclick="goProfile()">فتح</button>
+    </div>
+
     <button class="logout" onclick="logout()">تسجيل خروج</button>
 
   </div>
@@ -144,7 +148,6 @@ button {
 
 <script>
 
-//// 🔐 حماية الصفحة
 const user = localStorage.getItem("user");
 const userId = localStorage.getItem("user_id");
 
@@ -154,7 +157,6 @@ if(!userId){
 
 document.getElementById("username").innerText = "👤 " + user;
 
-//// 👨‍🎓 عداد الطلاب
 let count = localStorage.getItem("studentsCount");
 
 if (!count) {
@@ -171,7 +173,6 @@ function updateStudents() {
 updateStudents();
 setInterval(updateStudents, 8000);
 
-//// 🔗 التنقل
 function goClass() {
   window.location.href = "myclass.html";
 }
@@ -188,7 +189,11 @@ function goSearch() {
   window.location.href = "search.html";
 }
 
-//// 🚪 تسجيل خروج
+/* 🔥 الجديد */
+function goProfile(){
+  window.location.href = "student.html";
+}
+
 function logout(){
   localStorage.clear();
   window.location.href = "login.html";

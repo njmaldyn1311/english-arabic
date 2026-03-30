@@ -69,19 +69,20 @@ body{
 .loading{text-align:center;margin-top:20px;}
 
 .story{
-  line-height:1.8;
+  line-height:2;
+  font-size:17px;
   margin-bottom:15px;
 }
 
-/* 🔥 الجديد */
+/* 🔥 الاتجاه + توزيع النص */
 .story-en {
   direction: ltr;
-  text-align: left;
+  text-align: justify;
 }
 
 .story-ar {
   direction: rtl;
-  text-align: right;
+  text-align: justify;
 }
 
 .section-title{
@@ -147,14 +148,13 @@ body{
 
 <script>
 
-/* 👤 عرض الاسم الأول والثاني فقط */
+/* 👤 اسم مختصر */
 const fullName = localStorage.getItem("user") || "";
 const nameParts = fullName.split(" ");
 const shortName = nameParts.slice(0,2).join(" ");
-
 document.getElementById("username").innerText = "👤 " + shortName;
 
-/* 🔗 حسابي */
+/* 🔗 */
 function goProfile(){
   window.location.href = "student.html";
 }
@@ -184,14 +184,14 @@ function selectType(type){
   document.getElementById("typeText").innerText=text;
 }
 
-/* 🔊 نطق */
+/* 🔊 */
 function speak(text){
   let utter = new SpeechSynthesisUtterance(text);
   utter.lang="en-US";
   speechSynthesis.speak(utter);
 }
 
-/* ⭐ حفظ */
+/* ⭐ */
 function saveWord(en,ar){
   let saved = JSON.parse(localStorage.getItem("words") || "[]");
   saved.push({en,ar});
@@ -199,15 +199,11 @@ function saveWord(en,ar){
   alert("تم الحفظ ⭐");
 }
 
-/* عرض الكلمات */
+/* كلمات */
 function renderWords(words){
-
   let html="";
-
   for(let section in words){
-
     html+=`<div class="section-title">${section}</div>`;
-
     words[section].forEach(w=>{
       html+=`
         <div class="word">
@@ -220,9 +216,7 @@ function renderWords(words){
         </div>
       `;
     });
-
   }
-
   return html;
 }
 
@@ -235,8 +229,6 @@ async function generateLesson(){
     return;
   }
 
-  document.getElementById("textInput").value="";
-
   document.getElementById("lesson").innerHTML=
     `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;
 
@@ -244,9 +236,9 @@ async function generateLesson(){
 
     let res=await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/lesson",{
       method:"POST",
-      headers:{"Content-Type":"application/json"},
+      headers:{ "Content-Type":"application/json" },
       body:JSON.stringify({
-        inputPart:input,
+        input: input, // 🔥 FIX المشكلة هنا
         type:selectedType,
         user_id:user_id
       })
@@ -257,12 +249,14 @@ async function generateLesson(){
     document.getElementById("lesson").innerHTML=`
       <div class="card">
 
+        <div class="section-title">📖 القصة</div>
         <div class="story story-en">
           ${(data.story || "").replace(/\n/g,"<br>")}
         </div>
 
         <hr>
 
+        <div class="section-title">🌍 الترجمة</div>
         <div class="story story-ar">
           ${(data.translation || "⚠️ لا توجد ترجمة")}
         </div>

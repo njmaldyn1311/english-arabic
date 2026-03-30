@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>حساب الطالب</title>
+<title>حسابي</title>
 
 <style>
+
+*{box-sizing:border-box;}
 
 body{
   margin:0;
@@ -14,21 +16,42 @@ body{
   color:white;
 }
 
-.top{display:flex;justify-content:space-between;padding:15px;}
-.user{color:#38bdf8;}
-.points{color:#FFD700;}
-.review{background:#6366f1;padding:10px;border-radius:12px;cursor:pointer;}
-
-.title{text-align:center;}
-.subtitle{text-align:center;color:#94a3b8;}
-
-.card{
-  background:#1e293b;
-  margin:20px;
-  padding:20px;
-  border-radius:20px;
+/* 🔝 الأعلى */
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px;
+  flex-wrap:wrap;
+  gap:10px;
 }
 
+.user{color:#38bdf8;font-size:14px;}
+.points{color:#FFD700;font-size:14px;}
+
+.review{
+  background:#6366f1;
+  padding:8px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:14px;
+}
+
+/* 📦 كروت */
+.card{
+  background:#1e293b;
+  margin:15px;
+  padding:18px;
+  border-radius:18px;
+}
+
+/* 📱 استجابة */
+@media (max-width:480px){
+  .card{margin:12px;}
+  .top{padding:10px;}
+}
+
+/* ⭐ الكلمات */
 .word{
   display:flex;
   justify-content:space-between;
@@ -39,17 +62,22 @@ body{
 .en{color:#38bdf8;}
 .ar{color:#f87171;}
 
+/* 📝 الملاحظات */
 textarea{
   width:100%;
   padding:10px;
   border-radius:10px;
   border:none;
   margin-top:10px;
+  resize:none;
+  height:80px;
+  font-family:"Cairo";
 }
 
+/* زر */
 button{
   margin-top:10px;
-  padding:10px;
+  padding:10px 15px;
   border:none;
   border-radius:10px;
   background:#22c55e;
@@ -57,8 +85,12 @@ button{
   cursor:pointer;
 }
 
-.quiz{
-  margin-top:10px;
+/* 🧠 اختبار */
+.quiz button{
+  display:block;
+  width:100%;
+  margin-top:6px;
+  background:#334155;
 }
 
 </style>
@@ -72,44 +104,47 @@ button{
   <div class="review" onclick="goHome()">🏠 الرئيسية</div>
 </div>
 
-<h2 class="title">👤 حساب الطالب</h2>
-<p class="subtitle">📊 تعلمك وتقدمك</p>
-
-<!-- الكلمات -->
+<!-- ⭐ الكلمات -->
 <div class="card">
   <h3>⭐ الكلمات المحفوظة</h3>
   <div id="words"></div>
 </div>
 
-<!-- الملاحظات -->
+<!-- 📝 الملاحظات -->
 <div class="card">
   <h3>📝 ملاحظاتي</h3>
-  <textarea id="notes" placeholder="اكتب ملاحظاتك هنا..."></textarea>
-  <button onclick="saveNotes()">💾 حفظ</button>
+
+  <div id="oldNotes" style="color:#cbd5f5;margin-bottom:10px;"></div>
+
+  <textarea id="noteInput" placeholder="اكتب ملاحظة جديدة..."></textarea>
+
+  <button onclick="addNote()">➕ إضافة</button>
 </div>
 
-<!-- الاختبار -->
+<!-- 🧠 اختبار -->
 <div class="card">
   <h3>🧠 اختبار سريع</h3>
   <div id="quiz"></div>
 </div>
 
-</body>
-
 <script>
 
-// اسم المستخدم
-const user = localStorage.getItem("user") || "طالب";
-document.getElementById("username").innerText = "👤 " + user;
+/* 👤 الاسم (أول + ثاني فقط) */
+let fullName = localStorage.getItem("user") || "طالب";
 
-// تحميل الكلمات
-let saved = JSON.parse(localStorage.getItem("words") || "[]");
-document.getElementById("count").innerText = saved.length;
+let parts = fullName.split(" ");
+let shortName = parts[0] + (parts[1] ? " " + parts[1] : "");
 
-// عرض الكلمات
-function loadWords(){
+document.getElementById("username").innerText = "👤 " + shortName;
+
+
+/* ⭐ الكلمات */
+let words = JSON.parse(localStorage.getItem("words") || "[]");
+document.getElementById("count").innerText = words.length;
+
+function renderWords(){
   let html="";
-  saved.forEach(w=>{
+  words.forEach(w=>{
     html+=`
       <div class="word">
         <div class="ar">${w.ar}</div>
@@ -119,43 +154,54 @@ function loadWords(){
   });
   document.getElementById("words").innerHTML = html || "لا توجد كلمات";
 }
-loadWords();
+renderWords();
 
 
-// ==================
-// 📝 الملاحظات
-// ==================
-document.getElementById("notes").value =
-  localStorage.getItem("notes") || "";
+/* 📝 الملاحظات */
+function loadNotes(){
+  let notes = JSON.parse(localStorage.getItem("notes") || "[]");
 
-function saveNotes(){
-  localStorage.setItem("notes",
-    document.getElementById("notes").value);
-  alert("تم حفظ الملاحظات ✅");
+  let html="";
+  notes.forEach(n=>{
+    html+=`<div>• ${n}</div>`;
+  });
+
+  document.getElementById("oldNotes").innerHTML =
+    html || "لا توجد ملاحظات";
 }
 
+function addNote(){
+  let input = document.getElementById("noteInput").value.trim();
+  if(!input) return;
 
-// ==================
-// 🧠 الاختبار
-// ==================
+  let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+  notes.push(input);
+
+  localStorage.setItem("notes", JSON.stringify(notes));
+
+  document.getElementById("noteInput").value = "";
+
+  loadNotes();
+}
+
+loadNotes();
+
+
+/* 🧠 اختبار */
 function generateQuiz(){
 
-  if(saved.length < 3){
-    document.getElementById("quiz").innerHTML =
-      "أضف كلمات أولاً ⭐";
+  if(words.length < 3){
+    document.getElementById("quiz").innerHTML = "أضف كلمات أولاً ⭐";
     return;
   }
 
-  let random = saved.sort(()=>0.5-Math.random()).slice(0,3);
+  let random = words.sort(()=>0.5-Math.random()).slice(0,3);
 
   let html="";
 
-  random.forEach((q,i)=>{
+  random.forEach(q=>{
 
-    let options = saved
-      .sort(()=>0.5-Math.random())
-      .slice(0,3);
-
+    let options = words.sort(()=>0.5-Math.random()).slice(0,3);
     options.push(q);
     options = options.sort(()=>0.5-Math.random());
 
@@ -188,11 +234,12 @@ function checkAnswer(correct, answer){
 generateQuiz();
 
 
-// ==================
+/* 🔙 رجوع */
 function goHome(){
   window.location.href="index.html";
 }
 
 </script>
 
+</body>
 </html>

@@ -74,14 +74,14 @@ body{
   margin-bottom:15px;
 }
 
-.story-en {
-  direction: ltr;
-  text-align: justify;
+.story-en{
+  direction:ltr;
+  text-align:justify;
 }
 
-.story-ar {
-  direction: rtl;
-  text-align: justify;
+.story-ar{
+  direction:rtl;
+  text-align:justify;
 }
 
 .section-title{
@@ -100,18 +100,16 @@ body{
 
 .en{
   color:#38bdf8;
-  font-size:16px;
 }
 
 .ar{
-  color:#facc15; /* ⭐ أصفر بدل الأحمر */
-  font-size:16px;
+  color:#facc15;
 }
 
-/* 🔥 تحسين الأزرار */
+/* تحسين الأزرار */
 .actions{
   display:flex;
-  gap:15px; /* مسافة واضحة */
+  gap:15px;
 }
 
 .icon{
@@ -120,15 +118,11 @@ body{
   padding:10px;
   border-radius:10px;
   font-size:18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
   transition:0.2s;
 }
 
 .icon:hover{
   transform:scale(1.1);
-  background:#1e293b;
 }
 
 </style>
@@ -168,15 +162,18 @@ body{
 
 <script>
 
+/* اسم المستخدم (الأول + الثاني) */
 const fullName = localStorage.getItem("user") || "";
 const nameParts = fullName.split(" ");
 const shortName = nameParts.slice(0,2).join(" ");
 document.getElementById("username").innerText = "👤 " + shortName;
 
+/* الانتقال للحساب */
 function goProfile(){
   window.location.href = "student.html";
 }
 
+/* user id */
 let user_id = localStorage.getItem("user_id");
 if(!user_id){
   user_id = "user_" + Math.random().toString(36).substring(2,10);
@@ -201,12 +198,14 @@ function selectType(type){
   document.getElementById("typeText").innerText=text;
 }
 
+/* نطق */
 function speak(text){
   let utter = new SpeechSynthesisUtterance(text);
   utter.lang="en-US";
   speechSynthesis.speak(utter);
 }
 
+/* حفظ */
 function saveWord(en,ar){
   let saved = JSON.parse(localStorage.getItem("words") || "[]");
   saved.push({en,ar});
@@ -214,6 +213,7 @@ function saveWord(en,ar){
   alert("تم الحفظ ⭐");
 }
 
+/* عرض الكلمات */
 function renderWords(words){
   let html="";
   for(let section in words){
@@ -236,6 +236,7 @@ function renderWords(words){
   return html;
 }
 
+/* إنشاء الدرس */
 async function generateLesson(){
 
   let input=document.getElementById("textInput").value;
@@ -245,22 +246,22 @@ async function generateLesson(){
     return;
   }
 
-  document.getElementById("lesson").innerHTML=
+  document.getElementById("lesson").innerHTML =
     `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;
 
   try{
 
-    let res=await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/lesson",{
+    let res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/lesson",{
       method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({
-        input: input,
-        type:selectedType,
-        user_id:user_id
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        inputPart: input,   /* ✅ رجعناه زي ما كان */
+        type: selectedType,
+        user_id: user_id
       })
     });
 
-    let data=await res.json();
+    let data = await res.json();
 
     document.getElementById("lesson").innerHTML=`
       <div class="card">
@@ -283,7 +284,7 @@ async function generateLesson(){
     `;
 
   }catch(e){
-    document.getElementById("lesson").innerHTML=
+    document.getElementById("lesson").innerHTML =
       `<div class="loading" style="color:red;">❌ خطأ</div>`;
   }
 

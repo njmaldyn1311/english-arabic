@@ -18,36 +18,79 @@ body{
   text-align:center;
 }
 
-.card{
-  background:#1e293b;
-  margin:20px;
-  padding:20px;
-  border-radius:20px;
+/* 🔥 العنوان */
+h2{
+  margin-top:20px;
 }
 
-.word{font-size:26px;margin:20px;}
-
-input{
+/* 📦 الكرت */
+.card{
+  background:#1e293b;
+  margin:20px auto;
+  padding:25px;
+  border-radius:20px;
   width:90%;
+  max-width:400px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+/* 🧠 السؤال */
+.word{
+  font-size:24px;
+  margin:20px 0;
+}
+
+/* 🔘 الخيارات */
+.option{
+  background:#334155;
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  margin:8px 0;
+  color:white;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.option:hover{
+  background:#475569;
+}
+
+/* 🟢 صح */
+.correct{
+  background:#22c55e !important;
+}
+
+/* 🔴 خطأ */
+.wrong{
+  background:#ef4444 !important;
+}
+
+/* 📝 إدخال */
+input{
+  width:100%;
   padding:12px;
   border-radius:10px;
   border:none;
   margin-top:10px;
+  font-size:16px;
 }
 
+/* 🔘 زر */
 button{
-  padding:12px;
+  padding:10px 20px;
   border:none;
   border-radius:10px;
-  margin:5px;
+  margin-top:10px;
   cursor:pointer;
 }
 
-.option{
-  background:#334155;
-  width:90%;
-  display:block;
-  margin:8px auto;
+/* 🔊 زر الصوت */
+.speaker{
+  font-size:24px;
+  cursor:pointer;
+  margin-top:10px;
 }
 
 </style>
@@ -61,6 +104,8 @@ button{
 
   <div id="question" class="word">⏳ جاري التحميل...</div>
 
+  <div id="speaker" class="speaker" onclick="playSound()">🔊</div>
+
   <div id="answers"></div>
 
   <input id="inputAnswer" placeholder="اكتب الإجابة">
@@ -71,66 +116,53 @@ button{
 
 <script>
 
-// 🔗 بيانات Supabase
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-// ✅ الحل هنا (اسم مختلف)
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let words = [];
 let current = 0;
+let currentWord = null;
 let currentType = "";
 
-// 🚀 تحميل الكلمات
+// تحميل
 async function load(){
 
-  try{
-    let { data, error } = await client
-      .from("words")
-      .select("*");
+  let { data } = await client.from("words").select("*");
 
-    if(error){
-      document.getElementById("question").innerText = "❌ خطأ: " + error.message;
-      return;
-    }
-
-    if(!data || data.length === 0){
-      document.getElementById("question").innerText = "⚠️ لا توجد كلمات";
-      return;
-    }
-
-    words = data.sort(()=>0.5 - Math.random());
-
-    showQuestion();
-
-  }catch(e){
-    document.getElementById("question").innerText = "❌ مشكلة في الاتصال";
-  }
+  words = data;
+  next();
 }
 
-// 🎯 عرض السؤال
-function showQuestion(){
+// عرض سؤال
+function next(){
 
-  let w = words[current];
+  if(current >= words.length){
+    document.getElementById("question").innerText = "🎉 انتهى الاختبار";
+    return;
+  }
 
-  let en = w.en || w.word;
-  let ar = w.ar || w.arabic;
+  currentWord = words[current];
 
-  let types = ["mcq","write_ar_en","mcq_ar_en","listen"];
+  let en = currentWord.en || currentWord.word;
+  let ar = currentWord.ar || currentWord.arabic;
+
+  let types = ["mcq","write","listen"];
   currentType = types[Math.floor(Math.random()*types.length)];
 
   document.getElementById("answers").innerHTML = "";
   document.getElementById("inputAnswer").value = "";
 
-  // 🎯 اختيار (EN → AR)
+  // 🎯 اختيار
   if(currentType === "mcq"){
 
+    document.getElementById("speaker").style.display="none";
     document.getElementById("question").innerText = "ما معنى: " + en;
 
-    let options = [...words].sort(()=>0.5 - Math.random()).slice(0,3);
-    options.push(w);
-    options = options.sort(()=>0.5 - Math.random());
+    let options = shuffle([...words]).slice(0,3);
+    options.push(currentWord);
+    options = shuffle(options);
 
     options.forEach(opt=>{
       let btn = document.createElement("button");
@@ -138,7 +170,12 @@ function showQuestion(){
       btn.innerText = opt.ar || opt.arabic;
 
       btn.onclick = ()=>{
-        checkAnswer((opt.ar || opt.arabic), ar);
+        if(btn.innerText === ar){
+          btn.classList.add("correct");
+        }else{
+          btn.classList.add("wrong");
+        }
+        setTimeout(()=>{ current++; next(); },1000);
       };
 
       document.getElementById("answers").appendChild(btn);
@@ -147,102 +184,64 @@ function showQuestion(){
     hideInput();
   }
 
-  // ✍️ عربي → إنجليزي
-  if(currentType === "write_ar_en"){
+  // ✍️ كتابة
+  if(currentType === "write"){
+
+    document.getElementById("speaker").style.display="none";
     document.getElementById("question").innerText = "اكتب بالإنجليزي: " + ar;
     showInput();
   }
 
-  // 🎯 اختيار عربي → إنجليزي
-  if(currentType === "mcq_ar_en"){
-
-    document.getElementById("question").innerText = "ما ترجمة: " + ar;
-
-    let options = [...words].sort(()=>0.5 - Math.random()).slice(0,3);
-    options.push(w);
-    options = options.sort(()=>0.5 - Math.random());
-
-    options.forEach(opt=>{
-      let btn = document.createElement("button");
-      btn.className = "option";
-      btn.innerText = opt.en || opt.word;
-
-      btn.onclick = ()=>{
-        checkAnswer((opt.en || opt.word), en);
-      };
-
-      document.getElementById("answers").appendChild(btn);
-    });
-
-    hideInput();
-  }
-
   // 🔊 استماع
   if(currentType === "listen"){
-    document.getElementById("question").innerText = "🎧 اكتب الكلمة التي تسمعها";
+
+    document.getElementById("speaker").style.display="block";
+    document.getElementById("question").innerText = "🎧 اضغط الصوت واكتب الكلمة";
     speak(en);
     showInput();
   }
 }
 
-// 🔊 صوت
-function speak(text){
-  let u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  speechSynthesis.speak(u);
-}
-
-// ✅ تحقق اختيار
-function checkAnswer(selected, correct){
-
-  if(selected === correct){
-    alert("✅ صح");
-  }else{
-    alert("❌ خطأ\nالإجابة: " + correct);
-  }
-
-  next();
-}
-
-// ✅ تحقق كتابة
+// تحقق كتابة
 function checkInput(){
 
-  let w = words[current];
-  let en = w.en || w.word;
-
+  let en = currentWord.en || currentWord.word;
   let val = document.getElementById("inputAnswer").value.trim().toLowerCase();
 
   if(val === en.toLowerCase()){
     alert("✅ صح");
   }else{
-    alert("❌ خطأ\nالإجابة: " + en);
+    alert("❌ خطأ\n" + en);
   }
 
+  current++;
   next();
 }
 
-// التالي
-function next(){
-
-  current++;
-
-  if(current >= words.length){
-    document.getElementById("question").innerText = "🎉 انتهى الاختبار";
-    document.getElementById("answers").innerHTML = "";
-    document.getElementById("inputAnswer").style.display = "none";
-    return;
-  }
-
-  showQuestion();
+// 🔊 تشغيل الصوت
+function speak(text){
+  window.currentAudio = new SpeechSynthesisUtterance(text);
+  currentAudio.lang = "en-US";
+  speechSynthesis.speak(currentAudio);
 }
 
-// إظهار / إخفاء
+function playSound(){
+  let en = currentWord.en || currentWord.word;
+  speak(en);
+}
+
+// أدوات
 function showInput(){
-  document.getElementById("inputAnswer").style.display = "block";
+  document.getElementById("inputAnswer").style.display="block";
 }
 
 function hideInput(){
-  document.getElementById("inputAnswer").style.display = "none";
+  document.getElementById("inputAnswer").style.display="none";
+}
+
+// منع تكرار
+function shuffle(arr){
+  return arr.sort(()=>0.5 - Math.random());
 }
 
 load();

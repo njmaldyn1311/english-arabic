@@ -1,61 +1,66 @@
-<!DOCTYPE html>
-<html lang="ar">
+<!DOCTYPE html><html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تحليل PDF</title>
-
-<style>
+<title>تحليل PDF</title><style>
 body {
   font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
   margin: 0;
-  padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
   display: flex;
+  align-items: center;
   justify-content: center;
 }
 
 .container {
   width: 100%;
-  max-width: 500px;
+  padding: 15px;
+  box-sizing: border-box;
 }
 
 .box {
-  background: white;
-  padding: 25px;
+  background: #fff;
+  padding: 20px;
   border-radius: 20px;
-  width: 98%;
+  max-width: 420px;
+  margin: auto;
   text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+h2 {
   margin-bottom: 20px;
 }
 
-button {
-  background: #00c6ff;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 10px;
-  cursor: pointer;
+input[type="file"] {
   width: 100%;
+  margin-bottom: 15px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #2a5298;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 button:hover {
-  background: #009edb;
+  background: #1e3c72;
 }
 
-.word {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
+#status {
+  margin-top: 10px;
+  font-size: 14px;
 }
-
-.en { text-align: left; }
-.ar { text-align: right; }
 
 .progress {
-  height: 8px;
+  height: 6px;
   background: #eee;
   border-radius: 10px;
   margin-top: 10px;
@@ -65,36 +70,49 @@ button:hover {
 .bar {
   height: 100%;
   width: 0%;
-  background: #00c6ff;
+  background: #2a5298;
   transition: 0.3s;
 }
-</style>
 
-</head>
+#result {
+  margin-top: 20px;
+}
 
-<body>
+.word {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-<div class="container">
+.en { text-align: left; }
+.ar { text-align: right; }
 
-  <div class="box">
-    <h2>📄 تحليل PDF</h2>
+/* موبايل */
+@media (max-width: 480px) {
+  .word {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-    <input type="file" id="file" accept="application/pdf"><br><br>
+  .en, .ar {
+    width: 100%;
+    text-align: right;
+  }
+}
+</style></head><body><div class="container">  <div class="box">
+    <h2>📄 تحليل PDF</h2><input type="file" id="file" accept="application/pdf">
 
-    <button onclick="upload()">🚀 تحليل</button>
+<button onclick="upload()">🚀 تحليل</button>
 
-    <div class="progress">
-      <div id="bar" class="bar"></div>
-    </div>
-
-    <p id="status"></p>
-  </div>
-
-  <div id="result"></div>
-
+<div class="progress">
+  <div id="bar" class="bar"></div>
 </div>
 
-<script>
+<p id="status"></p>
+
+  </div>  <div id="result"></div></div><script>
 
 function setProgress(v){
   document.getElementById("bar").style.width = v + "%";
@@ -110,13 +128,13 @@ async function upload() {
     return;
   }
 
-  // 🔥 تحقق النوع
+  // تحقق النوع
   if (file.type !== "application/pdf") {
     status.innerText = "❌ فقط PDF مسموح";
     return;
   }
 
-  // 🔥 تحقق الحجم (5MB)
+  // حد الحجم 5MB
   const maxSize = 5 * 1024 * 1024;
 
   if (file.size > maxSize) {
@@ -129,21 +147,17 @@ async function upload() {
   }
 
   result.innerHTML = "";
-  setProgress(10);
+  setProgress(20);
 
   const formData = new FormData();
   formData.append("file", file);
 
   try {
-    status.innerText = "⏳ جاري الإرسال...";
-    setProgress(30);
+    status.innerText = "⏳ جاري التحليل...";
+    setProgress(40);
 
     const controller = new AbortController();
-
-    // ⏱️ تايم أوت
-    const timeout = setTimeout(() => {
-      controller.abort();
-    }, 20000);
+    const timeout = setTimeout(() => controller.abort(), 20000);
 
     const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
       method: "POST",
@@ -152,7 +166,6 @@ async function upload() {
     });
 
     clearTimeout(timeout);
-
     setProgress(70);
 
     if (!res.ok) throw new Error("Server");
@@ -182,7 +195,7 @@ async function upload() {
       ${data.nouns ? `<div class="box"><h3>📌 الأسماء</h3>${render(data.nouns)}</div>` : ""}
       ${data.adjectives ? `<div class="box"><h3>📌 الصفات</h3>${render(data.adjectives)}</div>` : ""}
       ${data.idioms ? `<div class="box"><h3>📌 العبارات</h3>${render(data.idioms)}</div>` : ""}
-      ${data.phrasal_verbs || data.phrasalVerbs
+      ${(data.phrasal_verbs || data.phrasalVerbs)
         ? `<div class="box"><h3>📌 الأفعال المركبة</h3>${render(data.phrasal_verbs || data.phrasalVerbs)}</div>`
         : ""
       }
@@ -192,7 +205,7 @@ async function upload() {
     console.error(err);
 
     if (err.name === "AbortError") {
-      status.innerText = "⏱️ انتهى الوقت (الملف ثقيل)";
+      status.innerText = "⏱️ انتهى الوقت (الملف كبير)";
     } else {
       status.innerText = "❌ فشل الاتصال";
     }
@@ -202,12 +215,10 @@ async function upload() {
 }
 
 function speak(word){
-  let u = new SpeechSynthesisUtterance(word);
+  const u = new SpeechSynthesisUtterance(word);
   u.lang = "en-US";
   speechSynthesis.speak(u);
 }
 
-</script>
-
-</body>
+</script></body>
 </html>

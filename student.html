@@ -4,222 +4,87 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>🧠 اختبار تجريبي</title>
+<title>🔌 اختبار Supabase</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <style>
-
 body{
-  margin:0;
   font-family:"Cairo", sans-serif;
-  background:linear-gradient(135deg,#0f172a,#1e293b);
+  background:#0f172a;
   color:white;
   text-align:center;
+  padding:20px;
 }
-
 .card{
   background:#1e293b;
-  margin:20px;
   padding:20px;
-  border-radius:20px;
+  border-radius:15px;
+  margin-top:20px;
 }
-
-.word{font-size:26px;margin:20px;}
-
-input{
-  width:90%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  margin-top:10px;
+.word{
+  margin:10px;
+  padding:10px;
+  border-bottom:1px solid #334155;
 }
-
-button{
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  margin:5px;
-  cursor:pointer;
-}
-
-.option{
-  background:#334155;
-  width:90%;
-  display:block;
-  margin:8px auto;
-}
-
 </style>
+
 </head>
 
 <body>
 
-<h2>🧠 اختبار تجريبي</h2>
+<h2>🔌 اختبار الاتصال مع Supabase</h2>
 
-<div class="card">
+<div class="card" id="status">⏳ جاري الاتصال...</div>
 
-  <div id="question" class="word">...</div>
-
-  <div id="answers"></div>
-
-  <input id="inputAnswer" placeholder="اكتب الإجابة">
-
-  <button onclick="checkInput()">تحقق</button>
-
-</div>
+<div class="card" id="data"></div>
 
 <script>
 
-// 🔥 بيانات تجريبية
-let words = [
-  { word:"apple", arabic:"تفاحة" },
-  { word:"book", arabic:"كتاب" },
-  { word:"car", arabic:"سيارة" },
-  { word:"house", arabic:"منزل" }
-];
+// 🔴 حط بياناتك هنا
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "PUT_YOUR_KEY_HERE";
 
-let current = 0;
-let currentType = "";
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// عرض السؤال
-function showQuestion(){
+// اختبار
+async function test(){
 
-  let w = words[current];
+  let { data, error } = await supabase
+    .from("words")
+    .select("*");
 
-  let en = w.word;
-  let ar = w.arabic;
-
-  let types = ["mcq","write_ar_en","mcq_ar_en","listen"];
-  currentType = types[Math.floor(Math.random()*types.length)];
-
-  document.getElementById("answers").innerHTML = "";
-  document.getElementById("inputAnswer").value = "";
-
-  // 🎯 اختيار EN → AR
-  if(currentType === "mcq"){
-
-    document.getElementById("question").innerText = "ما معنى: " + en;
-
-    let options = [...words].sort(()=>0.5 - Math.random()).slice(0,3);
-    options.push(w);
-    options = options.sort(()=>0.5 - Math.random());
-
-    options.forEach(opt=>{
-      let btn = document.createElement("button");
-      btn.className = "option";
-      btn.innerText = opt.arabic;
-
-      btn.onclick = ()=>{
-        checkAnswer(opt.arabic, ar);
-      };
-
-      document.getElementById("answers").appendChild(btn);
-    });
-
-    hideInput();
-  }
-
-  // ✍️ عربي → إنجليزي
-  if(currentType === "write_ar_en"){
-
-    document.getElementById("question").innerText = "اكتب بالإنجليزي: " + ar;
-    showInput();
-  }
-
-  // 🎯 اختيار عربي → إنجليزي
-  if(currentType === "mcq_ar_en"){
-
-    document.getElementById("question").innerText = "ما ترجمة: " + ar;
-
-    let options = [...words].sort(()=>0.5 - Math.random()).slice(0,3);
-    options.push(w);
-    options = options.sort(()=>0.5 - Math.random());
-
-    options.forEach(opt=>{
-      let btn = document.createElement("button");
-      btn.className = "option";
-      btn.innerText = opt.word;
-
-      btn.onclick = ()=>{
-        checkAnswer(opt.word, en);
-      };
-
-      document.getElementById("answers").appendChild(btn);
-    });
-
-    hideInput();
-  }
-
-  // 🔊 استماع
-  if(currentType === "listen"){
-
-    document.getElementById("question").innerText = "🎧 اكتب الكلمة التي تسمعها";
-    speak(en);
-    showInput();
-  }
-}
-
-// صوت
-function speak(text){
-  let u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  speechSynthesis.speak(u);
-}
-
-// تحقق اختيار
-function checkAnswer(selected, correct){
-
-  if(selected === correct){
-    alert("✅ صح");
-  }else{
-    alert("❌ خطأ\nالإجابة: " + correct);
-  }
-
-  next();
-}
-
-// تحقق كتابة
-function checkInput(){
-
-  let w = words[current];
-  let en = w.word;
-
-  let val = document.getElementById("inputAnswer").value.trim().toLowerCase();
-
-  if(val === en.toLowerCase()){
-    alert("✅ صح");
-  }else{
-    alert("❌ خطأ\nالإجابة: " + en);
-  }
-
-  next();
-}
-
-// التالي
-function next(){
-
-  current++;
-
-  if(current >= words.length){
-    document.getElementById("question").innerText = "🎉 انتهى الاختبار";
-    document.getElementById("answers").innerHTML = "";
-    document.getElementById("inputAnswer").style.display = "none";
+  if(error){
+    document.getElementById("status").innerHTML = "❌ خطأ في الاتصال";
+    console.log(error);
     return;
   }
 
-  showQuestion();
+  document.getElementById("status").innerHTML = "✅ تم الاتصال بنجاح";
+
+  if(!data || data.length === 0){
+    document.getElementById("data").innerHTML = "⚠️ لا توجد بيانات";
+    return;
+  }
+
+  let html = "";
+
+  data.forEach(w=>{
+    let en = w.word || w.en;
+    let ar = w.arabic || w.ar;
+
+    html += `
+      <div class="word">
+        🇺🇸 ${en} <br>
+        🇸🇦 ${ar}
+      </div>
+    `;
+  });
+
+  document.getElementById("data").innerHTML = html;
 }
 
-// إظهار/إخفاء
-function showInput(){
-  document.getElementById("inputAnswer").style.display = "block";
-}
-
-function hideInput(){
-  document.getElementById("inputAnswer").style.display = "none";
-}
-
-// تشغيل
-showQuestion();
+test();
 
 </script>
 

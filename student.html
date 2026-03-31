@@ -15,79 +15,58 @@ body {
   justify-content: center;
 }
 
-/* الحاوية العامة */
 .container {
   width: 100%;
   max-width: 500px;
 }
 
-/* الصندوق الأبيض */
 .box {
   background: white;
   padding: 25px;
   border-radius: 20px;
   width: 98%;
-  box-sizing: border-box;
   text-align: center;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   margin-bottom: 20px;
 }
 
-/* الزر */
 button {
   background: #00c6ff;
   color: white;
   border: none;
-  padding: 10px 14px;
+  padding: 12px;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
+  width: 100%;
 }
 
 button:hover {
   background: #009edb;
 }
 
-/* النتائج */
-#result {
-  width: 100%;
-}
-
-/* عنوان القسم */
-.title {
-  margin: 15px 0 10px;
-  text-align: center;
-}
-
-/* كل كلمة */
 .word {
   padding: 10px;
   border-bottom: 1px solid #eee;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 10px;
 }
 
-.en {
-  flex: 1;
-  text-align: left;
+.en { text-align: left; }
+.ar { text-align: right; }
+
+.progress {
+  height: 8px;
+  background: #eee;
+  border-radius: 10px;
+  margin-top: 10px;
+  overflow: hidden;
 }
 
-.ar {
-  flex: 1;
-  text-align: right;
-}
-
-/* موبايل */
-@media (max-width: 480px) {
-  body {
-    padding: 15px;
-  }
-
-  .box {
-    padding: 20px;
-  }
+.bar {
+  height: 100%;
+  width: 0%;
+  background: #00c6ff;
+  transition: 0.3s;
 }
 </style>
 
@@ -98,11 +77,15 @@ button:hover {
 <div class="container">
 
   <div class="box">
-    <h2>📄 رفع PDF</h2>
+    <h2>📄 تحليل PDF</h2>
 
     <input type="file" id="file" accept="application/pdf"><br><br>
 
     <button onclick="upload()">🚀 تحليل</button>
+
+    <div class="progress">
+      <div id="bar" class="bar"></div>
+    </div>
 
     <p id="status"></p>
   </div>
@@ -112,76 +95,118 @@ button:hover {
 </div>
 
 <script>
+
+function setProgress(v){
+  document.getElementById("bar").style.width = v + "%";
+}
+
 async function upload() {
   const file = document.getElementById("file").files[0];
   const status = document.getElementById("status");
   const result = document.getElementById("result");
 
   if (!file) {
-    alert("اختر ملف");
+    alert("اختر ملف PDF");
     return;
   }
+
+  // 🔥 تحقق النوع
+  if (file.type !== "application/pdf") {
+    status.innerText = "❌ فقط PDF مسموح";
+    return;
+  }
+
+  // 🔥 تحقق الحجم (5MB)
+  const maxSize = 5 * 1024 * 1024;
+
+  if (file.size > maxSize) {
+    status.innerHTML = `
+      ❌ الملف كبير جدًا<br>
+      الحد: 5MB<br>
+      حجمك: ${(file.size / 1024 / 1024).toFixed(2)} MB
+    `;
+    return;
+  }
+
+  result.innerHTML = "";
+  setProgress(10);
 
   const formData = new FormData();
   formData.append("file", file);
 
-  status.innerText = "⏳ جاري التحليل...";
-  result.innerHTML = "";
-
   try {
+    status.innerText = "⏳ جاري الإرسال...";
+    setProgress(30);
+
+    const controller = new AbortController();
+
+    // ⏱️ تايم أوت
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 20000);
+
     const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
       method: "POST",
-      body: formData
+      body: formData,
+      signal: controller.signal
     });
+
+    clearTimeout(timeout);
+
+    setProgress(70);
+
+    if (!res.ok) throw new Error("Server");
 
     let data = await res.json();
 
     if (data.raw) {
-      try {
-        data = JSON.parse(data.raw);
-      } catch {}
+      try { data = JSON.parse(data.raw); } catch {}
     }
 
     status.innerText = "✅ تم التحليل";
+    setProgress(100);
 
-    function renderList(list) {
-      if (!list || list.length === 0) return "";
-
-      return list.map(item => `
+    function render(list){
+      if (!list) return "";
+      return list.map(i => `
         <div class="word">
-          <span class="en">${item.word || item.phrase || ""}</span>
-          <button onclick="speak('${item.word || item.phrase}')">🔊</button>
-          <span class="ar">${item.arabic || ""}</span>
+          <span class="en">${i.word || i.phrase}</span>
+          <button onclick="speak('${i.word || i.phrase}')">🔊</button>
+          <span class="ar">${i.arabic || ""}</span>
         </div>
       `).join("");
     }
 
     result.innerHTML = `
-      ${data.verbs?.length ? `<div class="box"><h3 class="title">📌 الأفعال</h3>${renderList(data.verbs)}</div>` : ""}
-
-      ${data.nouns?.length ? `<div class="box"><h3 class="title">📌 الأسماء</h3>${renderList(data.nouns)}</div>` : ""}
-
-      ${data.adjectives?.length ? `<div class="box"><h3 class="title">📌 الصفات</h3>${renderList(data.adjectives)}</div>` : ""}
-
-      ${data.idioms?.length ? `<div class="box"><h3 class="title">📌 العبارات</h3>${renderList(data.idioms)}</div>` : ""}
-
-      ${(data.phrasal_verbs?.length || data.phrasalVerbs?.length)
-        ? `<div class="box"><h3 class="title">📌 الأفعال المركبة</h3>${renderList(data.phrasal_verbs || data.phrasalVerbs)}</div>`
+      ${data.verbs ? `<div class="box"><h3>📌 الأفعال</h3>${render(data.verbs)}</div>` : ""}
+      ${data.nouns ? `<div class="box"><h3>📌 الأسماء</h3>${render(data.nouns)}</div>` : ""}
+      ${data.adjectives ? `<div class="box"><h3>📌 الصفات</h3>${render(data.adjectives)}</div>` : ""}
+      ${data.idioms ? `<div class="box"><h3>📌 العبارات</h3>${render(data.idioms)}</div>` : ""}
+      ${data.phrasal_verbs || data.phrasalVerbs
+        ? `<div class="box"><h3>📌 الأفعال المركبة</h3>${render(data.phrasal_verbs || data.phrasalVerbs)}</div>`
         : ""
       }
     `;
 
   } catch (err) {
     console.error(err);
-    status.innerText = "❌ خطأ في الاتصال";
+
+    if (err.name === "AbortError") {
+      status.innerText = "⏱️ انتهى الوقت (الملف ثقيل)";
+    } else {
+      status.innerText = "❌ فشل الاتصال";
+    }
+
+    setProgress(0);
   }
 }
 
-function speak(word) {
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.lang = "en-US";
-  speechSynthesis.speak(utterance);
+function speak(word){
+  let u = new SpeechSynthesisUtterance(word);
+  u.lang = "en-US";
+  speechSynthesis.speak(u);
 }
+
 </script>
 
 </body>

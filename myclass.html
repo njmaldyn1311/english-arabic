@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الفصل الذكي</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
 <style>
+
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
@@ -75,8 +74,15 @@ body{
   margin-bottom:15px;
 }
 
-.story-en{direction:ltr;text-align:justify;}
-.story-ar{direction:rtl;text-align:justify;}
+.story-en{
+  direction:ltr;
+  text-align:justify;
+}
+
+.story-ar{
+  direction:rtl;
+  text-align:justify;
+}
 
 .section-title{
   margin-top:20px;
@@ -106,9 +112,14 @@ body{
   padding:10px;
   border-radius:10px;
   font-size:18px;
+  transition:0.2s;
 }
-</style>
 
+.icon:hover{
+  transform:scale(1.1);
+}
+
+</style>
 </head>
 
 <body>
@@ -145,31 +156,24 @@ body{
 
 <script>
 
-/* 🔥 اربط Supabase */
-const supabase = window.supabase.createClient(
-  "https://ofyugbhplaynjeafdrgx.supabase.co",
-  "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
-);
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-/* 👤 اسم المستخدم */
 const fullName = localStorage.getItem("user") || "";
 const nameParts = fullName.split(" ");
 const shortName = nameParts.slice(0,2).join(" ");
 document.getElementById("username").innerText = "👤 " + shortName;
 
-/* 🆔 user_id */
+function goProfile(){
+  window.location.href = "student.html";
+}
+
 let user_id = localStorage.getItem("user_id");
 if(!user_id){
   user_id = "user_" + Math.random().toString(36).substring(2,10);
   localStorage.setItem("user_id", user_id);
 }
 
-/* التنقل */
-function goProfile(){
-  window.location.href = "student.html";
-}
-
-/* اختيار النوع */
 let selectedType="text";
 
 function toggleOptions(){
@@ -188,31 +192,39 @@ function selectType(type){
   document.getElementById("typeText").innerText=text;
 }
 
-/* 🔊 صوت */
 function speak(text){
   let utter = new SpeechSynthesisUtterance(text);
   utter.lang="en-US";
   speechSynthesis.speak(utter);
 }
 
-/* ⭐ حفظ في Supabase */
+/* ⭐ حفظ في Supabase (تم التعديل فقط هنا) */
 async function saveWord(el,en,ar){
 
   el.innerText = "⏳";
 
   try {
 
-    let { error } = await supabase
-      .from("user_words")  // ✅ استخدم جدولك الحالي
-      .insert([
-        {
-          user_id: user_id,
-          en: en,
-          ar: ar
-        }
-      ]);
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/user_words`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+        en: en,
+        ar: ar
+      })
+    });
 
-    if (error) throw error;
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(text);
+      throw new Error("error");
+    }
 
     el.innerText = "✅";
     el.style.background = "#22c55e";
@@ -223,7 +235,6 @@ async function saveWord(el,en,ar){
   }
 }
 
-/* عرض الكلمات */
 function renderWords(words){
   let html="";
   for(let section in words){
@@ -246,7 +257,6 @@ function renderWords(words){
   return html;
 }
 
-/* 🚀 إنشاء الدرس */
 async function generateLesson(){
 
   let input=document.getElementById("textInput").value;

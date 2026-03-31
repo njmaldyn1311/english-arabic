@@ -13,7 +13,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .container {
@@ -41,7 +41,6 @@ body {
   bottom: -55px;
   left: 50%;
   transform: translateX(-50%);
-  object-fit: cover;
 }
 
 .content {
@@ -54,10 +53,6 @@ h1 {
 
 .subtitle {
   color: #555;
-}
-
-.username {
-  display: none; /* ❌ اخفينا الاسم */
 }
 
 .students {
@@ -81,15 +76,41 @@ button {
   background: linear-gradient(135deg, #00c6ff, #0072ff);
   border: none;
   color: white;
-  padding: 10px 20px;
+  padding: 10px 15px;
   border-radius: 20px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .logout {
   background: #ef4444;
   margin-top: 10px;
+}
+
+/* زر واتساب */
+.whatsapp {
+  display: block;
+  margin-top: 15px;
+  background: #25D366;
+  color: white;
+  padding: 12px;
+  border-radius: 15px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* زر عائم */
+.whatsapp-float {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: #25D366;
+  color: white;
+  font-size: 20px;
+  padding: 15px;
+  border-radius: 50%;
+  text-decoration: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 </style>
 </head>
@@ -104,8 +125,6 @@ button {
 
   <div class="content">
 
-    <div class="username" id="username">👤 مستخدم</div>
-
     <h1>إنجلش بالعربي</h1>
     <div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
 
@@ -114,49 +133,66 @@ button {
     </div>
 
     <div class="card">
-      <span>📚 الفصل الذكي (دروسك)</span>
+      <span>📚 الفصل الذكي</span>
       <button onclick="goClass()">ابدأ</button>
     </div>
 
     <div class="card">
-      <span>📺 تحليل فيديو يوتيوب</span>
+      <span>📺 تحليل فيديو</span>
       <button onclick="goYoutube()">ابدأ</button>
     </div>
 
     <div class="card">
-      <span>📄 تحليل كتاب PDF</span>
+      <span>📄 تحليل PDF</span>
       <button onclick="goPDF()">ابدأ</button>
     </div>
 
     <div class="card">
-      <span>🔍 البحث عن كلمة</span>
+      <span>🔍 البحث</span>
       <button onclick="goSearch()">ابدأ</button>
     </div>
 
+    <!-- 🆕 اختبار -->
     <div class="card">
-      <span>👤 حسابي (مراجعة + اختبار)</span>
+      <span>📝 اختبار</span>
+      <button onclick="goTest()">ابدأ</button>
+    </div>
+
+    <!-- 🆕 مراجعة -->
+    <div class="card">
+      <span>📊 مراجعة</span>
+      <button onclick="goReview()">فتح</button>
+    </div>
+
+    <div class="card">
+      <span>👤 حسابي</span>
       <button onclick="goProfile()">فتح</button>
     </div>
+
+    <!-- 💬 واتساب -->
+    <a href="https://wa.me/message/735SJORMFI74H1" target="_blank" class="whatsapp">
+      💬 تواصل معي على واتساب
+    </a>
 
     <button class="logout" onclick="logout()">تسجيل خروج</button>
 
   </div>
 </div>
 
+<!-- زر واتساب عائم -->
+<a href="https://wa.me/message/735SJORMFI74H1" target="_blank" class="whatsapp-float">
+  💬
+</a>
+
 <script>
 
 const userId = localStorage.getItem("user_id");
-
 if(!userId){
   window.location.href = "login.html";
 }
 
-//// 👨‍🎓 عداد الطلاب (🔥 ثابت حتى بعد تسجيل الخروج)
 let count = localStorage.getItem("studentsCount");
-
-if (!count) {
-  count = 120;
-}
+if (!count) count = 120;
 
 function updateStudents() {
   count = parseInt(count) + Math.floor(Math.random() * 2);
@@ -168,35 +204,25 @@ function updateStudents() {
 updateStudents();
 setInterval(updateStudents, 8000);
 
-//// 🔗 التنقل
-function goClass() {
-  window.location.href = "myclass.html";
+function goClass(){ window.location.href = "myclass.html"; }
+function goYoutube(){ window.location.href = "youtube.html"; }
+function goPDF(){ window.location.href = "pdf.html"; }
+function goSearch(){ window.location.href = "search.html"; }
+function goProfile(){ window.location.href = "student.html"; }
+
+//// 🆕
+function goTest(){
+  window.location.href = "test.html";
 }
 
-function goYoutube() {
-  window.location.href = "youtube.html";
+function goReview(){
+  window.location.href = "review.html";
 }
 
-function goPDF() {
-  window.location.href = "pdf.html";
-}
-
-function goSearch() {
-  window.location.href = "search.html";
-}
-
-function goProfile(){
-  window.location.href = "student.html";
-}
-
-//// 🚪 تسجيل خروج (🔥 بدون حذف عداد الطلاب)
 function logout(){
-  const studentsCount = localStorage.getItem("studentsCount"); // حفظه
-
-  localStorage.clear(); // مسح كل شيء
-
-  localStorage.setItem("studentsCount", studentsCount); // رجعه
-
+  const studentsCount = localStorage.getItem("studentsCount");
+  localStorage.clear();
+  localStorage.setItem("studentsCount", studentsCount);
   window.location.href = "login.html";
 }
 

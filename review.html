@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>📚 مراجعة ذكية</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:"Cairo", sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+}
+
+.container{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:15px;
+}
+
+.card{
+  width:100%;
+  max-width:420px;
+  background:#1e293b;
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  text-align:center;
+}
+
+.title{
+  font-size:22px;
+  margin-bottom:10px;
+}
+
+.question{
+  font-size:20px;
+  margin:15px 0;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  font-size:16px;
+  text-align:center;
+}
+
+button{
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  margin-top:10px;
+  cursor:pointer;
+}
+
+.check{
+  background:#22c55e;
+  color:white;
+}
+
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:12px 20px;
+  border-radius:12px;
+  display:none;
+}
+
+.success{background:#22c55e;}
+.error{background:#ef4444;}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="card">
+
+    <div class="title">📚 مراجعة الدروس</div>
+
+    <div id="question" class="question">جاري التحميل...</div>
+
+    <input id="input" placeholder="اكتب المعنى">
+
+    <button class="check" onclick="check()">تحقق</button>
+
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+
+// 🔗 بياناتك
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let words = [];
+let current = 0;
+let currentWord = null;
+
+// 🚀 تحميل الكلمات الجاهزة للمراجعة
+async function load(){
+
+  let now = new Date().toISOString();
+
+  let { data } = await client
+    .from("words")
+    .select("*")
+    .lte("next_review", now);
+
+  words = data;
+
+  if(words.length === 0){
+    document.getElementById("question").innerText = "🎉 لا يوجد مراجعة الآن";
+    document.getElementById("input").style.display="none";
+    return;
+  }
+
+  show();
+}
+
+// 🎯 عرض الكلمة
+function show(){
+
+  currentWord = words[current];
+
+  let en = currentWord.en || currentWord.word;
+
+  document.getElementById("question").innerText = "ما معنى: " + en;
+  document.getElementById("input").value = "";
+}
+
+// ✅ تحقق
+async function check(){
+
+  let ar = currentWord.ar || currentWord.arabic;
+  let val = document.getElementById("input").value.trim();
+
+  let correct = (val === ar);
+
+  await updateWord(correct);
+
+  if(correct){
+    toast("✅ صح",true);
+  }else{
+    toast("❌ " + ar,false);
+  }
+
+  next();
+}
+
+// 🔁 تحديث ذكي
+async function updateWord(correct){
+
+  let id = currentWord.id;
+
+  let review = currentWord.review_count || 0;
+  let wrong = currentWord.wrong_count || 0;
+
+  let next;
+
+  if(correct){
+    review++;
+    next = new Date(Date.now() + (review * 15 * 60000));
+  }else{
+    wrong++;
+    next = new Date(Date.now() + (2 * 60000));
+  }
+
+  await client
+    .from("words")
+    .update({
+      review_count: review,
+      wrong_count: wrong,
+      next_review: next.toISOString()
+    })
+    .eq("id", id);
+}
+
+// التالي
+function next(){
+
+  current++;
+
+  if(current >= words.length){
+    document.getElementById("question").innerText = "🎉 خلصت المراجعة";
+    document.getElementById("input").style.display="none";
+    return;
+  }
+
+  show();
+}
+
+// 🔔 toast
+function toast(msg, ok){
+
+  let t=document.getElementById("toast");
+  t.innerText=msg;
+  t.className="toast " + (ok?"success":"error");
+  t.style.display="block";
+
+  setTimeout(()=>t.style.display="none",1200);
+}
+
+load();
+
+</script>
+
+</body>
+</html>

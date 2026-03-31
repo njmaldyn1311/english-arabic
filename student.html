@@ -72,7 +72,7 @@ async function upload() {
   formData.append("file", fileInput.files[0]);
 
   try {
-    const res = await fetch("https://https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf/webhook/upload-pdf", {
+    const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
       method: "POST",
       body: formData
     });

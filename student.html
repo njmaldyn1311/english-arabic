@@ -1,40 +1,86 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>رفع PDF</title>
+
+<style>
+body {
+  font-family: "Cairo", sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: #1e293b;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 15px 0;
+  border-radius: 10px;
+}
+
+button {
+  background: #22c55e;
+  border: none;
+  padding: 12px;
+  width: 100%;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+}
+</style>
 </head>
 
-<body style="text-align:center; padding:50px;">
+<body>
 
-<h2>📄 ارفع الكتاب</h2>
+<div class="card">
+  <h2>📄 رفع الكتاب</h2>
 
-<input type="file" id="file" accept="application/pdf"><br><br>
+  <input type="file" id="file" accept="application/pdf">
 
-<button onclick="upload()">رفع</button>
+  <button onclick="upload()">رفع</button>
+
+  <p id="status"></p>
+</div>
 
 <script>
 async function upload() {
-  const file = document.getElementById("file").files[0];
+  const fileInput = document.getElementById("file");
+  const status = document.getElementById("status");
 
-  if (!file) {
-    alert("اختر ملف PDF");
+  if (!fileInput.files.length) {
+    status.innerText = "❌ اختر ملف";
     return;
   }
 
   const formData = new FormData();
-  formData.append("file", file); // 👈 مهم الاسم
+
+  // 🔥 أهم سطر
+  formData.append("file", fileInput.files[0]);
 
   try {
-    const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
+    const res = await fetch("https://YOUR-WEBHOOK-URL/webhook/upload-pdf", {
       method: "POST",
       body: formData
     });
 
-    alert("تم الإرسال ✅");
+    status.innerText = "✅ تم الإرسال";
   } catch (err) {
-    alert("خطأ ❌");
-    console.log(err);
+    status.innerText = "❌ فشل الإرسال";
+    console.error(err);
   }
 }
 </script>

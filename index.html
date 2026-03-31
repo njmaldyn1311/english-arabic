@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html><html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إنجلش بالعربي</title>
-
-<style>
+<title>إنجلش بالعربي</title><style>
 body {
   margin: 0;
   font-family: "Cairo", sans-serif;
@@ -47,19 +44,10 @@ body {
   padding: 70px 20px 20px;
 }
 
-h1 {
-  margin: 10px 0;
-}
-
-.subtitle {
-  color: #555;
-}
-
 .students {
   color: #0072ff;
   font-weight: bold;
   margin: 10px 0;
-  font-size: 18px;
 }
 
 .card {
@@ -69,7 +57,6 @@ h1 {
   margin: 10px 0;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 button {
@@ -79,12 +66,6 @@ button {
   padding: 10px 15px;
   border-radius: 20px;
   cursor: pointer;
-  font-size: 13px;
-}
-
-.logout {
-  background: #ef4444;
-  margin-top: 10px;
 }
 
 /* زر واتساب */
@@ -96,7 +77,6 @@ button {
   padding: 12px;
   border-radius: 15px;
   text-decoration: none;
-  font-weight: bold;
 }
 
 /* زر عائم */
@@ -110,123 +90,70 @@ button {
   padding: 15px;
   border-radius: 50%;
   text-decoration: none;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-  <div class="header">
+</style></head><body><div class="container">  <div class="header">
     <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="profile-img">
-  </div>
+  </div>  <div class="content"><h2>إنجلش بالعربي 🚀</h2>
 
-  <div class="content">
-
-    <h1>إنجلش بالعربي</h1>
-    <div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
-
-    <div class="students" id="students">
-      👨‍🎓 أكثر من 120 طالب
-    </div>
-
-    <div class="card">
-      <span>📚 الفصل الذكي</span>
-      <button onclick="goClass()">ابدأ</button>
-    </div>
-
-    <div class="card">
-      <span>📺 تحليل فيديو</span>
-      <button onclick="goYoutube()">ابدأ</button>
-    </div>
-
-    <div class="card">
-      <span>📄 تحليل PDF</span>
-      <button onclick="goPDF()">ابدأ</button>
-    </div>
-
-    <div class="card">
-      <span>🔍 البحث</span>
-      <button onclick="goSearch()">ابدأ</button>
-    </div>
-
-    <!-- 🆕 اختبار -->
-    <div class="card">
-      <span>📝 اختبار</span>
-      <button onclick="goTest()">ابدأ</button>
-    </div>
-
-    <!-- 🆕 مراجعة -->
-    <div class="card">
-      <span>📊 مراجعة</span>
-      <button onclick="goReview()">فتح</button>
-    </div>
-
-    <div class="card">
-      <span>👤 حسابي</span>
-      <button onclick="goProfile()">فتح</button>
-    </div>
-
-    <!-- 💬 واتساب -->
-    <a href="https://wa.me/message/735SJORMFI74H1" target="_blank" class="whatsapp">
-      💬 تواصل معي على واتساب
-    </a>
-
-    <button class="logout" onclick="logout()">تسجيل خروج</button>
-
-  </div>
+<div class="students" id="students">
+  👨‍🎓 أكثر من 120 طالب
 </div>
 
-<!-- زر واتساب عائم -->
-<a href="https://wa.me/message/735SJORMFI74H1" target="_blank" class="whatsapp-float">
-  💬
+<div class="card">
+  <span>📚 الفصل</span>
+  <button onclick="goClass()">ابدأ</button>
+</div>
+
+<div class="card">
+  <span>📄 PDF</span>
+  <button onclick="goPDF()">ابدأ</button>
+</div>
+
+<div class="card">
+  <span>📝 اختبار</span>
+  <button onclick="goTest()">ابدأ</button>
+</div>
+
+<div class="card">
+  <span>📊 مراجعة</span>
+  <button onclick="goReview()">فتح</button>
+</div>
+
+<!-- واتساب -->
+<a id="whatsappLink" target="_blank" class="whatsapp">
+  💬 تواصل معي على واتساب
 </a>
 
-<script>
+  </div>
+</div><!-- زر واتساب عائم --><a id="whatsappFloat" target="_blank" class="whatsapp-float">
+  💬
+</a><script>
 
-const userId = localStorage.getItem("user_id");
-if(!userId){
-  window.location.href = "login.html";
+// 👤 اسم الطالب (تأكد أنك تخزنه في login)
+let userName = localStorage.getItem("user_name");
+
+if (!userName) {
+  userName = "طالب";
 }
 
-let count = localStorage.getItem("studentsCount");
-if (!count) count = 120;
+// ✨ الرسالة
+const message = `السلام عليكم، أنا ${userName} وأحتاج مساعدة 🙏`;
 
-function updateStudents() {
-  count = parseInt(count) + Math.floor(Math.random() * 2);
-  document.getElementById("students").innerText =
-    "👨‍🎓 أكثر من " + count + " طالب";
-  localStorage.setItem("studentsCount", count);
-}
+// 🔗 تحويل النص لرابط
+const encoded = encodeURIComponent(message);
 
-updateStudents();
-setInterval(updateStudents, 8000);
+// 📲 رابط واتساب
+const link = `https://wa.me/message/735SJORMFI74H1?text=${encoded}`;
 
+// ربط الأزرار
+document.getElementById("whatsappLink").href = link;
+document.getElementById("whatsappFloat").href = link;
+
+// التنقل
 function goClass(){ window.location.href = "myclass.html"; }
-function goYoutube(){ window.location.href = "youtube.html"; }
 function goPDF(){ window.location.href = "pdf.html"; }
-function goSearch(){ window.location.href = "search.html"; }
-function goProfile(){ window.location.href = "student.html"; }
+function goTest(){ window.location.href = "test.html"; }
+function goReview(){ window.location.href = "review.html"; }
 
-//// 🆕
-function goTest(){
-  window.location.href = "test.html";
-}
-
-function goReview(){
-  window.location.href = "review.html";
-}
-
-function logout(){
-  const studentsCount = localStorage.getItem("studentsCount");
-  localStorage.clear();
-  localStorage.setItem("studentsCount", studentsCount);
-  window.location.href = "login.html";
-}
-
-</script>
-
-</body>
+</script></body>
 </html>

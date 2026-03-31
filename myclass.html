@@ -156,6 +156,7 @@ body{
 
 <script>
 
+// 🔥 بيانات Supabase
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
@@ -198,43 +199,38 @@ function speak(text){
   speechSynthesis.speak(utter);
 }
 
-/* ⭐ حفظ في Supabase (تم التعديل فقط هنا) */
+/* ⭐ حفظ في Supabase بدل localStorage */
 async function saveWord(el,en,ar){
 
-  el.innerText = "⏳";
+  try{
 
-  try {
-
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/user_words`, {
+    await fetch(SUPABASE_URL + "/rest/v1/user_words", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Authorization": "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
         "Prefer": "return=minimal"
       },
       body: JSON.stringify({
         user_id: user_id,
-        en: en,
-        ar: ar
+        word: en,
+        translation: ar
       })
     });
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error(text);
-      throw new Error("error");
-    }
-
+    // ✅ تغيير الشكل
     el.innerText = "✅";
     el.style.background = "#22c55e";
 
-  } catch (err) {
+  }catch(err){
     console.error(err);
-    el.innerText = "❌";
+    alert("❌ فشل الحفظ");
   }
+
 }
 
+/* عرض الكلمات */
 function renderWords(words){
   let html="";
   for(let section in words){
@@ -257,6 +253,7 @@ function renderWords(words){
   return html;
 }
 
+/* 🚀 إنشاء الدرس */
 async function generateLesson(){
 
   let input=document.getElementById("textInput").value;

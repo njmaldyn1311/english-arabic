@@ -21,7 +21,6 @@ body {
   padding: 15px;
 }
 
-/* توسيط */
 .input-box {
   display: flex;
   justify-content: center;
@@ -219,7 +218,6 @@ async function sendUrl() {
   const url = document.getElementById("url").value;
   if (!url) return alert("اكتب رابط");
 
-  // 🔥 إخفاء النتائج القديمة
   document.getElementById("result").innerHTML = "";
 
   localStorage.setItem("last_video_url", url);
@@ -241,13 +239,32 @@ async function sendUrl() {
   show(data);
 }
 
-/* صوت */
+/* 🔊 صوت احترافي */
 function speak(text) {
+
+  speechSynthesis.cancel();
+
   const msg = new SpeechSynthesisUtterance(text);
+
   msg.lang = "en-US";
   msg.rate = 0.85;
+  msg.pitch = 1;
+  msg.volume = 1;
+
+  const voices = speechSynthesis.getVoices();
+  const englishVoice = voices.find(v => v.lang.includes("en"));
+
+  if (englishVoice) {
+    msg.voice = englishVoice;
+  }
+
   speechSynthesis.speak(msg);
 }
+
+/* تحميل الأصوات */
+speechSynthesis.onvoiceschanged = () => {
+  speechSynthesis.getVoices();
+};
 
 function startLoading() {
   document.getElementById("loading").style.display = "block";

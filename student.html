@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>📚 مراجعة ذكية</title>
+<title>📖 قراءة الكتاب</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
@@ -19,6 +19,7 @@ body{
   color:white;
 }
 
+/* 📱 حاوية */
 .container{
   min-height:100vh;
   display:flex;
@@ -27,60 +28,64 @@ body{
   padding:15px;
 }
 
+/* 📦 كرت */
 .card{
   width:100%;
-  max-width:420px;
+  max-width:500px;
   background:#1e293b;
   border-radius:20px;
   padding:20px;
   box-shadow:0 10px 30px rgba(0,0,0,0.4);
-  text-align:center;
 }
 
+/* 📖 عنوان */
 .title{
+  text-align:center;
   font-size:22px;
   margin-bottom:10px;
 }
 
-.question{
-  font-size:20px;
+/* 📝 النص */
+.content{
+  line-height:1.8;
   margin:15px 0;
 }
 
-input{
-  width:100%;
+/* 📦 صناديق */
+.box{
   padding:12px;
   border-radius:12px;
-  border:none;
-  font-size:16px;
-  text-align:center;
+  margin:10px 0;
+  font-size:15px;
+}
+
+.green{background:#065f46}
+.yellow{background:#78350f}
+
+/* 📚 كلمات */
+.word{
+  background:#334155;
+  padding:8px;
+  border-radius:10px;
+  margin:5px 0;
+}
+
+/* 🔘 أزرار */
+.nav{
+  display:flex;
+  justify-content:space-between;
+  margin-top:15px;
 }
 
 button{
-  padding:12px;
+  padding:10px 15px;
   border:none;
-  border-radius:12px;
-  margin-top:10px;
+  border-radius:10px;
   cursor:pointer;
 }
 
-.check{
-  background:#22c55e;
-  color:white;
-}
-
-.toast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  padding:12px 20px;
-  border-radius:12px;
-  display:none;
-}
-
-.success{background:#22c55e;}
-.error{background:#ef4444;}
+.next{background:#22c55e;color:white}
+.prev{background:#475569;color:white}
 
 </style>
 </head>
@@ -90,136 +95,91 @@ button{
 <div class="container">
   <div class="card">
 
-    <div class="title">📚 مراجعة الدروس</div>
+    <div id="title" class="title">📖 الصفحة 1</div>
 
-    <div id="question" class="question">جاري التحميل...</div>
+    <div id="content" class="content">...</div>
 
-    <input id="input" placeholder="اكتب المعنى">
+    <div id="translation" class="box green"></div>
 
-    <button class="check" onclick="check()">تحقق</button>
+    <div id="explanation" class="box yellow"></div>
+
+    <div id="words"></div>
+
+    <div class="nav">
+      <button class="prev" onclick="prev()">⬅️ السابق</button>
+      <button class="next" onclick="next()">التالي ➡️</button>
+    </div>
 
   </div>
 </div>
 
-<div id="toast" class="toast"></div>
-
 <script>
 
-// 🔗 بياناتك
+// 🔗 Supabase
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let words = [];
-let current = 0;
-let currentWord = null;
+// 📖 رقم الصفحة
+let pageNumber = 1;
 
-// 🚀 تحميل الكلمات الجاهزة للمراجعة
-async function load(){
+// 🚀 تحميل الصفحة
+async function loadPage(){
 
-  let now = new Date().toISOString();
-
-  let { data } = await client
-    .from("words")
+  let { data, error } = await client
+    .from("pages")
     .select("*")
-    .lte("next_review", now);
+    .eq("page_number", pageNumber)
+    .single();
 
-  words = data;
-
-  if(words.length === 0){
-    document.getElementById("question").innerText = "🎉 لا يوجد مراجعة الآن";
-    document.getElementById("input").style.display="none";
+  if(error || !data){
+    document.getElementById("content").innerText = "❌ لا توجد صفحة";
     return;
   }
 
-  show();
+  document.getElementById("title").innerText = "📖 الصفحة " + data.page_number;
+  document.getElementById("content").innerText = data.content || "";
+  document.getElementById("translation").innerText = "📘 ترجمة:\n" + (data.translation || "");
+  document.getElementById("explanation").innerText = "💡 شرح:\n" + (data.explanation || "");
+
+  loadWords(data.id);
 }
 
-// 🎯 عرض الكلمة
-function show(){
+// 📚 كلمات الصفحة
+async function loadWords(page_id){
 
-  currentWord = words[current];
+  let { data } = await client
+    .from("page_words")
+    .select("*")
+    .eq("page_id", page_id);
 
-  let en = currentWord.en || currentWord.word;
+  let container = document.getElementById("words");
+  container.innerHTML = "<h4>📚 كلمات مهمة</h4>";
 
-  document.getElementById("question").innerText = "ما معنى: " + en;
-  document.getElementById("input").value = "";
-}
-
-// ✅ تحقق
-async function check(){
-
-  let ar = currentWord.ar || currentWord.arabic;
-  let val = document.getElementById("input").value.trim();
-
-  let correct = (val === ar);
-
-  await updateWord(correct);
-
-  if(correct){
-    toast("✅ صح",true);
-  }else{
-    toast("❌ " + ar,false);
-  }
-
-  next();
-}
-
-// 🔁 تحديث ذكي
-async function updateWord(correct){
-
-  let id = currentWord.id;
-
-  let review = currentWord.review_count || 0;
-  let wrong = currentWord.wrong_count || 0;
-
-  let next;
-
-  if(correct){
-    review++;
-    next = new Date(Date.now() + (review * 15 * 60000));
-  }else{
-    wrong++;
-    next = new Date(Date.now() + (2 * 60000));
-  }
-
-  await client
-    .from("words")
-    .update({
-      review_count: review,
-      wrong_count: wrong,
-      next_review: next.toISOString()
-    })
-    .eq("id", id);
+  data.forEach(w=>{
+    let div = document.createElement("div");
+    div.className = "word";
+    div.innerText = w.en + " = " + w.ar;
+    container.appendChild(div);
+  });
 }
 
 // التالي
 function next(){
+  pageNumber++;
+  loadPage();
+}
 
-  current++;
-
-  if(current >= words.length){
-    document.getElementById("question").innerText = "🎉 خلصت المراجعة";
-    document.getElementById("input").style.display="none";
-    return;
+// السابق
+function prev(){
+  if(pageNumber > 1){
+    pageNumber--;
+    loadPage();
   }
-
-  show();
 }
 
-// 🔔 toast
-function toast(msg, ok){
-
-  let t=document.getElementById("toast");
-  t.innerText=msg;
-  t.className="toast " + (ok?"success":"error");
-  t.style.display="block";
-
-  setTimeout(()=>t.style.display="none",1200);
-}
-
-load();
+loadPage();
 
 </script>
 

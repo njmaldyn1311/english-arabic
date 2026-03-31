@@ -16,29 +16,33 @@ body {
 }
 
 .container {
-  max-width: 900px;
+  max-width: 700px;
   margin: auto;
   padding: 15px;
-  box-sizing: border-box;
+}
+
+.input-box {
+  display: flex;
+  justify-content: center;
 }
 
 input {
   padding: 10px;
-  width: 100%;
-  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 12px;
   border: none;
-  margin: 5px 0;
-  box-sizing: border-box;
+  margin: 10px 0;
+  text-align: center;
 }
 
 button {
   background: #22c55e;
-  padding: 10px 15px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   color: white;
   cursor: pointer;
-  margin: 5px;
 }
 
 .card {
@@ -46,16 +50,13 @@ button {
   margin: 15px 0;
   padding: 15px;
   border-radius: 15px;
-  box-shadow: 0 0 10px #000;
 }
 
-/* الفيديو */
 #videoBox {
   position: sticky;
   top: 0;
   z-index: 999;
   background: #0f172a;
-  padding-top: 10px;
 }
 
 iframe {
@@ -64,58 +65,20 @@ iframe {
   border-radius: 15px;
 }
 
-h3 {
-  color: #22c55e;
-}
-
-/* الجدول */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-  table-layout: fixed;
-}
-
-.table th:nth-child(1),
-.table td:nth-child(1) { width: 30%; }
-
-.table th:nth-child(2),
-.table td:nth-child(2) { width: 20%; }
-
-.table th:nth-child(3),
-.table td:nth-child(3) { width: 50%; }
-
-.table th, .table td {
-  border-bottom: 1px solid #334155;
-  padding: 10px;
+.line {
   text-align: left;
-  vertical-align: top;
-  word-break: break-word;
+  margin: 10px 0;
+  line-height: 1.8;
 }
 
-.en {
-  color: #38bdf8;
-  font-weight: bold;
+.en { color: #38bdf8; font-weight: bold; cursor: pointer; }
+.ar { color: #f87171; margin-left: 10px; }
+.example { color: #e2e8f0; display: block; cursor: pointer; }
+.example-ar { color: #94a3b8; font-size: 13px; }
+
+.star {
   cursor: pointer;
-}
-
-.ar {
-  color: #f87171;
-}
-
-.example {
-  color: #e2e8f0;
-}
-
-.example-ar {
-  color: #94a3b8;
-  font-size: 13px;
-  margin-top: 5px;
-}
-
-#loading {
-  display: none;
-  margin-top: 10px;
+  margin-left: 10px;
 }
 </style>
 </head>
@@ -124,17 +87,18 @@ h3 {
 
 <div class="container">
 
-<h2>🎥 تعلم من الفيديو بذكاء </h2>
+<h2>🎥 تعلم من الفيديو بذكاء</h2>
 
-<input type="text" id="url" placeholder="ضع رابط YouTube">
-<br>
+<div class="input-box">
+  <input type="text" id="url" placeholder="ضع رابط YouTube">
+</div>
 
-<button onclick="sendUrl()">🔗 تحليل رابط</button>
+<button onclick="sendUrl()">🔗 تحليل</button>
 
-<p id="loading">⏳ جاري التحليل...</p>
+<p id="loading" style="display:none;">⏳ جاري التحليل...</p>
 
 <div id="videoBox" class="card" style="display:none;">
-  <iframe id="videoFrame" frameborder="0" allowfullscreen></iframe>
+  <iframe id="videoFrame"></iframe>
 </div>
 
 <div id="result"></div>
@@ -145,9 +109,14 @@ h3 {
 
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 
+/* 🔥 Supabase */
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+
+let user_id = localStorage.getItem("user_id");
+
 let videoId = "";
 
-/* استخراج ID */
 function getVideoId(url) {
   if (url.includes("youtu.be")) {
     return url.split("/").pop().split("?")[0];
@@ -155,7 +124,6 @@ function getVideoId(url) {
   return url.split("v=")[1]?.split("&")[0];
 }
 
-/* عرض الفيديو */
 function showVideo(url) {
   videoId = getVideoId(url);
   document.getElementById("videoFrame").src =
@@ -163,80 +131,59 @@ function showVideo(url) {
   document.getElementById("videoBox").style.display = "block";
 }
 
-/* الانتقال للوقت */
 function goToTime(sec) {
   document.getElementById("videoFrame").src =
     `https://www.youtube.com/embed/${videoId}?start=${sec}&autoplay=1`;
 }
 
-/* 🔊 الصوت */
-let voices = [];
+/* ⭐ حفظ الكلمة */
+async function saveWord(el, word, translation){
 
-function loadVoices() {
-  voices = speechSynthesis.getVoices();
-}
+  const check = await fetch(
+    `${SUPABASE_URL}/rest/v1/user_words?user_id=eq.${user_id}&word=eq.${encodeURIComponent(word)}`,
+    {
+      headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization":"Bearer "+SUPABASE_KEY
+      }
+    }
+  );
 
-loadVoices();
-speechSynthesis.onvoiceschanged = loadVoices;
+  const existing = await check.json();
 
-function speak(text) {
-  speechSynthesis.cancel();
-
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = "en-US";
-  msg.rate = 0.9;
-
-  const voice = voices.find(v => v.lang.startsWith("en"));
-  if (voice) msg.voice = voice;
-
-  speechSynthesis.speak(msg);
-}
-
-/* إرسال الرابط */
-async function sendUrl() {
-  const url = document.getElementById("url").value;
-
-  if (!url) {
-    alert("اكتب رابط");
+  if(existing.length > 0){
+    el.innerText = "✅";
+    el.style.background = "#22c55e";
     return;
   }
 
-  startLoading();
-  showVideo(url);
-
-  // ✅ مسح الحقل
-  document.getElementById("url").value = "";
-
-  const res = await fetch(WEBHOOK, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url })
+  await fetch(SUPABASE_URL + "/rest/v1/user_words", {
+    method:"POST",
+    headers:{
+      "apikey": SUPABASE_KEY,
+      "Authorization":"Bearer "+SUPABASE_KEY,
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
+      user_id,
+      word,
+      translation
+    })
   });
 
-  const data = await res.json();
-
-  stopLoading();
-  show(data);
+  el.innerText = "✅";
+  el.style.background = "#22c55e";
 }
 
-/* عرض النتائج */
+/* عرض */
 function show(data) {
+
   let html = "";
 
   for (let cat in data) {
     if (!data[cat] || data[cat].length === 0) continue;
 
-    html += `
-    <div class="card">
-      <h3>${cat}</h3>
-
-      <table class="table">
-        <tr>
-          <th>Word</th>
-          <th>Arabic</th>
-          <th>Example</th>
-        </tr>
-    `;
+    html += `<div class="card"><h3>${cat}</h3>`;
 
     data[cat].forEach(w => {
 
@@ -244,29 +191,81 @@ function show(data) {
       const arabic = w.ar || w.arabic || "";
 
       html += `
-        <tr>
-          <td class="en"
-              onclick="speak('${word}'); event.stopPropagation();">
-              ${word}
-          </td>
+        <div class="line">
+          <span class="en" onclick="speak('${word}')">${word}</span>
+          <span class="ar">${arabic}</span>
+          <span class="star" onclick="saveWord(this,'${word}','${arabic}')">⭐</span>
 
-          <td class="ar">${arabic}</td>
+          <span class="example" onclick="goToTime(${w.time || 0})">
+            ${w.example || ""}
+          </span>
 
-          <td onclick="goToTime(${w.time || 0})" style="cursor:pointer;">
-            <div class="example">${w.example || ""}</div>
-            <div class="example-ar">${w.example_ar || ""}</div>
-          </td>
-        </tr>
+          <span class="example-ar">
+            ${w.example_ar || ""}
+          </span>
+        </div>
       `;
     });
 
-    html += `</table></div>`;
+    html += `</div>`;
   }
 
   document.getElementById("result").innerHTML = html;
 }
 
-/* تحميل */
+/* 🚀 إرسال */
+async function sendUrl() {
+  const url = document.getElementById("url").value;
+  if (!url) return alert("اكتب رابط");
+
+  document.getElementById("result").innerHTML = "";
+
+  localStorage.setItem("last_video_url", url);
+
+  startLoading();
+  showVideo(url);
+
+  const res = await fetch(WEBHOOK, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ url })
+  });
+
+  const data = await res.json();
+
+  localStorage.setItem("last_video_data", JSON.stringify(data));
+
+  stopLoading();
+  show(data);
+}
+
+/* 🔊 صوت احترافي */
+function speak(text) {
+
+  speechSynthesis.cancel();
+
+  const msg = new SpeechSynthesisUtterance(text);
+
+  msg.lang = "en-US";
+  msg.rate = 0.85;
+  msg.pitch = 1;
+  msg.volume = 1;
+
+  const voices = speechSynthesis.getVoices();
+  const englishVoice = voices.find(v => v.lang.includes("en"));
+
+  if (englishVoice) {
+    msg.voice = englishVoice;
+  }
+
+  speechSynthesis.speak(msg);
+}
+
+/* تحميل الأصوات */
+speechSynthesis.onvoiceschanged = () => {
+  speechSynthesis.getVoices();
+};
+
 function startLoading() {
   document.getElementById("loading").style.display = "block";
 }
@@ -274,6 +273,20 @@ function startLoading() {
 function stopLoading() {
   document.getElementById("loading").style.display = "none";
 }
+
+/* 🔥 استرجاع */
+window.onload = function(){
+
+  const savedData = localStorage.getItem("last_video_data");
+  const savedUrl = localStorage.getItem("last_video_url");
+
+  if(savedData && savedUrl){
+    const data = JSON.parse(savedData);
+    document.getElementById("url").value = savedUrl;
+    showVideo(savedUrl);
+    show(data);
+  }
+};
 
 </script>
 

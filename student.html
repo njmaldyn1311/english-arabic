@@ -7,8 +7,6 @@
 
 <style>
 
-*{box-sizing:border-box;}
-
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
@@ -19,21 +17,17 @@ body{
 .top{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   padding:15px;
-  flex-wrap:wrap;
-  gap:10px;
 }
 
-.user{color:#38bdf8;font-size:14px;}
-.points{color:#FFD700;font-size:14px;}
+.user{color:#38bdf8;}
+.points{color:#FFD700;}
 
 .review{
   background:#6366f1;
-  padding:8px 14px;
+  padding:10px;
   border-radius:12px;
   cursor:pointer;
-  font-size:14px;
 }
 
 .card{
@@ -41,11 +35,6 @@ body{
   margin:15px;
   padding:18px;
   border-radius:18px;
-}
-
-@media (max-width:480px){
-  .card{margin:12px;}
-  .top{padding:10px;}
 }
 
 .word{
@@ -58,32 +47,28 @@ body{
 .en{color:#38bdf8;}
 .ar{color:#f87171;}
 
-textarea{
+.quiz button{
   width:100%;
-  padding:10px;
-  border-radius:10px;
+  margin-top:8px;
+  padding:12px;
   border:none;
-  margin-top:10px;
-  resize:none;
-  height:80px;
-  font-family:"Cairo";
-}
-
-button{
-  margin-top:10px;
-  padding:10px 15px;
-  border:none;
-  border-radius:10px;
-  background:#22c55e;
+  border-radius:12px;
+  background:#334155;
   color:white;
   cursor:pointer;
+  transition:0.2s;
 }
 
-.quiz button{
-  display:block;
-  width:100%;
-  margin-top:6px;
-  background:#334155;
+.quiz button:hover{
+  background:#475569;
+}
+
+.correct{
+  background:#22c55e !important;
+}
+
+.wrong{
+  background:#ef4444 !important;
 }
 
 </style>
@@ -99,18 +84,11 @@ button{
 
 <div class="card">
   <h3>⭐ الكلمات المحفوظة</h3>
-  <div id="words">⏳ جاري التحميل...</div>
+  <div id="words">⏳ تحميل...</div>
 </div>
 
 <div class="card">
-  <h3>📝 ملاحظاتي</h3>
-  <div id="oldNotes" style="color:#cbd5f5;margin-bottom:10px;"></div>
-  <textarea id="noteInput" placeholder="اكتب ملاحظة جديدة..."></textarea>
-  <button onclick="addNote()">➕ إضافة</button>
-</div>
-
-<div class="card">
-  <h3>🧠 اختبار سريع</h3>
+  <h3>🧠 اختبار ذكي</h3>
   <div id="quiz"></div>
 </div>
 
@@ -122,46 +100,39 @@ const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 let user_id = localStorage.getItem("user_id");
 
-/* 👤 الاسم */
+/* الاسم */
 let fullName = localStorage.getItem("user") || "طالب";
-let parts = fullName.split(" ");
-let shortName = parts[0] + (parts[1] ? " " + parts[1] : "");
-document.getElementById("username").innerText = "👤 " + shortName;
+document.getElementById("username").innerText = "👤 " + fullName;
 
-/* ⭐ جلب الكلمات من Supabase */
+/* الكلمات */
 let words = [];
 
 async function loadWords(){
 
-  try{
-
-    let res = await fetch(
-      SUPABASE_URL + "/rest/v1/user_words?user_id=eq." + user_id,
-      {
-        headers:{
-          "apikey": SUPABASE_KEY,
-          "Authorization": "Bearer " + SUPABASE_KEY
-        }
+  let res = await fetch(
+    SUPABASE_URL + "/rest/v1/user_words?user_id=eq." + user_id + "&order=created_at.desc",
+    {
+      headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization":"Bearer "+SUPABASE_KEY
       }
-    );
+    }
+  );
 
-    words = await res.json();
+  let data = await res.json();
 
-    document.getElementById("count").innerText = words.length;
+  // 🔥 ناخذ آخر درس (آخر 20 كلمة)
+  words = data.slice(0,20);
 
-    renderWords();
-    generateQuiz();
+  document.getElementById("count").innerText = words.length;
 
-  }catch(err){
-    document.getElementById("words").innerText = "❌ خطأ في التحميل";
-  }
+  renderWords();
+  nextQuestion();
 
 }
 
 function renderWords(){
-
   let html="";
-
   words.forEach(w=>{
     html+=`
       <div class="word">
@@ -170,91 +141,68 @@ function renderWords(){
       </div>
     `;
   });
-
-  document.getElementById("words").innerHTML =
-    html || "لا توجد كلمات";
-
+  document.getElementById("words").innerHTML = html || "لا توجد كلمات";
 }
 
-/* 📝 الملاحظات (كما هي) */
-function loadNotes(){
-  let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+/* 🧠 اختبار ذكي */
+let currentQuestion;
 
-  let html="";
-  notes.forEach(n=>{
-    html+=`<div>• ${n}</div>`;
-  });
-
-  document.getElementById("oldNotes").innerHTML =
-    html || "لا توجد ملاحظات";
-}
-
-function addNote(){
-  let input = document.getElementById("noteInput").value.trim();
-  if(!input) return;
-
-  let notes = JSON.parse(localStorage.getItem("notes") || "[]");
-  notes.push(input);
-
-  localStorage.setItem("notes", JSON.stringify(notes));
-
-  document.getElementById("noteInput").value = "";
-
-  loadNotes();
-}
-
-loadNotes();
-
-/* 🧠 اختبار من Supabase */
-function generateQuiz(){
+function nextQuestion(){
 
   if(words.length < 3){
     document.getElementById("quiz").innerHTML = "أضف كلمات أولاً ⭐";
     return;
   }
 
-  let random = [...words].sort(()=>0.5-Math.random()).slice(0,3);
+  currentQuestion = words[Math.floor(Math.random()*words.length)];
 
-  let html="";
+  let options = [...words]
+    .sort(()=>0.5-Math.random())
+    .slice(0,3);
 
-  random.forEach(q=>{
+  options.push(currentQuestion);
+  options = options.sort(()=>0.5-Math.random());
 
-    let options = [...words].sort(()=>0.5-Math.random()).slice(0,3);
-    options.push(q);
-    options = options.sort(()=>0.5-Math.random());
+  let html = `<div class="quiz">
+    <p>ما معنى: <strong>${currentQuestion.word}</strong>؟</p>
+  `;
 
-    html+=`<div class="quiz">
-      <p>ما معنى: <strong>${q.word}</strong>؟</p>
+  options.forEach(opt=>{
+    html+=`
+      <button onclick="answer(this,'${opt.translation}')">
+        ${opt.translation}
+      </button>
     `;
-
-    options.forEach(opt=>{
-      html+=`
-        <button onclick="checkAnswer('${q.translation}','${opt.translation}')">
-          ${opt.translation}
-        </button>
-      `;
-    });
-
-    html+=`</div><hr>`;
   });
+
+  html+=`</div>`;
 
   document.getElementById("quiz").innerHTML = html;
 }
 
-function checkAnswer(correct, answer){
-  if(correct === answer){
-    alert("✅ صحيح");
+function answer(btn, selected){
+
+  let correct = currentQuestion.translation;
+
+  if(selected === correct){
+    btn.classList.add("correct");
   }else{
-    alert("❌ خطأ");
+    btn.classList.add("wrong");
   }
+
+  // ⏳ بعد ثانية يجيب سؤال جديد
+  setTimeout(()=>{
+    nextQuestion();
+  }, 1000);
+
 }
 
-/* 🔙 */
+/* رجوع */
 function goHome(){
   window.location.href="index.html";
 }
 
-/* 🚀 تحميل */
+/* تشغيل */
 loadWords();
 
 </script>

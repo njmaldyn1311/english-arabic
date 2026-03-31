@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>📖 مراجعة الكتاب</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<title>📚 رفع كتاب</title>
 
 <style>
 
@@ -15,154 +13,129 @@ body{
   font-family:"Cairo", sans-serif;
   background:linear-gradient(135deg,#0f172a,#1e293b);
   color:white;
-  text-align:center;
-}
-
-.container{
-  max-width:600px;
-  margin:auto;
-  padding:15px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
 
 .card{
   background:#1e293b;
-  padding:20px;
+  padding:25px;
   border-radius:20px;
-  margin-top:20px;
+  width:90%;
+  max-width:400px;
+  text-align:center;
 }
 
-h2{margin-bottom:10px}
-
-.section{
-  background:#334155;
+input{
+  width:100%;
   padding:12px;
   border-radius:10px;
+  border:none;
   margin-top:10px;
-  text-align:right;
-}
-
-.word{
-  display:flex;
-  justify-content:space-between;
-  background:#0f172a;
-  padding:8px;
-  border-radius:8px;
-  margin-top:6px;
-}
-
-.buttons{
-  display:flex;
-  justify-content:space-between;
-  margin-top:15px;
 }
 
 button{
+  width:100%;
   padding:12px;
   border:none;
   border-radius:10px;
-  cursor:pointer;
+  background:#22c55e;
+  color:white;
+  margin-top:10px;
   font-size:16px;
+  cursor:pointer;
 }
 
-.next{background:#22c55e;color:white;}
-.prev{background:#475569;color:white;}
+.progress{
+  height:10px;
+  background:#334155;
+  border-radius:10px;
+  margin-top:15px;
+  overflow:hidden;
+}
+
+.bar{
+  height:100%;
+  width:0%;
+  background:#22c55e;
+  transition:0.3s;
+}
+
+.status{
+  margin-top:10px;
+  font-size:14px;
+  color:#cbd5f5;
+}
 
 </style>
 </head>
 
 <body>
 
-<div class="container">
-
-<h2>📖 مراجعة الكتاب</h2>
-
 <div class="card">
 
-  <h3 id="title">...</h3>
+<h2>📚 رفع كتاب PDF</h2>
 
-  <div class="section" id="content"></div>
+<input type="file" id="file" accept="application/pdf">
 
-  <div class="section" id="translation"></div>
+<button onclick="upload()">🚀 ابدأ التحليل</button>
 
-  <div class="section" id="explanation"></div>
-
-  <h3>📚 الكلمات</h3>
-  <div id="words"></div>
-
-  <div class="buttons">
-    <button class="prev" onclick="prev()">⬅ السابق</button>
-    <button class="next" onclick="next()">التالي ➡</button>
-  </div>
-
+<div class="progress">
+  <div id="bar" class="bar"></div>
 </div>
+
+<div id="status" class="status"></div>
 
 </div>
 
 <script>
 
-const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+// 🔗 حط رابط webhook هنا
+const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf";
 
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+async function upload(){
 
-let page = 1;
+  const file = document.getElementById("file").files[0];
 
-// تحميل الصفحة
-async function loadPage(){
-
-  let { data } = await client
-    .from("pages")
-    .select("*")
-    .eq("page_number", page)
-    .single();
-
-  if(!data){
-    document.getElementById("title").innerText = "❌ لا توجد صفحة";
+  if(!file){
+    alert("اختر ملف PDF");
     return;
   }
 
-  document.getElementById("title").innerText = "📘 الصفحة " + page;
-  document.getElementById("content").innerText = data.content || "";
-  document.getElementById("translation").innerText = "🇸🇦 " + (data.translation || "");
-  document.getElementById("explanation").innerText = "🧠 " + (data.explanation || "");
+  const formData = new FormData();
+  formData.append("file", file);
 
-  loadWords(data.id);
-}
+  updateStatus("⏳ جاري الرفع...");
+  updateBar(20);
 
-// تحميل الكلمات
-async function loadWords(page_id){
+  try{
 
-  let { data } = await client
-    .from("page_words")
-    .select("*")
-    .eq("page_id", page_id);
+    const res = await fetch(WEBHOOK,{
+      method:"POST",
+      body: formData
+    });
 
-  let container = document.getElementById("words");
-  container.innerHTML = "";
+    updateBar(70);
 
-  data.forEach(w=>{
-    let div = document.createElement("div");
-    div.className = "word";
-    div.innerHTML = `<span>${w.en}</span> <span>${w.ar}</span>`;
-    container.appendChild(div);
-  });
-}
+    const data = await res.json();
 
-// التالي
-function next(){
-  page++;
-  loadPage();
-}
+    updateBar(100);
+    updateStatus("✅ تم تحليل الكتاب بنجاح");
 
-// السابق
-function prev(){
-  if(page > 1){
-    page--;
-    loadPage();
+  }catch(e){
+    updateStatus("❌ خطأ في الاتصال");
   }
 }
 
-loadPage();
+function updateBar(value){
+  document.getElementById("bar").style.width = value + "%";
+}
+
+function updateStatus(text){
+  document.getElementById("status").innerText = text;
+}
 
 </script>
 

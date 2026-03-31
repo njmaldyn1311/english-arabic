@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>🧠 اختبار ذكي</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:"Cairo", sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+}
+
+/* 📱 حاوية عامة */
+.container{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:15px;
+}
+
+/* 📦 الكرت */
+.card{
+  width:100%;
+  max-width:420px;
+  background:#1e293b;
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  text-align:center;
+}
+
+/* 📊 العنوان */
+.title{
+  font-size:22px;
+  margin-bottom:10px;
+}
+
+/* 🧠 السؤال */
+.question{
+  font-size:20px;
+  margin:15px 0;
+  line-height:1.5;
+}
+
+/* 🔊 */
+.speaker{
+  font-size:26px;
+  cursor:pointer;
+  margin:10px 0;
+}
+
+/* 📝 الإدخال */
+input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  font-size:16px;
+  text-align:center;
+  margin-top:10px;
+}
+
+/* 🔘 زر */
+button{
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  margin-top:10px;
+  cursor:pointer;
+  font-size:15px;
+}
+
+/* خيارات */
+.option{
+  width:100%;
+  background:#334155;
+  margin:6px 0;
+  color:white;
+}
+
+/* تحقق */
+.check{
+  background:#22c55e;
+  color:white;
+}
+
+/* 🔔 toast */
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:12px 20px;
+  border-radius:12px;
+  display:none;
+  font-size:14px;
+}
+
+.success{background:#22c55e;}
+.error{background:#ef4444;}
+
+/* 📱 تحسين للجوال */
+@media (max-width:400px){
+  .question{font-size:18px}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="card">
+
+    <div class="title">🧠 اختبار ذكي</div>
+
+    <div id="question" class="question">...</div>
+
+    <div id="speaker" class="speaker" onclick="play()">🔊</div>
+
+    <div id="answers"></div>
+
+    <input id="input" placeholder="اكتب الإجابة">
+
+    <button class="check" onclick="check()">تحقق</button>
+
+  </div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let words = [];
+let current = 0;
+let type = "";
+let currentWord = null;
+
+// تحميل
+async function load(){
+  let { data } = await client.from("words").select("*");
+  words = data;
+  next();
+}
+
+// السؤال التالي
+function next(){
+
+  if(current >= words.length){
+    document.getElementById("question").innerText = "🎉 انتهى الاختبار";
+    return;
+  }
+
+  currentWord = words[current];
+
+  let en = currentWord.en || currentWord.word;
+  let ar = currentWord.ar || currentWord.arabic;
+
+  let types = ["mcq","write","listen"];
+  type = types[Math.floor(Math.random()*types.length)];
+
+  document.getElementById("answers").innerHTML = "";
+  document.getElementById("input").value = "";
+
+  // 🎯 اختيار من متعدد
+  if(type === "mcq"){
+
+    document.getElementById("speaker").style.display="none";
+    document.getElementById("input").style.display="none";
+
+    document.getElementById("question").innerText = "ما معنى: " + en;
+
+    let options = [...words].sort(()=>0.5-Math.random()).slice(0,3);
+    options.push(currentWord);
+    options = options.sort(()=>0.5-Math.random());
+
+    options.forEach(o=>{
+      let btn = document.createElement("button");
+      btn.className="option";
+      btn.innerText = o.ar || o.arabic;
+
+      btn.onclick=()=>{
+        checkChoice(btn.innerText, ar);
+      };
+
+      document.getElementById("answers").appendChild(btn);
+    });
+  }
+
+  // ✍️ كتابة معنى كلمة
+  if(type === "write"){
+
+    document.getElementById("speaker").style.display="none";
+    document.getElementById("input").style.display="block";
+
+    document.getElementById("question").innerText = "اكتب معنى: " + en;
+  }
+
+  // 🎧 استماع
+  if(type === "listen"){
+
+    document.getElementById("speaker").style.display="block";
+    document.getElementById("input").style.display="block";
+
+    document.getElementById("question").innerText = "🎧 اسمع واكتب المعنى";
+    speak(en);
+  }
+}
+
+// 🔊
+function speak(text){
+  let u = new SpeechSynthesisUtterance(text);
+  u.lang="en-US";
+  speechSynthesis.speak(u);
+}
+
+function play(){
+  let en = currentWord.en || currentWord.word;
+  speak(en);
+}
+
+// تحقق اختيار
+function checkChoice(selected, correct){
+  if(selected === correct){
+    toast("✅ صح",true);
+  }else{
+    toast("❌ " + correct,false);
+  }
+  nextStep();
+}
+
+// تحقق كتابة
+function check(){
+
+  if(type === "mcq") return;
+
+  let ar = currentWord.ar || currentWord.arabic;
+  let val = document.getElementById("input").value.trim();
+
+  if(val === ar){
+    toast("✅ صح",true);
+  }else{
+    toast("❌ " + ar,false);
+  }
+
+  nextStep();
+}
+
+// التالي
+function nextStep(){
+  current++;
+  setTimeout(next,800);
+}
+
+// toast
+function toast(msg, ok){
+
+  let t=document.getElementById("toast");
+  t.innerText=msg;
+  t.className="toast " + (ok?"success":"error");
+  t.style.display="block";
+
+  setTimeout(()=>t.style.display="none",1200);
+}
+
+load();
+
+</script>
+
+</body>
+</html>

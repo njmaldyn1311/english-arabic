@@ -15,104 +15,92 @@ body{
   font-family:"Cairo", sans-serif;
   background:linear-gradient(135deg,#0f172a,#1e293b);
   color:white;
-  text-align:center;
-}
-
-/* 🔥 العنوان */
-h2{
-  margin-top:20px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
 
 /* 📦 الكرت */
 .card{
   background:#1e293b;
-  margin:20px auto;
   padding:25px;
   border-radius:20px;
   width:90%;
-  max-width:400px;
+  max-width:350px;
+  text-align:center;
   box-shadow:0 10px 30px rgba(0,0,0,0.4);
 }
 
 /* 🧠 السؤال */
 .word{
-  font-size:24px;
-  margin:20px 0;
+  font-size:22px;
+  margin-bottom:20px;
 }
 
-/* 🔘 الخيارات */
-.option{
-  background:#334155;
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  margin:8px 0;
-  color:white;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-.option:hover{
-  background:#475569;
-}
-
-/* 🟢 صح */
-.correct{
-  background:#22c55e !important;
-}
-
-/* 🔴 خطأ */
-.wrong{
-  background:#ef4444 !important;
-}
-
-/* 📝 إدخال */
+/* 📝 الإدخال */
 input{
   width:100%;
   padding:12px;
-  border-radius:10px;
+  border-radius:12px;
   border:none;
-  margin-top:10px;
   font-size:16px;
+  text-align:center;
 }
 
 /* 🔘 زر */
 button{
+  margin-top:12px;
   padding:10px 20px;
   border:none;
   border-radius:10px;
-  margin-top:10px;
+  background:#22c55e;
+  color:white;
   cursor:pointer;
 }
 
-/* 🔊 زر الصوت */
+/* 🔊 */
 .speaker{
   font-size:24px;
   cursor:pointer;
-  margin-top:10px;
+  margin:10px 0;
 }
+
+/* 🔔 تنبيه جميل */
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#1e293b;
+  padding:15px 20px;
+  border-radius:12px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.4);
+  display:none;
+  font-size:16px;
+}
+
+.toast.success{background:#22c55e;}
+.toast.error{background:#ef4444;}
 
 </style>
 </head>
 
 <body>
 
-<h2>🧠 اختبار ذكي</h2>
-
 <div class="card">
 
   <div id="question" class="word">⏳ جاري التحميل...</div>
 
-  <div id="speaker" class="speaker" onclick="playSound()">🔊</div>
+  <div class="speaker" onclick="playSound()">🔊</div>
 
-  <div id="answers"></div>
+  <input id="inputAnswer" placeholder="اكتب المعنى بالعربي">
 
-  <input id="inputAnswer" placeholder="اكتب الإجابة">
-
-  <button onclick="checkInput()">تحقق</button>
+  <button onclick="check()">تحقق</button>
 
 </div>
+
+<div id="toast" class="toast"></div>
 
 <script>
 
@@ -124,9 +112,8 @@ const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let words = [];
 let current = 0;
 let currentWord = null;
-let currentType = "";
 
-// تحميل
+// تحميل الكلمات
 async function load(){
 
   let { data } = await client.from("words").select("*");
@@ -135,7 +122,7 @@ async function load(){
   next();
 }
 
-// عرض سؤال
+// عرض السؤال
 function next(){
 
   if(current >= words.length){
@@ -146,83 +133,34 @@ function next(){
   currentWord = words[current];
 
   let en = currentWord.en || currentWord.word;
-  let ar = currentWord.ar || currentWord.arabic;
 
-  let types = ["mcq","write","listen"];
-  currentType = types[Math.floor(Math.random()*types.length)];
-
-  document.getElementById("answers").innerHTML = "";
+  document.getElementById("question").innerText = "🎧 اسمع واكتب المعنى";
   document.getElementById("inputAnswer").value = "";
 
-  // 🎯 اختيار
-  if(currentType === "mcq"){
-
-    document.getElementById("speaker").style.display="none";
-    document.getElementById("question").innerText = "ما معنى: " + en;
-
-    let options = shuffle([...words]).slice(0,3);
-    options.push(currentWord);
-    options = shuffle(options);
-
-    options.forEach(opt=>{
-      let btn = document.createElement("button");
-      btn.className = "option";
-      btn.innerText = opt.ar || opt.arabic;
-
-      btn.onclick = ()=>{
-        if(btn.innerText === ar){
-          btn.classList.add("correct");
-        }else{
-          btn.classList.add("wrong");
-        }
-        setTimeout(()=>{ current++; next(); },1000);
-      };
-
-      document.getElementById("answers").appendChild(btn);
-    });
-
-    hideInput();
-  }
-
-  // ✍️ كتابة
-  if(currentType === "write"){
-
-    document.getElementById("speaker").style.display="none";
-    document.getElementById("question").innerText = "اكتب بالإنجليزي: " + ar;
-    showInput();
-  }
-
-  // 🔊 استماع
-  if(currentType === "listen"){
-
-    document.getElementById("speaker").style.display="block";
-    document.getElementById("question").innerText = "🎧 اضغط الصوت واكتب الكلمة";
-    speak(en);
-    showInput();
-  }
+  speak(en);
 }
 
-// تحقق كتابة
-function checkInput(){
+// تحقق
+function check(){
 
-  let en = currentWord.en || currentWord.word;
-  let val = document.getElementById("inputAnswer").value.trim().toLowerCase();
+  let ar = currentWord.ar || currentWord.arabic;
+  let val = document.getElementById("inputAnswer").value.trim();
 
-  if(val === en.toLowerCase()){
-    alert("✅ صح");
+  if(val === ar){
+    showToast("✅ صح", true);
   }else{
-    alert("❌ خطأ\n" + en);
+    showToast("❌ خطأ - " + ar, false);
   }
 
   current++;
-  next();
+  setTimeout(next,1000);
 }
 
-// 🔊 تشغيل الصوت
+// 🔊 الصوت
 function speak(text){
-  window.currentAudio = new SpeechSynthesisUtterance(text);
-  currentAudio.lang = "en-US";
-  speechSynthesis.speak(currentAudio);
+  let u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  speechSynthesis.speak(u);
 }
 
 function playSound(){
@@ -230,18 +168,18 @@ function playSound(){
   speak(en);
 }
 
-// أدوات
-function showInput(){
-  document.getElementById("inputAnswer").style.display="block";
-}
+// 🔔 تنبيه
+function showToast(msg, success){
 
-function hideInput(){
-  document.getElementById("inputAnswer").style.display="none";
-}
+  let t = document.getElementById("toast");
+  t.innerText = msg;
 
-// منع تكرار
-function shuffle(arr){
-  return arr.sort(()=>0.5 - Math.random());
+  t.className = "toast " + (success ? "success" : "error");
+  t.style.display = "block";
+
+  setTimeout(()=>{
+    t.style.display = "none";
+  },1500);
 }
 
 load();

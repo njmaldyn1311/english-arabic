@@ -26,7 +26,7 @@ async function upload() {
   formData.append("file", file); // 👈 مهم الاسم
 
   try {
-    const res = await fetch("https://YOUR-WEBHOOK-URL", {
+    const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
       method: "POST",
       body: formData
     });

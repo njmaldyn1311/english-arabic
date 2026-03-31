@@ -4,88 +4,68 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>📖 قراءة الكتاب</title>
+<title>📖 مراجعة الكتاب</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <style>
-
-*{box-sizing:border-box}
 
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
   background:linear-gradient(135deg,#0f172a,#1e293b);
   color:white;
+  text-align:center;
 }
 
-/* 📱 حاوية */
 .container{
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  max-width:600px;
+  margin:auto;
   padding:15px;
 }
 
-/* 📦 كرت */
 .card{
-  width:100%;
-  max-width:500px;
   background:#1e293b;
-  border-radius:20px;
   padding:20px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  border-radius:20px;
+  margin-top:20px;
 }
 
-/* 📖 عنوان */
-.title{
-  text-align:center;
-  font-size:22px;
-  margin-bottom:10px;
-}
+h2{margin-bottom:10px}
 
-/* 📝 النص */
-.content{
-  line-height:1.8;
-  margin:15px 0;
-}
-
-/* 📦 صناديق */
-.box{
-  padding:12px;
-  border-radius:12px;
-  margin:10px 0;
-  font-size:15px;
-}
-
-.green{background:#065f46}
-.yellow{background:#78350f}
-
-/* 📚 كلمات */
-.word{
+.section{
   background:#334155;
-  padding:8px;
+  padding:12px;
   border-radius:10px;
-  margin:5px 0;
+  margin-top:10px;
+  text-align:right;
 }
 
-/* 🔘 أزرار */
-.nav{
+.word{
+  display:flex;
+  justify-content:space-between;
+  background:#0f172a;
+  padding:8px;
+  border-radius:8px;
+  margin-top:6px;
+}
+
+.buttons{
   display:flex;
   justify-content:space-between;
   margin-top:15px;
 }
 
 button{
-  padding:10px 15px;
+  padding:12px;
   border:none;
   border-radius:10px;
   cursor:pointer;
+  font-size:16px;
 }
 
-.next{background:#22c55e;color:white}
-.prev{background:#475569;color:white}
+.next{background:#22c55e;color:white;}
+.prev{background:#475569;color:white;}
 
 </style>
 </head>
@@ -93,60 +73,63 @@ button{
 <body>
 
 <div class="container">
-  <div class="card">
 
-    <div id="title" class="title">📖 الصفحة 1</div>
+<h2>📖 مراجعة الكتاب</h2>
 
-    <div id="content" class="content">...</div>
+<div class="card">
 
-    <div id="translation" class="box green"></div>
+  <h3 id="title">...</h3>
 
-    <div id="explanation" class="box yellow"></div>
+  <div class="section" id="content"></div>
 
-    <div id="words"></div>
+  <div class="section" id="translation"></div>
 
-    <div class="nav">
-      <button class="prev" onclick="prev()">⬅️ السابق</button>
-      <button class="next" onclick="next()">التالي ➡️</button>
-    </div>
+  <div class="section" id="explanation"></div>
 
+  <h3>📚 الكلمات</h3>
+  <div id="words"></div>
+
+  <div class="buttons">
+    <button class="prev" onclick="prev()">⬅ السابق</button>
+    <button class="next" onclick="next()">التالي ➡</button>
   </div>
+
+</div>
+
 </div>
 
 <script>
 
-// 🔗 Supabase
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 📖 رقم الصفحة
-let pageNumber = 1;
+let page = 1;
 
-// 🚀 تحميل الصفحة
+// تحميل الصفحة
 async function loadPage(){
 
-  let { data, error } = await client
+  let { data } = await client
     .from("pages")
     .select("*")
-    .eq("page_number", pageNumber)
+    .eq("page_number", page)
     .single();
 
-  if(error || !data){
-    document.getElementById("content").innerText = "❌ لا توجد صفحة";
+  if(!data){
+    document.getElementById("title").innerText = "❌ لا توجد صفحة";
     return;
   }
 
-  document.getElementById("title").innerText = "📖 الصفحة " + data.page_number;
+  document.getElementById("title").innerText = "📘 الصفحة " + page;
   document.getElementById("content").innerText = data.content || "";
-  document.getElementById("translation").innerText = "📘 ترجمة:\n" + (data.translation || "");
-  document.getElementById("explanation").innerText = "💡 شرح:\n" + (data.explanation || "");
+  document.getElementById("translation").innerText = "🇸🇦 " + (data.translation || "");
+  document.getElementById("explanation").innerText = "🧠 " + (data.explanation || "");
 
   loadWords(data.id);
 }
 
-// 📚 كلمات الصفحة
+// تحميل الكلمات
 async function loadWords(page_id){
 
   let { data } = await client
@@ -155,26 +138,26 @@ async function loadWords(page_id){
     .eq("page_id", page_id);
 
   let container = document.getElementById("words");
-  container.innerHTML = "<h4>📚 كلمات مهمة</h4>";
+  container.innerHTML = "";
 
   data.forEach(w=>{
     let div = document.createElement("div");
     div.className = "word";
-    div.innerText = w.en + " = " + w.ar;
+    div.innerHTML = `<span>${w.en}</span> <span>${w.ar}</span>`;
     container.appendChild(div);
   });
 }
 
 // التالي
 function next(){
-  pageNumber++;
+  page++;
   loadPage();
 }
 
 // السابق
 function prev(){
-  if(pageNumber > 1){
-    pageNumber--;
+  if(page > 1){
+    page--;
     loadPage();
   }
 }

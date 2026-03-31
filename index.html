@@ -6,85 +6,93 @@
 body {
   margin: 0;
   font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  background: linear-gradient(135deg, #0f172a, #1e293b);
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
 }
 
+/* الحاوية */
 .container {
   width: 90%;
   max-width: 400px;
-  background: #eee;
+  background: #111827;
   border-radius: 30px;
   overflow: hidden;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
+/* الهيدر */
 .header {
-  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  background: linear-gradient(135deg, #0f172a, #1e293b);
   height: 140px;
   position: relative;
 }
 
+/* صورة */
 .profile-img {
   width: 110px;
   height: 110px;
   border-radius: 50%;
-  border: 5px solid white;
+  border: 5px solid #1e293b;
   position: absolute;
   bottom: -55px;
   left: 50%;
   transform: translateX(-50%);
 }
 
+/* المحتوى */
 .content {
   padding: 70px 20px 20px;
 }
 
 h1 {
   margin: 10px 0;
+  color: white;
 }
 
 .subtitle {
-  color: #555;
+  color: #cbd5e1;
 }
 
+/* الطلاب */
 .students {
-  color: #0072ff;
+  color: #22c55e;
   font-weight: bold;
   margin: 10px 0;
-  font-size: 18px;
 }
 
+/* الكروت */
 .card {
-  background: #ddd;
+  background: #1e293b;
   border-radius: 20px;
   padding: 15px;
   margin: 10px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: white;
 }
 
+/* الأزرار */
 button {
-  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  background: #22c55e;
   border: none;
   color: white;
   padding: 10px 15px;
   border-radius: 20px;
   cursor: pointer;
-  font-size: 13px;
 }
 
+/* تسجيل خروج */
 .logout {
   background: #ef4444;
   margin-top: 10px;
 }
 
-/* زر واتساب */
+/* واتساب */
 .whatsapp {
   display: block;
   margin-top: 15px;
@@ -107,7 +115,6 @@ button {
   padding: 15px;
   border-radius: 50%;
   text-decoration: none;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 </style></head><body><div class="container">  <div class="header">
     <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="profile-img">
@@ -153,7 +160,7 @@ button {
   <button onclick="goProfile()">فتح</button>
 </div>
 
-<!-- 💬 واتساب -->
+<!-- واتساب -->
 <a id="whatsappLink" target="_blank" class="whatsapp">
   💬 تواصل معي على واتساب
 </a>
@@ -165,27 +172,25 @@ button {
   💬
 </a><script>
 
+// تحقق تسجيل الدخول
 const userId = localStorage.getItem("user_id");
 if(!userId){
   window.location.href = "login.html";
 }
 
-// 👤 اسم الطالب
+// اسم الطالب
 let userName = localStorage.getItem("user_name") || "طالب";
 
-// ✉️ الرسالة
+// رسالة واتساب
 let message = `السلام عليكم، أنا ${userName} وأحتاج مساعدة 🙏`;
-
-// 🔗 تحويل النص
-let encodedMessage = encodeURIComponent(message);
-
-// 📲 رابط واتساب
-let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encodedMessage}`;
+let encoded = encodeURIComponent(message);
+let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encoded}`;
 
 // ربط الأزرار
 document.getElementById("whatsappLink").href = whatsappURL;
 document.getElementById("whatsappFloat").href = whatsappURL;
 
+// عداد الطلاب
 let count = localStorage.getItem("studentsCount");
 if (!count) count = 120;
 
@@ -199,6 +204,7 @@ function updateStudents() {
 updateStudents();
 setInterval(updateStudents, 8000);
 
+// التنقل
 function goClass(){ window.location.href = "myclass.html"; }
 function goYoutube(){ window.location.href = "youtube.html"; }
 function goPDF(){ window.location.href = "pdf.html"; }
@@ -207,6 +213,7 @@ function goProfile(){ window.location.href = "student.html"; }
 function goTest(){ window.location.href = "test.html"; }
 function goReview(){ window.location.href = "review.html"; }
 
+// تسجيل خروج
 function logout(){
   const studentsCount = localStorage.getItem("studentsCount");
   localStorage.clear();

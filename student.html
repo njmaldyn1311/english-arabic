@@ -1,75 +1,132 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>رفع PDF</title>
+<title>تحليل PDF</title>
 
 <style>
 body {
   font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: white;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  margin: 0;
+  padding: 20px;
   display: flex;
   justify-content: center;
-  align-items: center;
-  height: 100vh;
 }
 
-.card {
-  background: #1e293b;
-  padding: 30px;
+/* الحاوية العامة */
+.container {
+  width: 100%;
+  max-width: 500px;
+}
+
+/* الصندوق الأبيض */
+.box {
+  background: white;
+  padding: 25px;
   border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
+  width: 98%;
+  box-sizing: border-box;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+/* الزر */
+button {
+  background: #00c6ff;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background: #009edb;
+}
+
+/* النتائج */
+#result {
+  width: 100%;
+}
+
+/* عنوان القسم */
+.title {
+  margin: 15px 0 10px;
   text-align: center;
 }
 
-input {
-  width: 100%;
-  padding: 12px;
-  margin: 15px 0;
-  border-radius: 10px;
+/* كل كلمة */
+.word {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-button {
-  background: #22c55e;
-  border: none;
-  padding: 12px;
-  width: 100%;
-  border-radius: 10px;
-  color: white;
-  font-size: 16px;
+.en {
+  flex: 1;
+  text-align: left;
+}
+
+.ar {
+  flex: 1;
+  text-align: right;
+}
+
+/* موبايل */
+@media (max-width: 480px) {
+  body {
+    padding: 15px;
+  }
+
+  .box {
+    padding: 20px;
+  }
 }
 </style>
+
 </head>
 
 <body>
 
-<div class="card">
-  <h2>📄 رفع الكتاب</h2>
+<div class="container">
 
-  <input type="file" id="file" accept="application/pdf">
+  <div class="box">
+    <h2>📄 رفع PDF</h2>
 
-  <button onclick="upload()">رفع</button>
+    <input type="file" id="file" accept="application/pdf"><br><br>
 
-  <p id="status"></p>
+    <button onclick="upload()">🚀 تحليل</button>
+
+    <p id="status"></p>
+  </div>
+
+  <div id="result"></div>
+
 </div>
 
 <script>
 async function upload() {
-  const fileInput = document.getElementById("file");
+  const file = document.getElementById("file").files[0];
   const status = document.getElementById("status");
+  const result = document.getElementById("result");
 
-  if (!fileInput.files.length) {
-    status.innerText = "❌ اختر ملف";
+  if (!file) {
+    alert("اختر ملف");
     return;
   }
 
   const formData = new FormData();
+  formData.append("file", file);
 
-  // 🔥 أهم سطر
-  formData.append("file", fileInput.files[0]);
+  status.innerText = "⏳ جاري التحليل...";
+  result.innerHTML = "";
 
   try {
     const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
@@ -77,11 +134,53 @@ async function upload() {
       body: formData
     });
 
-    status.innerText = "✅ تم الإرسال";
+    let data = await res.json();
+
+    if (data.raw) {
+      try {
+        data = JSON.parse(data.raw);
+      } catch {}
+    }
+
+    status.innerText = "✅ تم التحليل";
+
+    function renderList(list) {
+      if (!list || list.length === 0) return "";
+
+      return list.map(item => `
+        <div class="word">
+          <span class="en">${item.word || item.phrase || ""}</span>
+          <button onclick="speak('${item.word || item.phrase}')">🔊</button>
+          <span class="ar">${item.arabic || ""}</span>
+        </div>
+      `).join("");
+    }
+
+    result.innerHTML = `
+      ${data.verbs?.length ? `<div class="box"><h3 class="title">📌 الأفعال</h3>${renderList(data.verbs)}</div>` : ""}
+
+      ${data.nouns?.length ? `<div class="box"><h3 class="title">📌 الأسماء</h3>${renderList(data.nouns)}</div>` : ""}
+
+      ${data.adjectives?.length ? `<div class="box"><h3 class="title">📌 الصفات</h3>${renderList(data.adjectives)}</div>` : ""}
+
+      ${data.idioms?.length ? `<div class="box"><h3 class="title">📌 العبارات</h3>${renderList(data.idioms)}</div>` : ""}
+
+      ${(data.phrasal_verbs?.length || data.phrasalVerbs?.length)
+        ? `<div class="box"><h3 class="title">📌 الأفعال المركبة</h3>${renderList(data.phrasal_verbs || data.phrasalVerbs)}</div>`
+        : ""
+      }
+    `;
+
   } catch (err) {
-    status.innerText = "❌ فشل الإرسال";
     console.error(err);
+    status.innerText = "❌ خطأ في الاتصال";
   }
+}
+
+function speak(word) {
+  const utterance = new SpeechSynthesisUtterance(word);
+  utterance.lang = "en-US";
+  speechSynthesis.speak(utterance);
 }
 </script>
 

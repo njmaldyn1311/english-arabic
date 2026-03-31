@@ -1,224 +1,245 @@
-<!DOCTYPE html><html lang="ar" dir="rtl">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تحليل PDF</title><style>
-body {
-  font-family: "Cairo", sans-serif;
-  margin: 0;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+<title>حسابي</title>
+
+<style>
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:"Cairo", sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
 }
 
-.container {
-  width: 100%;
-  padding: 15px;
-  box-sizing: border-box;
+/* 🔝 الأعلى */
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px;
+  flex-wrap:wrap;
+  gap:10px;
 }
 
-.box {
-  background: #fff;
-  padding: 20px;
-  border-radius: 20px;
-  max-width: 420px;
-  margin: auto;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+.user{color:#38bdf8;font-size:14px;}
+.points{color:#FFD700;font-size:14px;}
+
+.review{
+  background:#6366f1;
+  padding:8px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:14px;
 }
 
-h2 {
-  margin-bottom: 20px;
+/* 📦 كروت */
+.card{
+  background:#1e293b;
+  margin:15px;
+  padding:18px;
+  border-radius:18px;
 }
 
-input[type="file"] {
-  width: 100%;
-  margin-bottom: 15px;
+/* 📱 استجابة */
+@media (max-width:480px){
+  .card{margin:12px;}
+  .top{padding:10px;}
 }
 
-button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  background: #2a5298;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  transition: 0.3s;
+/* ⭐ الكلمات */
+.word{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px solid #334155;
 }
 
-button:hover {
-  background: #1e3c72;
+.en{color:#38bdf8;}
+.ar{color:#f87171;}
+
+/* 📝 الملاحظات */
+textarea{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  margin-top:10px;
+  resize:none;
+  height:80px;
+  font-family:"Cairo";
 }
 
-#status {
-  margin-top: 10px;
-  font-size: 14px;
+/* زر */
+button{
+  margin-top:10px;
+  padding:10px 15px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  color:white;
+  cursor:pointer;
 }
 
-.progress {
-  height: 6px;
-  background: #eee;
-  border-radius: 10px;
-  margin-top: 10px;
-  overflow: hidden;
+/* 🧠 اختبار */
+.quiz button{
+  display:block;
+  width:100%;
+  margin-top:6px;
+  background:#334155;
 }
 
-.bar {
-  height: 100%;
-  width: 0%;
-  background: #2a5298;
-  transition: 0.3s;
-}
+</style>
+</head>
 
-#result {
-  margin-top: 20px;
-}
+<body>
 
-.word {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.en { text-align: left; }
-.ar { text-align: right; }
-
-/* موبايل */
-@media (max-width: 480px) {
-  .word {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .en, .ar {
-    width: 100%;
-    text-align: right;
-  }
-}
-</style></head><body><div class="container">  <div class="box">
-    <h2>📄 تحليل PDF</h2><input type="file" id="file" accept="application/pdf">
-
-<button onclick="upload()">🚀 تحليل</button>
-
-<div class="progress">
-  <div id="bar" class="bar"></div>
+<div class="top">
+  <div class="user" id="username">👤</div>
+  <div class="points">⭐ كلماتك: <span id="count">0</span></div>
+  <div class="review" onclick="goHome()">🏠 الرئيسية</div>
 </div>
 
-<p id="status"></p>
+<!-- ⭐ الكلمات -->
+<div class="card">
+  <h3>⭐ الكلمات المحفوظة</h3>
+  <div id="words"></div>
+</div>
 
-  </div>  <div id="result"></div></div><script>
+<!-- 📝 الملاحظات -->
+<div class="card">
+  <h3>📝 ملاحظاتي</h3>
 
-function setProgress(v){
-  document.getElementById("bar").style.width = v + "%";
+  <div id="oldNotes" style="color:#cbd5f5;margin-bottom:10px;"></div>
+
+  <textarea id="noteInput" placeholder="اكتب ملاحظة جديدة..."></textarea>
+
+  <button onclick="addNote()">➕ إضافة</button>
+</div>
+
+<!-- 🧠 اختبار -->
+<div class="card">
+  <h3>🧠 اختبار سريع</h3>
+  <div id="quiz"></div>
+</div>
+
+<script>
+
+/* 👤 الاسم (أول + ثاني فقط) */
+let fullName = localStorage.getItem("user") || "طالب";
+
+let parts = fullName.split(" ");
+let shortName = parts[0] + (parts[1] ? " " + parts[1] : "");
+
+document.getElementById("username").innerText = "👤 " + shortName;
+
+
+/* ⭐ الكلمات */
+let words = JSON.parse(localStorage.getItem("words") || "[]");
+document.getElementById("count").innerText = words.length;
+
+function renderWords(){
+  let html="";
+  words.forEach(w=>{
+    html+=`
+      <div class="word">
+        <div class="ar">${w.ar}</div>
+        <div class="en">${w.en}</div>
+      </div>
+    `;
+  });
+  document.getElementById("words").innerHTML = html || "لا توجد كلمات";
+}
+renderWords();
+
+
+/* 📝 الملاحظات */
+function loadNotes(){
+  let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+
+  let html="";
+  notes.forEach(n=>{
+    html+=`<div>• ${n}</div>`;
+  });
+
+  document.getElementById("oldNotes").innerHTML =
+    html || "لا توجد ملاحظات";
 }
 
-async function upload() {
-  const file = document.getElementById("file").files[0];
-  const status = document.getElementById("status");
-  const result = document.getElementById("result");
+function addNote(){
+  let input = document.getElementById("noteInput").value.trim();
+  if(!input) return;
 
-  if (!file) {
-    alert("اختر ملف PDF");
+  let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+  notes.push(input);
+
+  localStorage.setItem("notes", JSON.stringify(notes));
+
+  document.getElementById("noteInput").value = "";
+
+  loadNotes();
+}
+
+loadNotes();
+
+
+/* 🧠 اختبار */
+function generateQuiz(){
+
+  if(words.length < 3){
+    document.getElementById("quiz").innerHTML = "أضف كلمات أولاً ⭐";
     return;
   }
 
-  // تحقق النوع
-  if (file.type !== "application/pdf") {
-    status.innerText = "❌ فقط PDF مسموح";
-    return;
-  }
+  let random = words.sort(()=>0.5-Math.random()).slice(0,3);
 
-  // حد الحجم 5MB
-  const maxSize = 5 * 1024 * 1024;
+  let html="";
 
-  if (file.size > maxSize) {
-    status.innerHTML = `
-      ❌ الملف كبير جدًا<br>
-      الحد: 5MB<br>
-      حجمك: ${(file.size / 1024 / 1024).toFixed(2)} MB
+  random.forEach(q=>{
+
+    let options = words.sort(()=>0.5-Math.random()).slice(0,3);
+    options.push(q);
+    options = options.sort(()=>0.5-Math.random());
+
+    html+=`<div class="quiz">
+      <p>ما معنى: <strong>${q.en}</strong>؟</p>
     `;
-    return;
-  }
 
-  result.innerHTML = "";
-  setProgress(20);
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  try {
-    status.innerText = "⏳ جاري التحليل...";
-    setProgress(40);
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000);
-
-    const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
-      method: "POST",
-      body: formData,
-      signal: controller.signal
+    options.forEach(opt=>{
+      html+=`
+        <button onclick="checkAnswer('${q.ar}','${opt.ar}')">
+          ${opt.ar}
+        </button>
+      `;
     });
 
-    clearTimeout(timeout);
-    setProgress(70);
+    html+=`</div><hr>`;
+  });
 
-    if (!res.ok) throw new Error("Server");
+  document.getElementById("quiz").innerHTML = html;
+}
 
-    let data = await res.json();
-
-    if (data.raw) {
-      try { data = JSON.parse(data.raw); } catch {}
-    }
-
-    status.innerText = "✅ تم التحليل";
-    setProgress(100);
-
-    function render(list){
-      if (!list) return "";
-      return list.map(i => `
-        <div class="word">
-          <span class="en">${i.word || i.phrase}</span>
-          <button onclick="speak('${i.word || i.phrase}')">🔊</button>
-          <span class="ar">${i.arabic || ""}</span>
-        </div>
-      `).join("");
-    }
-
-    result.innerHTML = `
-      ${data.verbs ? `<div class="box"><h3>📌 الأفعال</h3>${render(data.verbs)}</div>` : ""}
-      ${data.nouns ? `<div class="box"><h3>📌 الأسماء</h3>${render(data.nouns)}</div>` : ""}
-      ${data.adjectives ? `<div class="box"><h3>📌 الصفات</h3>${render(data.adjectives)}</div>` : ""}
-      ${data.idioms ? `<div class="box"><h3>📌 العبارات</h3>${render(data.idioms)}</div>` : ""}
-      ${(data.phrasal_verbs || data.phrasalVerbs)
-        ? `<div class="box"><h3>📌 الأفعال المركبة</h3>${render(data.phrasal_verbs || data.phrasalVerbs)}</div>`
-        : ""
-      }
-    `;
-
-  } catch (err) {
-    console.error(err);
-
-    if (err.name === "AbortError") {
-      status.innerText = "⏱️ انتهى الوقت (الملف كبير)";
-    } else {
-      status.innerText = "❌ فشل الاتصال";
-    }
-
-    setProgress(0);
+function checkAnswer(correct, answer){
+  if(correct === answer){
+    alert("✅ صحيح");
+  }else{
+    alert("❌ خطأ");
   }
 }
 
-function speak(word){
-  const u = new SpeechSynthesisUtterance(word);
-  u.lang = "en-US";
-  speechSynthesis.speak(u);
+generateQuiz();
+
+
+/* 🔙 رجوع */
+function goHome(){
+  window.location.href="index.html";
 }
 
-</script></body>
+</script>
+
+</body>
 </html>

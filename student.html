@@ -18,6 +18,7 @@ body{
   display:flex;
   justify-content:space-between;
   padding:15px;
+  align-items:center;
 }
 
 .user{color:#38bdf8;}
@@ -77,19 +78,21 @@ body{
 <body>
 
 <div class="top">
-  <div class="user" id="username">👤</div>
-  <div class="points">⭐ كلماتك: <span id="count">0</span></div>
   <div class="review" onclick="goHome()">🏠 الرئيسية</div>
+  <div class="points">⭐ كلماتك: <span id="count">0</span></div>
+  <div class="user" id="username">👤</div>
 </div>
 
-<div class="card">
-  <h3>⭐ الكلمات المحفوظة</h3>
-  <div id="words">⏳ تحميل...</div>
-</div>
-
+<!-- 🧠 الاختبار أول -->
 <div class="card">
   <h3>🧠 اختبار ذكي</h3>
   <div id="quiz"></div>
+</div>
+
+<!-- ⭐ الكلمات تحت -->
+<div class="card">
+  <h3>⭐ الكلمات المحفوظة</h3>
+  <div id="words">⏳ تحميل...</div>
 </div>
 
 <script>
@@ -100,9 +103,11 @@ const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 let user_id = localStorage.getItem("user_id");
 
-/* الاسم */
+/* 👤 الاسم (أول + ثاني فقط) */
 let fullName = localStorage.getItem("user") || "طالب";
-document.getElementById("username").innerText = "👤 " + fullName;
+let parts = fullName.split(" ");
+let shortName = parts[0] + (parts[1] ? " " + parts[1] : "");
+document.getElementById("username").innerText = "👤 " + shortName;
 
 /* الكلمات */
 let words = [];
@@ -121,7 +126,7 @@ async function loadWords(){
 
   let data = await res.json();
 
-  // 🔥 ناخذ آخر درس (آخر 20 كلمة)
+  // 🔥 آخر درس (آخر 20 كلمة)
   words = data.slice(0,20);
 
   document.getElementById("count").innerText = words.length;
@@ -144,7 +149,7 @@ function renderWords(){
   document.getElementById("words").innerHTML = html || "لا توجد كلمات";
 }
 
-/* 🧠 اختبار ذكي */
+/* 🧠 الاختبار */
 let currentQuestion;
 
 function nextQuestion(){
@@ -190,7 +195,6 @@ function answer(btn, selected){
     btn.classList.add("wrong");
   }
 
-  // ⏳ بعد ثانية يجيب سؤال جديد
   setTimeout(()=>{
     nextQuestion();
   }, 1000);

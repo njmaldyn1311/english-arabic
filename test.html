@@ -17,7 +17,7 @@ body{
   color:white;
 }
 
-/* 🔝 الأعلى */
+/* 🔝 */
 .top{
   display:flex;
   justify-content:space-between;
@@ -26,36 +26,33 @@ body{
 
 .user{color:#38bdf8;}
 
-.home{
-  background:#6366f1;
-  padding:10px;
-  border-radius:10px;
-  cursor:pointer;
-}
-
 /* 📦 */
 .container{
   min-height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
+  padding:15px;
 }
 
 .card{
-  width:90%;
+  width:100%;
   max-width:420px;
   background:#1e293b;
-  padding:20px;
   border-radius:20px;
+  padding:20px;
   text-align:center;
 }
 
-.question{margin:15px 0;font-size:18px;}
+.question{
+  font-size:20px;
+  margin:15px 0;
+}
 
 input{
   width:100%;
-  padding:12px;
-  border-radius:12px;
+  padding:15px;
+  border-radius:15px;
   border:none;
   margin-top:10px;
   text-align:center;
@@ -63,30 +60,32 @@ input{
 
 button{
   width:100%;
-  padding:12px;
+  padding:15px;
   border:none;
-  border-radius:12px;
+  border-radius:15px;
   margin-top:10px;
   cursor:pointer;
+  font-size:16px;
 }
+
+.btn{background:#22c55e;}
 
 .option{
   background:#334155;
+  margin-top:8px;
   color:white;
-  margin:5px 0;
 }
 
-.check{background:#22c55e;}
-
+/* 🔔 وسط الشاشة */
 .toast{
   position:fixed;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
   padding:20px;
-  border-radius:12px;
+  border-radius:15px;
   display:none;
-  font-size:20px;
+  font-size:18px;
 }
 
 .success{background:#22c55e;}
@@ -99,20 +98,20 @@ button{
 
 <div class="top">
   <div class="user" id="username">👤</div>
-  <div class="home" onclick="goHome()">🏠</div>
+  <div onclick="goHome()">🏠</div>
 </div>
 
 <div class="container">
 
   <div class="card">
 
-    <div class="question" id="question">...</div>
+    <div id="question" class="question">...</div>
 
     <div id="answers"></div>
 
     <input id="input" placeholder="اكتب الإجابة">
 
-    <button class="check" onclick="check()">تحقق</button>
+    <button class="btn" onclick="check()">تحقق</button>
 
   </div>
 
@@ -135,6 +134,7 @@ let parts = fullName.split(" ");
 document.getElementById("username").innerText =
   "👤 " + parts[0] + (parts[1] ? " " + parts[1] : "");
 
+/* البيانات */
 let words = [];
 let queue = [];
 let currentWord;
@@ -143,7 +143,7 @@ let type;
 let correctCount = 0;
 let total = 0;
 
-/* 🔥 تحميل الكلمات */
+/* تحميل */
 async function load(){
 
   let { data } = await client
@@ -153,33 +153,32 @@ async function load(){
 
   words = data || [];
 
-  // 🔥 نكرر الكلمات لعمل وزن
   words.forEach(w=>{
-    queue.push(w,w); // تكرار
+    queue.push(w,w); // وزن
   });
 
   next();
 }
 
-/* 🎯 اختيار ذكي */
-function getNextWord(){
+/* اختيار ذكي */
+function getWord(){
   return queue[Math.floor(Math.random()*queue.length)];
 }
 
 /* السؤال */
 function next(){
 
-  if(total >= 20){ // عدد الأسئلة
+  if(total >= 15){
     finish();
     return;
   }
 
-  currentWord = getNextWord();
+  currentWord = getWord();
 
   let en = currentWord.word;
   let ar = currentWord.translation;
 
-  let types = ["mcq","write","listen","reverse"];
+  let types = ["mcq","write","reverse","listen"];
   type = types[Math.floor(Math.random()*types.length)];
 
   document.getElementById("answers").innerHTML="";
@@ -187,54 +186,49 @@ function next(){
 
   total++;
 
-  if(type === "mcq"){
+  if(type==="mcq"){
 
     document.getElementById("input").style.display="none";
-    document.getElementById("question").innerText = "ما معنى: " + en;
+    document.getElementById("question").innerText="ما معنى: "+en;
 
-    let options = [...words].sort(()=>0.5-Math.random()).slice(0,3);
+    let options=[...words].sort(()=>0.5-Math.random()).slice(0,3);
     options.push(currentWord);
-    options = options.sort(()=>0.5-Math.random());
+    options=options.sort(()=>0.5-Math.random());
 
     options.forEach(o=>{
       let btn=document.createElement("button");
       btn.className="option";
       btn.innerText=o.translation;
-      btn.onclick=()=>checkChoice(btn.innerText, ar);
+      btn.onclick=()=>handle(btn.innerText===ar);
       document.getElementById("answers").appendChild(btn);
     });
   }
 
-  if(type === "write"){
+  if(type==="write"){
     document.getElementById("input").style.display="block";
-    document.getElementById("question").innerText = "اكتب معنى: " + en;
+    document.getElementById("question").innerText="اكتب معنى: "+en;
   }
 
-  if(type === "listen"){
+  if(type==="reverse"){
     document.getElementById("input").style.display="block";
-    document.getElementById("question").innerText = "🎧 استمع واكتب المعنى";
+    document.getElementById("question").innerText="اكتب بالإنجليزي: "+ar;
+  }
+
+  if(type==="listen"){
+    document.getElementById("input").style.display="block";
+    document.getElementById("question").innerText="🎧 استمع واكتب";
     speak(en);
-  }
-
-  if(type === "reverse"){
-    document.getElementById("input").style.display="block";
-    document.getElementById("question").innerText = "اكتب بالإنجليزي: " + ar;
   }
 }
 
-/* 🔊 */
-function speak(text){
-  speechSynthesis.cancel();
-  let u=new SpeechSynthesisUtterance(text);
+/* صوت */
+function speak(t){
+  let u=new SpeechSynthesisUtterance(t);
   u.lang="en-US";
   speechSynthesis.speak(u);
 }
 
 /* تحقق */
-function checkChoice(sel, correct){
-  handle(sel === correct);
-}
-
 function check(){
 
   if(type==="mcq") return;
@@ -245,25 +239,24 @@ function check(){
   handle(val===correct);
 }
 
-/* 🔥 الذكاء */
+/* الذكاء */
 function handle(ok){
 
   if(ok){
     correctCount++;
   }else{
-    // 🔥 إعادة الكلمة الصعبة
-    queue.push(currentWord,currentWord,currentWord);
+    queue.push(currentWord,currentWord); // إعادة
   }
 
   toast(ok?"✅":"❌",ok);
 
-  saveProgress(ok);
+  save(ok);
 
   setTimeout(next,700);
 }
 
-/* 💾 حفظ */
-async function saveProgress(ok){
+/* حفظ */
+async function save(ok){
   await client.from("progress").insert([{
     user_id,
     word: currentWord.word,
@@ -277,12 +270,11 @@ async function finish(){
   let percent=Math.round((correctCount/total)*100);
 
   document.getElementById("question").innerHTML=
-    `🎉 انتهى الاختبار<br><br>نتيجتك: ${percent}%`;
+    `🎉 انتهى الاختبار<br><br>⭐ نتيجتك: ${percent}%`;
 
   document.getElementById("input").style.display="none";
   document.getElementById("answers").innerHTML="";
 
-  // 🔥 حفظ النتيجة
   await client.from("results").insert([{
     user_id,
     score: percent

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>📚 الوحدات</title>
+
+<style>
+
+body{
+  margin:0;
+  font-family:"Cairo", sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+}
+
+/* الهيدر */
+.top{
+  display:flex;
+  justify-content:space-between;
+  padding:15px;
+}
+
+.user{color:#38bdf8;}
+.points{color:#facc15;}
+
+.title{
+  text-align:center;
+  font-size:24px;
+  margin-top:10px;
+}
+
+/* الوحدات */
+.container{
+  padding:15px;
+}
+
+.unit{
+  background:#1e293b;
+  border-radius:20px;
+  padding:15px;
+  margin-bottom:15px;
+}
+
+.unit-title{
+  font-size:18px;
+  margin-bottom:10px;
+  color:#38bdf8;
+}
+
+/* الدروس */
+.lesson{
+  background:#334155;
+  padding:12px;
+  border-radius:12px;
+  margin:6px 0;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.lesson:hover{
+  background:#475569;
+}
+
+/* حالة الدرس */
+.done{
+  border-right:4px solid #22c55e;
+}
+
+.locked{
+  opacity:0.4;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="top">
+  <div class="user">👤 أحمد علي</div>
+  <div class="points">⭐ نقاطك: 120</div>
+</div>
+
+<div class="title">📚 الوحدات التعليمية</div>
+
+<div class="container" id="unitsContainer"></div>
+
+<script>
+
+/* بيانات تجريبية */
+const data = [
+  {
+    unit: "Unit 1 - Basics",
+    lessons: [
+      {title:"Lesson 1 - Greetings", done:true},
+      {title:"Lesson 2 - Introductions", done:false},
+      {title:"Lesson 3 - Daily Words", done:false}
+    ]
+  },
+  {
+    unit: "Unit 2 - Verbs",
+    lessons: [
+      {title:"Lesson 4 - Basic Verbs", done:false},
+      {title:"Lesson 5 - Phrasal Verbs", locked:true}
+    ]
+  }
+];
+
+/* عرض */
+function render(){
+
+  let html="";
+
+  data.forEach((u,index)=>{
+
+    html+=`
+      <div class="unit">
+        <div class="unit-title">${u.unit}</div>
+    `;
+
+    u.lessons.forEach((l,i)=>{
+
+      let cls="lesson";
+
+      if(l.done) cls+=" done";
+      if(l.locked) cls+=" locked";
+
+      html+=`
+        <div class="${cls}" onclick="openLesson(${index},${i})">
+          ${l.title}
+        </div>
+      `;
+    });
+
+    html+="</div>";
+
+  });
+
+  document.getElementById("unitsContainer").innerHTML=html;
+}
+
+/* فتح الدرس */
+function openLesson(unitIndex, lessonIndex){
+
+  const lesson = data[unitIndex].lessons[lessonIndex];
+
+  if(lesson.locked){
+    alert("🔒 هذا الدرس مقفل");
+    return;
+  }
+
+  // 👉 هنا تربطه بصفحة الدرس
+  window.location.href = "lesson.html?unit="+unitIndex+"&lesson="+lessonIndex;
+}
+
+render();
+
+</script>
+
+</body>
+</html>

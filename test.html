@@ -19,6 +19,7 @@ body{
   color:white;
 }
 
+/* 🔝 */
 .topbar{
   position:absolute;
   top:15px;
@@ -34,12 +35,13 @@ body{
   font-size:14px;
 }
 
+/* زر نفس ستايل الاسم */
 .home{
-  background:#6366f1;
-  padding:10px 15px;
-  border:none;
+  background:#1e293b;
+  border:1px solid #334155;
+  padding:8px 14px;
   border-radius:12px;
-  color:white;
+  color:#38bdf8;
   cursor:pointer;
 }
 
@@ -117,7 +119,6 @@ button{
 
 <body>
 
-<!-- 👤 الاسم -->
 <div class="user-name" id="username">👤</div>
 
 <div class="topbar">
@@ -138,7 +139,7 @@ button{
 
     <input id="input" placeholder="اكتب الإجابة">
 
-    <button class="check" onclick="check()">تحقق</button>
+    <button id="mainBtn" class="check" onclick="check()">تحقق</button>
 
   </div>
 
@@ -155,7 +156,7 @@ const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let user_id = localStorage.getItem("user_id");
 
-/* 👤 عرض الاسم */
+/* 👤 الاسم */
 let fullName = localStorage.getItem("user") || "طالب";
 let parts = fullName.split(" ");
 document.getElementById("username").innerText =
@@ -200,7 +201,7 @@ function next(){
   let en = currentWord.word;
   let ar = currentWord.translation;
 
-  let types = ["mcq","write","listen","reverse"];
+  let types = ["mcq","write","listen"];
   type = types[Math.floor(Math.random()*types.length)];
 
   document.getElementById("answers").innerHTML = "";
@@ -232,18 +233,13 @@ function next(){
 
   if(type === "write"){
     showInput();
-    document.getElementById("question").innerText = "اكتب معنى: " + en;
+    document.getElementById("question").innerText = "اكتب المعنى بالعربي: " + en;
   }
 
   if(type === "listen"){
     showInput();
     document.getElementById("question").innerText = "🎧 استمع واكتب المعنى";
     speak(en);
-  }
-
-  if(type === "reverse"){
-    showInput();
-    document.getElementById("question").innerText = "اكتب بالإنجليزي: " + ar;
   }
 }
 
@@ -257,6 +253,7 @@ function showInput(){
   document.getElementById("input").style.display="block";
 }
 
+// صوت
 function speak(text){
   speechSynthesis.cancel();
   let u = new SpeechSynthesisUtterance(text);
@@ -269,6 +266,7 @@ function play(){
   speak(currentWord.word);
 }
 
+// اختيار
 function checkChoice(selected, correct){
   let ok = selected === correct;
   if(ok) correctCount++;
@@ -276,12 +274,13 @@ function checkChoice(selected, correct){
   nextStep();
 }
 
+// كتابة
 function check(){
 
   if(type === "mcq") return;
 
   let val = document.getElementById("input").value.trim().toLowerCase();
-  let correct = (type === "reverse") ? currentWord.word.toLowerCase() : currentWord.translation.toLowerCase();
+  let correct = currentWord.translation.toLowerCase();
 
   let ok = val === correct;
 
@@ -291,12 +290,14 @@ function check(){
   nextStep();
 }
 
+// التالي
 function nextStep(){
   current++;
   setTimeout(next,800);
 }
 
-function finish(){
+// النهاية + حفظ
+async function finish(){
 
   let percent = Math.round((correctCount / total) * 100);
 
@@ -305,8 +306,34 @@ function finish(){
 
   document.getElementById("input").style.display="none";
   document.getElementById("answers").innerHTML="";
+
+  // حفظ في سوبا
+  await client.from("results").insert({
+    user_id: user_id,
+    score: percent
+  });
+
+  // تغيير الزر
+  let btn = document.getElementById("mainBtn");
+  btn.innerText = "🔄 إعادة الاختبار";
+  btn.onclick = restart;
 }
 
+// إعادة
+function restart(){
+  current = 0;
+  correctCount = 0;
+  total = 0;
+
+  document.getElementById("mainBtn").innerText = "تحقق";
+  document.getElementById("mainBtn").onclick = check;
+
+  document.getElementById("input").style.display="block";
+
+  next();
+}
+
+// toast
 function toast(msg, ok){
   let t=document.getElementById("toast");
   t.innerText=msg;
@@ -315,6 +342,7 @@ function toast(msg, ok){
   setTimeout(()=>t.style.display="none",1000);
 }
 
+// رجوع
 function goHome(){
   window.location.href="index.html";
 }

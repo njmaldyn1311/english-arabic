@@ -24,45 +24,53 @@ body {
   max-width: 500px;
 }
 
-/* الكرت */
+/* الصندوق */
 .box {
   background: #1e293b;
   padding: 25px;
   border-radius: 20px;
   width: 98%;
+  box-sizing: border-box;
   text-align: center;
   box-shadow: 0 10px 25px rgba(0,0,0,0.4);
   margin-bottom: 20px;
 }
 
-/* زر */
+/* الزر */
 button {
   background: #22c55e;
   color: white;
   border: none;
-  padding: 12px 18px;
-  border-radius: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 button:hover {
   background: #16a34a;
 }
 
+/* النتائج */
+#result {
+  width: 100%;
+}
+
 /* عنوان */
 .title {
   margin: 15px 0 10px;
+  text-align: center;
   color: #facc15;
 }
 
-/* كلمة */
+/* الكلمة */
 .word {
   padding: 10px;
   border-bottom: 1px solid #334155;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
 }
 
 .en {
@@ -78,34 +86,26 @@ button:hover {
   color: #f87171;
 }
 
-/* الأزرار الصغيرة */
-.actions {
-  display:flex;
-  gap:6px;
+/* ⭐ زر */
+.star {
+  cursor: pointer;
+  font-size: 18px;
 }
 
-.icon {
-  cursor:pointer;
-  background:#0f172a;
-  padding:6px 8px;
-  border-radius:8px;
-  font-size:14px;
+.saved {
+  color: #22c55e;
 }
 
-.icon.saved {
-  background:#22c55e;
-}
+/* موبايل */
+@media (max-width: 480px) {
+  body {
+    padding: 15px;
+  }
 
-/* تحسين input */
-input[type="file"]{
-  background:#334155;
-  color:white;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  width:100%;
+  .box {
+    padding: 20px;
+  }
 }
-
 </style>
 
 </head>
@@ -136,7 +136,7 @@ const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// user
+// 🧠 user
 let user_id = localStorage.getItem("user_id");
 if(!user_id){
   user_id = "user_" + Math.random().toString(36).substring(2,10);
@@ -174,14 +174,16 @@ async function saveWord(el,en,ar){
   }
 }
 
-// رفع
+// 🚀 رفع
 async function upload() {
-
   const file = document.getElementById("file").files[0];
   const status = document.getElementById("status");
   const result = document.getElementById("result");
 
-  if (!file) return alert("اختر ملف");
+  if (!file) {
+    alert("اختر ملف");
+    return;
+  }
 
   const formData = new FormData();
   formData.append("file", file);
@@ -190,7 +192,6 @@ async function upload() {
   result.innerHTML = "";
 
   try {
-
     const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
       method: "POST",
       body: formData
@@ -199,22 +200,23 @@ async function upload() {
     let data = await res.json();
 
     if (data.raw) {
-      try { data = JSON.parse(data.raw); } catch {}
+      try {
+        data = JSON.parse(data.raw);
+      } catch {}
     }
 
     status.innerText = "✅ تم التحليل";
 
     function renderList(list) {
-      if (!list) return "";
+      if (!list || list.length === 0) return "";
 
       return list.map(item => `
         <div class="word">
           <span class="en">${item.word || item.phrase || ""}</span>
 
-          <div class="actions">
-            <div class="icon" onclick="speak('${item.word || item.phrase}')">🔊</div>
-            <div class="icon" onclick="saveWord(this,'${item.word || item.phrase}','${item.arabic || ""}')">⭐</div>
-          </div>
+          <span class="star" onclick="saveWord(this,'${item.word || item.phrase}','${item.arabic || ""}')">⭐</span>
+
+          <button onclick="speak('${item.word || item.phrase}')">🔊</button>
 
           <span class="ar">${item.arabic || ""}</span>
         </div>
@@ -237,16 +239,16 @@ async function upload() {
     `;
 
   } catch (err) {
-    status.innerText = "❌ خطأ";
+    console.error(err);
+    status.innerText = "❌ خطأ في الاتصال";
   }
 }
 
 // 🔊 صوت
 function speak(word) {
-  const u = new SpeechSynthesisUtterance(word);
-  u.lang = "en-US";
-  u.rate = 0.9;
-  speechSynthesis.speak(u);
+  const utterance = new SpeechSynthesisUtterance(word);
+  utterance.lang = "en-US";
+  speechSynthesis.speak(utterance);
 }
 
 </script>

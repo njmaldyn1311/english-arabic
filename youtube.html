@@ -4,92 +4,95 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>🎥 Smart Video Learning</title>
+<title>AI Video Learning</title>
 
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <style>
 body {
-  background: linear-gradient(135deg,#0f172a,#1e293b);
-  color:white;
-  font-family:Arial;
-  text-align:center;
-  margin:0;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  font-family: Arial;
+  text-align: center;
+  margin: 0;
 }
 
-.container{
-  max-width:700px;
-  margin:auto;
-  padding:15px;
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 15px;
 }
 
-input{
-  padding:10px;
-  width:90%;
-  border-radius:12px;
-  border:none;
-  margin:10px;
-  text-align:center;
+input {
+  padding: 10px;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 12px;
+  border: none;
+  margin: 10px 0;
+  text-align: center;
 }
 
-button{
-  background:#22c55e;
-  padding:10px 20px;
-  border:none;
-  border-radius:12px;
-  color:white;
-  cursor:pointer;
+button {
+  background: #22c55e;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
 }
 
-/* الفيديو */
-#videoBox{
-  position:relative;
-  margin-top:15px;
+.card {
+  background: #1e293b;
+  margin: 15px 0;
+  padding: 15px;
+  border-radius: 15px;
 }
 
-#player{
-  width:100%;
-  height:250px;
-  border-radius:15px;
+/* 🎬 فيديو أكبر */
+#player {
+  width: 100%;
+  height: 320px;
+  border-radius: 15px;
 }
 
-/* CC */
-#ccBtn{
-  position:absolute;
-  top:10px;
-  right:10px;
-  background:#000000aa;
-  padding:6px 10px;
-  border-radius:8px;
-  cursor:pointer;
+/* 🔘 زر CC */
+#ccBtn {
+  margin-top:10px;
+  background:#00000088;
 }
 
 #ccBtn.active{
   background:#22c55e;
 }
 
-/* الترجمة */
-#subtitle{
-  position:absolute;
-  bottom:10px;
-  left:50%;
-  transform:translateX(-50%);
-  width:90%;
+/* 📝 الترجمة */
+#subtitleBox{
+  margin-top:10px;
 }
 
-.en{
-  font-size:16px;
+.sub-en{
+  font-size:18px;
   font-weight:bold;
+  color:#38bdf8;
 }
 
-.ar{
-  font-size:14px;
+.sub-ar{
+  font-size:16px;
   color:#f87171;
 }
 
-/* تمييز */
-.highlight{
-  color:#38bdf8;
+.line {
+  text-align: left;
+  margin: 10px 0;
+}
+
+.en { color: #38bdf8; }
+.ar { color: #f87171; }
+
+.star {
+  cursor: pointer;
+  margin-left: 10px;
 }
 </style>
 </head>
@@ -98,103 +101,74 @@ button{
 
 <div class="container">
 
-<h2>🎬 تعلم من الفيديو (احترافي)</h2>
+<h2>🎥 تعلم من الفيديو بذكاء</h2>
 
-<input id="url" placeholder="ضع رابط YouTube">
+<input type="text" id="url" placeholder="ضع رابط YouTube">
 
 <br>
-<button onclick="start()">تحليل</button>
+<button onclick="sendUrl()">🔗 تحليل</button>
 
-<div id="videoBox" style="display:none;">
-  <div id="ccBtn" onclick="toggleCC()">CC</div>
+<p id="loading" style="display:none;">⏳ جاري التحليل...</p>
 
+<div id="videoBox" class="card" style="display:none;">
   <div id="player"></div>
 
-  <div id="subtitle">
-    <div id="en" class="en"></div>
-    <div id="ar" class="ar"></div>
+  <button id="ccBtn" onclick="toggleCC()">CC</button>
+
+  <div id="subtitleBox">
+    <div id="subEn" class="sub-en"></div>
+    <div id="subAr" class="sub-ar"></div>
   </div>
 </div>
+
+<div id="result"></div>
 
 </div>
 
 <script>
+
+const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 
 let player;
 let subtitles = [];
 let cc = true;
 
 /* استخراج ID */
-function getId(url){
-  if(url.includes("youtu.be"))
-    return url.split("/").pop();
+function getVideoId(url) {
+  if (url.includes("youtu.be")) {
+    return url.split("/").pop().split("?")[0];
+  }
   return url.split("v=")[1]?.split("&")[0];
 }
 
-/* API جاهز */
-function onYouTubeIframeAPIReady(){}
-
-/* تشغيل */
-async function start(){
-
-  const url = document.getElementById("url").value;
-  if(!url) return alert("حط الرابط");
-
-  const id = getId(url);
-
-  document.getElementById("videoBox").style.display="block";
+/* تشغيل الفيديو */
+function loadVideo(id){
 
   if(player) player.destroy();
 
   player = new YT.Player("player",{
     videoId:id,
     events:{
-      onReady: runSync
+      onReady: startSync
     }
   });
 
-  /* 🔥 جلب البيانات */
-  const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/video-ai",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({url})
-  });
-
-  const data = await res.json();
-
-  subtitles = [];
-
-  for(let cat in data){
-    if(!Array.isArray(data[cat])) continue;
-
-    data[cat].forEach(w=>{
-      if(w.time !== undefined){
-        subtitles.push({
-          start:w.time,
-          end:w.time+3,
-          en:w.example || w.en,
-          ar:w.example_ar || w.ar
-        });
-      }
-    });
-  }
-
 }
 
-/* 🔥 مزامنة حقيقية */
-function runSync(){
+/* 🔥 مزامنة */
+function startSync(){
 
   setInterval(()=>{
 
-    if(!cc) return;
+    if(!cc || !player) return;
 
-    const t = player.getCurrentTime();
+    let t = player.getCurrentTime();
 
     subtitles.forEach(s=>{
-      if(t>=s.start && t<=s.end){
+      if(t >= s.start && t <= s.end){
 
-        document.getElementById("en").innerHTML = highlight(s.en);
-        document.getElementById("ar").innerText = s.ar;
+        document.getElementById("subEn").innerText = s.en;
+        document.getElementById("subAr").innerText = s.ar;
 
       }
     });
@@ -203,26 +177,104 @@ function runSync(){
 
 }
 
-/* تمييز */
-function highlight(text){
-  return text.replace(/\b\w+\b/g, w=>`<span class="highlight">${w}</span>`);
-}
-
 /* CC */
 function toggleCC(){
+  cc = !cc;
 
-  cc=!cc;
-
-  const btn=document.getElementById("ccBtn");
+  let btn = document.getElementById("ccBtn");
 
   if(cc){
     btn.classList.add("active");
   }else{
     btn.classList.remove("active");
-    document.getElementById("en").innerText="";
-    document.getElementById("ar").innerText="";
+    document.getElementById("subEn").innerText="";
+    document.getElementById("subAr").innerText="";
+  }
+}
+
+/* ⭐ حفظ */
+async function saveWord(el, word, translation){
+  await fetch("https://ofyugbhplaynjeafdrgx.supabase.co/rest/v1/user_words",{
+    method:"POST",
+    headers:{
+      "apikey":"sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO",
+      "Authorization":"Bearer sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO",
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({word,translation})
+  });
+
+  el.innerText="✅";
+}
+
+/* عرض */
+function show(data){
+
+  let html="";
+
+  for(let cat in data){
+
+    if(!Array.isArray(data[cat])) continue;
+
+    html += `<div class="card"><h3>${cat}</h3>`;
+
+    data[cat].forEach(w=>{
+
+      subtitles.push({
+        start:w.time || 0,
+        end:(w.time || 0)+3,
+        en:w.example || w.en || "",
+        ar:w.example_ar || w.ar || ""
+      });
+
+      html+=`
+        <div class="line">
+          <span class="en">${w.en || w.word}</span>
+          <span class="ar">${w.ar || w.arabic}</span>
+          <span class="star" onclick="saveWord(this,'${w.en}','${w.ar}')">⭐</span>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
   }
 
+  document.getElementById("result").innerHTML=html;
+}
+
+/* 🚀 إرسال */
+async function sendUrl(){
+
+  const url = document.getElementById("url").value;
+  if(!url) return alert("اكتب رابط");
+
+  subtitles = [];
+
+  document.getElementById("videoBox").style.display="block";
+
+  startLoading();
+
+  const id = getVideoId(url);
+  loadVideo(id);
+
+  const res = await fetch(WEBHOOK,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({url})
+  });
+
+  const data = await res.json();
+
+  stopLoading();
+  show(data);
+}
+
+function startLoading(){
+  document.getElementById("loading").style.display="block";
+}
+
+function stopLoading(){
+  document.getElementById("loading").style.display="none";
 }
 
 </script>

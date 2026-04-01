@@ -17,83 +17,91 @@ body{
   color:white;
 }
 
-/* 🔥 الهيدر */
+/* 🔥 هيدر متوازن */
 .header{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
   display:flex;
   justify-content:space-between;
+  align-items:center;
   padding:15px;
-  background:#0f172a;
 }
 
-.user-name{color:#38bdf8;}
+.user-name{
+  color:#38bdf8;
+  font-size:14px;
+}
+
 .home{
   background:#1e293b;
   border:1px solid #334155;
-  padding:8px 14px;
-  border-radius:12px;
+  padding:8px 12px;
+  border-radius:10px;
   color:#38bdf8;
   cursor:pointer;
+  font-size:13px;
 }
 
+/* 📦 */
 .container{
-  padding:80px 15px 20px;
-  max-width:600px;
+  max-width:500px;
   margin:auto;
+  padding:10px;
 }
 
 .card{
   background:#1e293b;
-  padding:20px;
-  border-radius:20px;
-  margin-bottom:15px;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:12px;
 }
 
 .title{
-  font-size:20px;
+  font-size:18px;
   margin-bottom:10px;
 }
 
-.word{
-  display:flex;
-  justify-content:space-between;
-  padding:8px 0;
-  border-bottom:1px solid #334155;
-}
-
-.en{color:#38bdf8;}
-.ar{color:#facc15;}
-
+/* ✏️ إدخال أصغر */
 input{
   width:100%;
-  padding:12px;
-  border-radius:12px;
+  padding:10px;
+  border-radius:10px;
   border:none;
   text-align:center;
   margin-top:10px;
+  font-size:14px;
 }
 
 button{
   width:100%;
-  padding:12px;
+  padding:10px;
   border:none;
-  border-radius:12px;
-  margin-top:10px;
+  border-radius:10px;
+  margin-top:8px;
   background:#22c55e;
   color:white;
+  font-size:14px;
 }
 
+/* الكلمات */
+.word{
+  display:flex;
+  justify-content:space-between;
+  border-bottom:1px solid #334155;
+  padding:8px 0;
+}
+
+.en{color:#38bdf8;}
+.ar{color:#f87171;}
+
+/* 🔔 */
 .toast{
   position:fixed;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
-  padding:20px;
+  padding:18px 25px;
   border-radius:12px;
   display:none;
+  font-size:18px;
 }
 
 .success{background:#22c55e;}
@@ -106,17 +114,32 @@ button{
 
 <div class="header">
   <div id="username" class="user-name">👤</div>
-  <button class="home" onclick="goHome()">🏠</button>
+  <button class="home" onclick="goHome()">🏠 الرئيسية</button>
 </div>
 
 <div class="container">
 
-  <div id="lesson"></div>
+  <!-- 📖 القصة -->
+  <div class="card">
+    <div class="title">📖 القصة</div>
+    <textarea id="story" placeholder="اكتب القصة..."></textarea>
+  </div>
+
+  <!-- 📝 ملاحظات -->
+  <div class="card">
+    <div class="title">📝 ملاحظاتي</div>
+    <textarea id="notes" placeholder="اكتب ملاحظاتك..."></textarea>
+  </div>
+
+  <!-- ⭐ الكلمات -->
+  <div class="card">
+    <div class="title">⭐ كلمات الدرس</div>
+    <div id="words"></div>
+  </div>
 
   <!-- 🧠 اختبار -->
   <div class="card">
-    <div class="title">🧠 اختبار الدرس</div>
-
+    <div class="title">🧠 اختبار</div>
     <div id="question"></div>
 
     <input id="input" placeholder="اكتب المعنى">
@@ -140,112 +163,80 @@ let user_id = localStorage.getItem("user_id");
 // 👤 الاسم
 let name = localStorage.getItem("user") || "طالب";
 let p = name.split(" ");
-username.innerText = "👤 " + p[0] + (p[1] ? " " + p[1] : "");
+document.getElementById("username").innerText =
+  "👤 " + p[0] + (p[1] ? " " + p[1] : "");
 
+// 💾 تحميل القصة والملاحظات
+document.getElementById("story").value =
+  localStorage.getItem("story") || "";
+
+document.getElementById("notes").value =
+  localStorage.getItem("notes") || "";
+
+// حفظ تلقائي
+document.getElementById("story").oninput = e=>{
+  localStorage.setItem("story", e.target.value);
+};
+
+document.getElementById("notes").oninput = e=>{
+  localStorage.setItem("notes", e.target.value);
+};
+
+// ⭐ الكلمات من Supabase
 let words = [];
 let current = 0;
 
-// 🚀 تحميل آخر درس كامل
-async function load(){
+async function loadWords(){
 
   let { data } = await client
-    .from("lessons")
+    .from("user_words")
     .select("*")
     .eq("user_id", user_id)
     .order("created_at", { ascending:false })
-    .limit(1);
+    .limit(10);
 
-  let lesson = data?.[0];
+  words = data || [];
 
-  if(!lesson){
-    lessonDiv.innerHTML = "⚠️ لا يوجد درس";
-    return;
-  }
-
-  renderLesson(lesson);
-
-  words = lesson.words || [];
-
+  renderWords();
   next();
 }
 
-// 🎨 عرض الدرس
-function renderLesson(l){
-
-  let html = "";
-
-  html += `
-  <div class="card">
-    <div class="title">📖 القصة</div>
-    ${l.story || ""}
-  </div>`;
-
-  html += `
-  <div class="card">
-    <div class="title">🌍 الترجمة</div>
-    ${l.translation || ""}
-  </div>`;
-
-  if(l.words){
-    html += `<div class="card"><div class="title">⭐ الكلمات</div>`;
-    l.words.forEach(w=>{
-      html += `
-        <div class="word">
-          <div class="ar">${w.ar}</div>
-          <div class="en">${w.en}</div>
-        </div>`;
-    });
-    html += `</div>`;
-  }
-
-  if(l.grammar){
-    html += `
-    <div class="card">
-      <div class="title">📘 القواعد</div>
-      ${l.grammar}
-    </div>`;
-  }
-
-  if(l.notes){
-    html += `
-    <div class="card">
-      <div class="title">📝 ملاحظات</div>
-      ${l.notes}
-    </div>`;
-  }
-
-  document.getElementById("lesson").innerHTML = html;
+function renderWords(){
+  let html="";
+  words.forEach(w=>{
+    html+=`
+      <div class="word">
+        <div class="ar">${w.translation}</div>
+        <div class="en">${w.word}</div>
+      </div>
+    `;
+  });
+  document.getElementById("words").innerHTML = html;
 }
 
-// 🧠 السؤال
+// 🧠 اختبار
 function next(){
 
   if(current >= words.length){
-    question.innerText = "🎉 انتهت مراجعة الدرس";
-    input.style.display="none";
+    question.innerText="🎉 انتهى الدرس";
     return;
   }
 
-  let w = words[current];
-
-  question.innerText = "ما معنى: " + w.en;
+  question.innerText = "ما معنى: " + words[current].word;
   input.value="";
 }
 
-// ✅ تحقق
 function check(){
 
-  let w = words[current];
-
   let val = normalize(input.value);
-  let correct = normalize(w.ar);
+  let correct = normalize(words[current].translation);
 
   let ok = val.includes(correct) || correct.includes(val);
 
-  toast(ok ? "✅ صح" : "❌ " + w.ar, ok);
+  toast(ok ? "✅ صح" : "❌ " + words[current].translation, ok);
 
   current++;
-  setTimeout(next,800);
+  setTimeout(next,700);
 }
 
 // 🔤
@@ -255,22 +246,19 @@ function normalize(t){
 
 // 🔔
 function toast(msg, ok){
-  let t=toastDiv;
+  let t=document.getElementById("toast");
   t.innerText=msg;
   t.className="toast "+(ok?"success":"error");
   t.style.display="block";
   setTimeout(()=>t.style.display="none",1000);
 }
 
-// رجوع
+// 🔙
 function goHome(){
   location.href="index.html";
 }
 
-let lessonDiv = document.getElementById("lesson");
-let toastDiv = document.getElementById("toast");
-
-load();
+loadWords();
 
 </script>
 

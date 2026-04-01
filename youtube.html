@@ -67,7 +67,7 @@ iframe {
   border-radius: 15px;
 }
 
-/* 🔥 subtitle Netflix */
+/* 🔥 Netflix subtitle */
 .subtitle-box {
   position: absolute;
   bottom: 15px;
@@ -87,18 +87,15 @@ iframe {
   text-shadow: 0 0 6px black;
 }
 
+/* النص */
 .line {
   text-align: left;
   margin: 10px 0;
   line-height: 1.8;
 }
 
-.en { color: #38bdf8; font-weight: bold; cursor: pointer; }
+.en { color: #38bdf8; font-weight: bold; }
 .ar { color: #f87171; margin-left: 10px; }
-
-.example { color: #e2e8f0; display: block; cursor: pointer; }
-.example-ar { color: #94a3b8; font-size: 13px; }
-
 .star { cursor: pointer; margin-left: 10px; }
 </style>
 </head>
@@ -120,7 +117,6 @@ iframe {
 <div id="videoBox" class="card" style="display:none;">
   <iframe id="videoFrame"></iframe>
 
-  <!-- subtitle -->
   <div class="subtitle-box">
     <div id="subEn" class="subtitle-en"></div>
     <div id="subAr" class="subtitle-ar"></div>
@@ -141,6 +137,9 @@ const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 let user_id = localStorage.getItem("user_id");
 let videoId = "";
 
+let subtitles = [];
+let subtitleInterval = null;
+
 /* استخراج ID */
 function getVideoId(url) {
   if (url.includes("youtu.be")) {
@@ -152,29 +151,15 @@ function getVideoId(url) {
 /* عرض الفيديو */
 function showVideo(url) {
   videoId = getVideoId(url);
+
   document.getElementById("videoFrame").src =
-    `https://www.youtube.com/embed/${videoId}`;
+    `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+
   document.getElementById("videoBox").style.display = "block";
-}
-
-/* تشغيل + subtitle */
-function playWithSubtitle(sec, en, ar){
-
-  document.getElementById("videoFrame").src =
-    `https://www.youtube.com/embed/${videoId}?start=${sec}&autoplay=1`;
-
-  document.getElementById("subEn").innerText = en;
-  document.getElementById("subAr").innerText = ar;
-
-  setTimeout(()=>{
-    document.getElementById("subEn").innerText = "";
-    document.getElementById("subAr").innerText = "";
-  }, 5000);
 }
 
 /* حفظ */
 async function saveWord(el, word, translation){
-
   await fetch(SUPABASE_URL + "/rest/v1/user_words", {
     method:"POST",
     headers:{
@@ -190,47 +175,70 @@ async function saveWord(el, word, translation){
   });
 
   el.innerText = "✅";
-  el.style.background = "#22c55e";
 }
 
-/* 🔥 عرض (مع إصلاح الخطأ) */
+/* عرض البيانات */
 function show(data) {
 
   let html = "";
+  subtitles = [];
 
   for (let cat in data) {
 
-    // ✅ الحل هنا
-    if (!Array.isArray(data[cat]) || data[cat].length === 0) continue;
-
-    html += `<div class="card"><h3>${cat}</h3>`;
+    if (!Array.isArray(data[cat])) continue;
 
     data[cat].forEach(w => {
+
+      // 🔥 جمع الترجمة
+      subtitles.push({
+        time: w.time || 0,
+        en: w.example || "",
+        ar: w.example_ar || ""
+      });
 
       const word = w.en || w.word || "";
       const arabic = w.ar || w.arabic || "";
 
       html += `
         <div class="line">
-          <span class="en" onclick="speak('${word}')">${word}</span>
+          <span class="en">${word}</span>
           <span class="ar">${arabic}</span>
           <span class="star" onclick="saveWord(this,'${word}','${arabic}')">⭐</span>
-
-          <span class="example" onclick="playWithSubtitle(${w.time || 0}, '${w.example || ""}', '${w.example_ar || ""}')">
-            ${w.example || ""}
-          </span>
-
-          <span class="example-ar">
-            ${w.example_ar || ""}
-          </span>
         </div>
       `;
     });
-
-    html += `</div>`;
   }
 
+  subtitles.sort((a,b)=>a.time - b.time);
+
   document.getElementById("result").innerHTML = html;
+
+  startAutoSubtitle();
+}
+
+/* 🔥 ترجمة تلقائية */
+function startAutoSubtitle(){
+
+  let startTime = Date.now();
+  let i = 0;
+
+  if(subtitleInterval) clearInterval(subtitleInterval);
+
+  subtitleInterval = setInterval(()=>{
+
+    let current = (Date.now() - startTime) / 1000;
+
+    if(i >= subtitles.length) return;
+
+    if(current >= subtitles[i].time){
+
+      document.getElementById("subEn").innerText = subtitles[i].en;
+      document.getElementById("subAr").innerText = subtitles[i].ar;
+
+      i++;
+    }
+
+  }, 300);
 }
 
 /* إرسال */
@@ -254,7 +262,6 @@ async function sendUrl() {
 
     let data = await res.json();
 
-    // 🔥 دعم n8n raw
     if(data.raw){
       try{ data = JSON.parse(data.raw); }catch{}
     }
@@ -268,15 +275,7 @@ async function sendUrl() {
   }
 }
 
-/* صوت */
-function speak(text) {
-  speechSynthesis.cancel();
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = "en-US";
-  msg.rate = 0.85;
-  speechSynthesis.speak(msg);
-}
-
+/* تحميل */
 function startLoading() {
   document.getElementById("loading").style.display = "block";
 }

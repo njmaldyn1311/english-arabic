@@ -17,7 +17,7 @@ body{
   color:white;
 }
 
-/* 🔥 هيدر متوازن */
+/* 🔥 هيدر مرتب */
 .header{
   display:flex;
   justify-content:space-between;
@@ -33,7 +33,7 @@ body{
 .home{
   background:#1e293b;
   border:1px solid #334155;
-  padding:8px 12px;
+  padding:6px 12px;
   border-radius:10px;
   color:#38bdf8;
   cursor:pointer;
@@ -59,26 +59,28 @@ body{
   margin-bottom:10px;
 }
 
-/* ✏️ إدخال أصغر */
-input{
-  width:100%;
+/* ✏️ نفس الحجم */
+.input-group{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+
+.input-group input{
+  flex:1;
   padding:10px;
   border-radius:10px;
   border:none;
   text-align:center;
-  margin-top:10px;
-  font-size:14px;
 }
 
-button{
-  width:100%;
+.input-group button{
+  flex:1;
   padding:10px;
   border:none;
   border-radius:10px;
-  margin-top:8px;
   background:#22c55e;
   color:white;
-  font-size:14px;
 }
 
 /* الكلمات */
@@ -107,6 +109,14 @@ button{
 .success{background:#22c55e;}
 .error{background:#ef4444;}
 
+.note{
+  background:#0f172a;
+  padding:10px;
+  border-radius:10px;
+  margin-top:8px;
+  color:#cbd5f5;
+}
+
 </style>
 </head>
 
@@ -122,13 +132,13 @@ button{
   <!-- 📖 القصة -->
   <div class="card">
     <div class="title">📖 القصة</div>
-    <textarea id="story" placeholder="اكتب القصة..."></textarea>
+    <div id="story"></div>
   </div>
 
-  <!-- 📝 ملاحظات -->
+  <!-- 📝 الملاحظات (عرض فقط) -->
   <div class="card">
     <div class="title">📝 ملاحظاتي</div>
-    <textarea id="notes" placeholder="اكتب ملاحظاتك..."></textarea>
+    <div id="notes"></div>
   </div>
 
   <!-- ⭐ الكلمات -->
@@ -142,9 +152,10 @@ button{
     <div class="title">🧠 اختبار</div>
     <div id="question"></div>
 
-    <input id="input" placeholder="اكتب المعنى">
-
-    <button onclick="check()">تحقق</button>
+    <div class="input-group">
+      <input id="input" placeholder="اكتب المعنى">
+      <button onclick="check()">تحقق</button>
+    </div>
   </div>
 
 </div>
@@ -166,21 +177,20 @@ let p = name.split(" ");
 document.getElementById("username").innerText =
   "👤 " + p[0] + (p[1] ? " " + p[1] : "");
 
-// 💾 تحميل القصة والملاحظات
-document.getElementById("story").value =
-  localStorage.getItem("story") || "";
+// 📖 القصة من local
+document.getElementById("story").innerText =
+  localStorage.getItem("story") || "لا توجد قصة";
 
-document.getElementById("notes").value =
-  localStorage.getItem("notes") || "";
+// 📝 الملاحظات من local
+let notes = JSON.parse(localStorage.getItem("notes") || "[]");
 
-// حفظ تلقائي
-document.getElementById("story").oninput = e=>{
-  localStorage.setItem("story", e.target.value);
-};
+let notesHtml="";
+notes.forEach(n=>{
+  notesHtml += `<div class="note">• ${n}</div>`;
+});
 
-document.getElementById("notes").oninput = e=>{
-  localStorage.setItem("notes", e.target.value);
-};
+document.getElementById("notes").innerHTML =
+  notesHtml || "لا توجد ملاحظات";
 
 // ⭐ الكلمات من Supabase
 let words = [];

@@ -19,7 +19,6 @@ body{
   color:white;
 }
 
-/* 📱 حاوية عامة */
 .container{
   min-height:100vh;
   display:flex;
@@ -28,7 +27,6 @@ body{
   padding:15px;
 }
 
-/* 📦 الكرت */
 .card{
   width:100%;
   max-width:420px;
@@ -39,48 +37,35 @@ body{
   text-align:center;
 }
 
-/* 📊 العنوان */
-.title{
-  font-size:22px;
-  margin-bottom:10px;
-}
+.title{font-size:22px;margin-bottom:10px;}
 
-/* 🧠 السؤال */
 .question{
   font-size:20px;
   margin:15px 0;
-  line-height:1.5;
 }
 
-/* 🔊 */
 .speaker{
   font-size:26px;
   cursor:pointer;
-  margin:10px 0;
 }
 
-/* 📝 الإدخال */
 input{
   width:100%;
   padding:12px;
   border-radius:12px;
   border:none;
-  font-size:16px;
   text-align:center;
   margin-top:10px;
 }
 
-/* 🔘 زر */
 button{
   padding:12px;
   border:none;
   border-radius:12px;
   margin-top:10px;
   cursor:pointer;
-  font-size:15px;
 }
 
-/* خيارات */
 .option{
   width:100%;
   background:#334155;
@@ -88,13 +73,12 @@ button{
   color:white;
 }
 
-/* تحقق */
-.check{
-  background:#22c55e;
-  color:white;
+.check{background:#22c55e;}
+
+.home{
+  background:#6366f1;
 }
 
-/* 🔔 toast */
 .toast{
   position:fixed;
   bottom:20px;
@@ -103,16 +87,10 @@ button{
   padding:12px 20px;
   border-radius:12px;
   display:none;
-  font-size:14px;
 }
 
 .success{background:#22c55e;}
 .error{background:#ef4444;}
-
-/* 📱 تحسين للجوال */
-@media (max-width:400px){
-  .question{font-size:18px}
-}
 
 </style>
 </head>
@@ -124,6 +102,8 @@ button{
   <div class="card">
 
     <div class="title">🧠 اختبار ذكي</div>
+
+    <button class="home" onclick="goHome()">🏠 الرئيسية</button>
 
     <div id="question" class="question">...</div>
 
@@ -148,19 +128,32 @@ const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+let user_id = localStorage.getItem("user_id");
+
 let words = [];
 let current = 0;
 let type = "";
 let currentWord = null;
 
-// تحميل
+// 🔥 تحميل كلمات الطالب فقط
 async function load(){
-  let { data } = await client.from("words").select("*");
-  words = data;
+
+  let { data } = await client
+    .from("user_words")
+    .select("*")
+    .eq("user_id", user_id);
+
+  words = data || [];
+
+  if(words.length === 0){
+    document.getElementById("question").innerText = "⚠️ ما عندك كلمات محفوظة";
+    return;
+  }
+
   next();
 }
 
-// السؤال التالي
+// 🎯 السؤال
 function next(){
 
   if(current >= words.length){
@@ -170,21 +163,19 @@ function next(){
 
   currentWord = words[current];
 
-  let en = currentWord.en || currentWord.word;
-  let ar = currentWord.ar || currentWord.arabic;
+  let en = currentWord.word;
+  let ar = currentWord.translation;
 
-  let types = ["mcq","write","listen"];
+  let types = ["mcq","write","listen","reverse"];
   type = types[Math.floor(Math.random()*types.length)];
 
   document.getElementById("answers").innerHTML = "";
   document.getElementById("input").value = "";
 
-  // 🎯 اختيار من متعدد
+  // اختيار
   if(type === "mcq"){
 
-    document.getElementById("speaker").style.display="none";
-    document.getElementById("input").style.display="none";
-
+    hideAll();
     document.getElementById("question").innerText = "ما معنى: " + en;
 
     let options = [...words].sort(()=>0.5-Math.random()).slice(0,3);
@@ -194,7 +185,7 @@ function next(){
     options.forEach(o=>{
       let btn = document.createElement("button");
       btn.className="option";
-      btn.innerText = o.ar || o.arabic;
+      btn.innerText = o.translation;
 
       btn.onclick=()=>{
         checkChoice(btn.innerText, ar);
@@ -204,66 +195,85 @@ function next(){
     });
   }
 
-  // ✍️ كتابة معنى كلمة
+  // كتابة
   if(type === "write"){
 
-    document.getElementById("speaker").style.display="none";
-    document.getElementById("input").style.display="block";
-
+    showInput();
     document.getElementById("question").innerText = "اكتب معنى: " + en;
   }
 
-  // 🎧 استماع
+  // استماع
   if(type === "listen"){
 
-    document.getElementById("speaker").style.display="block";
-    document.getElementById("input").style.display="block";
-
+    showInput();
     document.getElementById("question").innerText = "🎧 اسمع واكتب المعنى";
     speak(en);
   }
+
+  // 🔥 ترجمة عكسية
+  if(type === "reverse"){
+
+    showInput();
+    document.getElementById("question").innerText = "اكتب بالإنجليزي: " + ar;
+  }
 }
 
-// 🔊
+function hideAll(){
+  document.getElementById("speaker").style.display="none";
+  document.getElementById("input").style.display="none";
+}
+
+function showInput(){
+  document.getElementById("speaker").style.display="block";
+  document.getElementById("input").style.display="block";
+}
+
+// 🔊 صوت محسّن
 function speak(text){
+  speechSynthesis.cancel();
   let u = new SpeechSynthesisUtterance(text);
   u.lang="en-US";
+  u.rate=0.9;
   speechSynthesis.speak(u);
 }
 
 function play(){
-  let en = currentWord.en || currentWord.word;
-  speak(en);
+  speak(currentWord.word);
 }
 
-// تحقق اختيار
+// اختيار
 function checkChoice(selected, correct){
-  if(selected === correct){
-    toast("✅ صح",true);
-  }else{
-    toast("❌ " + correct,false);
-  }
+  let ok = selected === correct;
+  toast(ok ? "✅ صح" : "❌ " + correct, ok);
+  saveResult(ok);
   nextStep();
 }
 
-// تحقق كتابة
+// كتابة
 function check(){
 
   if(type === "mcq") return;
 
-  let ar = currentWord.ar || currentWord.arabic;
   let val = document.getElementById("input").value.trim();
+  let correct = (type === "reverse") ? currentWord.word : currentWord.translation;
 
-  if(val === ar){
-    toast("✅ صح",true);
-  }else{
-    toast("❌ " + ar,false);
-  }
+  let ok = val.toLowerCase() === correct.toLowerCase();
 
+  toast(ok ? "✅ صح" : "❌ " + correct, ok);
+  saveResult(ok);
   nextStep();
 }
 
-// التالي
+// 🔥 حفظ المستوى
+async function saveResult(ok){
+
+  await client.from("progress").insert([{
+    user_id: user_id,
+    word: currentWord.word,
+    correct: ok
+  }]);
+}
+
 function nextStep(){
   current++;
   setTimeout(next,800);
@@ -271,13 +281,16 @@ function nextStep(){
 
 // toast
 function toast(msg, ok){
-
   let t=document.getElementById("toast");
   t.innerText=msg;
   t.className="toast " + (ok?"success":"error");
   t.style.display="block";
-
   setTimeout(()=>t.style.display="none",1200);
+}
+
+// 🏠 رجوع
+function goHome(){
+  window.location.href="index.html";
 }
 
 load();

@@ -10,8 +10,6 @@
 
 <style>
 
-*{box-sizing:border-box}
-
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
@@ -19,60 +17,52 @@ body{
   color:white;
 }
 
-.topbar{
-  position:absolute;
-  top:15px;
-  right:15px;
+/* 🔝 الأعلى */
+.top{
+  display:flex;
+  justify-content:space-between;
+  padding:15px;
 }
+
+.user{color:#38bdf8;}
 
 .home{
   background:#6366f1;
-  padding:10px 15px;
-  border:none;
-  border-radius:12px;
-  color:white;
+  padding:10px;
+  border-radius:10px;
   cursor:pointer;
 }
 
+/* 📦 */
 .container{
   min-height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
-  padding:15px;
 }
 
 .card{
-  width:100%;
+  width:90%;
   max-width:420px;
   background:#1e293b;
-  border-radius:20px;
   padding:20px;
+  border-radius:20px;
   text-align:center;
 }
 
-.title{font-size:22px;margin-bottom:10px;}
-
-.question{
-  font-size:18px;
-  margin:15px 0;
-}
-
-.speaker{
-  font-size:26px;
-  cursor:pointer;
-}
+.question{margin:15px 0;font-size:18px;}
 
 input{
   width:100%;
   padding:12px;
   border-radius:12px;
   border:none;
-  text-align:center;
   margin-top:10px;
+  text-align:center;
 }
 
 button{
+  width:100%;
   padding:12px;
   border:none;
   border-radius:12px;
@@ -81,10 +71,9 @@ button{
 }
 
 .option{
-  width:100%;
   background:#334155;
-  margin:6px 0;
   color:white;
+  margin:5px 0;
 }
 
 .check{background:#22c55e;}
@@ -94,10 +83,10 @@ button{
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
-  padding:15px 25px;
+  padding:20px;
   border-radius:12px;
   display:none;
-  font-size:18px;
+  font-size:20px;
 }
 
 .success{background:#22c55e;}
@@ -108,19 +97,16 @@ button{
 
 <body>
 
-<div class="topbar">
-  <button class="home" onclick="goHome()">🏠 الرئيسية</button>
+<div class="top">
+  <div class="user" id="username">👤</div>
+  <div class="home" onclick="goHome()">🏠</div>
 </div>
 
 <div class="container">
 
   <div class="card">
 
-    <div class="title">🧠 اختبار ذكي</div>
-
-    <div id="question" class="question">...</div>
-
-    <div id="speaker" class="speaker" onclick="play()">🔊</div>
+    <div class="question" id="question">...</div>
 
     <div id="answers"></div>
 
@@ -143,15 +129,21 @@ const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let user_id = localStorage.getItem("user_id");
 
+/* 👤 الاسم */
+let fullName = localStorage.getItem("user") || "طالب";
+let parts = fullName.split(" ");
+document.getElementById("username").innerText =
+  "👤 " + parts[0] + (parts[1] ? " " + parts[1] : "");
+
 let words = [];
-let current = 0;
-let type = "";
-let currentWord = null;
+let queue = [];
+let currentWord;
+let type;
 
 let correctCount = 0;
 let total = 0;
 
-// تحميل
+/* 🔥 تحميل الكلمات */
 async function load(){
 
   let { data } = await client
@@ -161,23 +153,28 @@ async function load(){
 
   words = data || [];
 
-  if(words.length === 0){
-    document.getElementById("question").innerText = "⚠️ ما عندك كلمات";
-    return;
-  }
+  // 🔥 نكرر الكلمات لعمل وزن
+  words.forEach(w=>{
+    queue.push(w,w); // تكرار
+  });
 
   next();
 }
 
-// السؤال
+/* 🎯 اختيار ذكي */
+function getNextWord(){
+  return queue[Math.floor(Math.random()*queue.length)];
+}
+
+/* السؤال */
 function next(){
 
-  if(current >= words.length){
+  if(total >= 20){ // عدد الأسئلة
     finish();
     return;
   }
 
-  currentWord = words[current];
+  currentWord = getNextWord();
 
   let en = currentWord.word;
   let ar = currentWord.translation;
@@ -185,15 +182,14 @@ function next(){
   let types = ["mcq","write","listen","reverse"];
   type = types[Math.floor(Math.random()*types.length)];
 
-  document.getElementById("answers").innerHTML = "";
-  document.getElementById("input").value = "";
+  document.getElementById("answers").innerHTML="";
+  document.getElementById("input").value="";
 
   total++;
 
-  // اختيار
   if(type === "mcq"){
 
-    hideAll();
+    document.getElementById("input").style.display="none";
     document.getElementById("question").innerText = "ما معنى: " + en;
 
     let options = [...words].sort(()=>0.5-Math.random()).slice(0,3);
@@ -201,113 +197,107 @@ function next(){
     options = options.sort(()=>0.5-Math.random());
 
     options.forEach(o=>{
-      let btn = document.createElement("button");
+      let btn=document.createElement("button");
       btn.className="option";
-      btn.innerText = o.translation;
-
-      btn.onclick=()=>{
-        checkChoice(btn.innerText, ar);
-      };
-
+      btn.innerText=o.translation;
+      btn.onclick=()=>checkChoice(btn.innerText, ar);
       document.getElementById("answers").appendChild(btn);
     });
   }
 
-  // كتابة
   if(type === "write"){
-    showInput();
+    document.getElementById("input").style.display="block";
     document.getElementById("question").innerText = "اكتب معنى: " + en;
   }
 
-  // استماع
   if(type === "listen"){
-    showInput();
+    document.getElementById("input").style.display="block";
     document.getElementById("question").innerText = "🎧 استمع واكتب المعنى";
     speak(en);
   }
 
-  // ترجمة عكسية
   if(type === "reverse"){
-    showInput();
+    document.getElementById("input").style.display="block";
     document.getElementById("question").innerText = "اكتب بالإنجليزي: " + ar;
   }
 }
 
-function hideAll(){
-  document.getElementById("speaker").style.display="none";
-  document.getElementById("input").style.display="none";
-}
-
-function showInput(){
-  document.getElementById("speaker").style.display="block";
-  document.getElementById("input").style.display="block";
-}
-
-// صوت
+/* 🔊 */
 function speak(text){
   speechSynthesis.cancel();
-  let u = new SpeechSynthesisUtterance(text);
+  let u=new SpeechSynthesisUtterance(text);
   u.lang="en-US";
-  u.rate=0.9;
   speechSynthesis.speak(u);
 }
 
-function play(){
-  speak(currentWord.word);
+/* تحقق */
+function checkChoice(sel, correct){
+  handle(sel === correct);
 }
 
-// اختيار
-function checkChoice(selected, correct){
-  let ok = selected === correct;
-  if(ok) correctCount++;
-  toast(ok ? "✅ صح" : "❌ " + correct, ok);
-  nextStep();
-}
-
-// كتابة
 function check(){
 
-  if(type === "mcq") return;
+  if(type==="mcq") return;
 
-  let val = document.getElementById("input").value.trim().toLowerCase();
-  let correct = (type === "reverse") ? currentWord.word.toLowerCase() : currentWord.translation.toLowerCase();
+  let val=document.getElementById("input").value.toLowerCase();
+  let correct=(type==="reverse")?currentWord.word.toLowerCase():currentWord.translation.toLowerCase();
 
-  let ok = val === correct;
-
-  if(ok) correctCount++;
-
-  toast(ok ? "✅ صح" : "❌ " + correct, ok);
-  nextStep();
+  handle(val===correct);
 }
 
-// التالي
-function nextStep(){
-  current++;
-  setTimeout(next,800);
+/* 🔥 الذكاء */
+function handle(ok){
+
+  if(ok){
+    correctCount++;
+  }else{
+    // 🔥 إعادة الكلمة الصعبة
+    queue.push(currentWord,currentWord,currentWord);
+  }
+
+  toast(ok?"✅":"❌",ok);
+
+  saveProgress(ok);
+
+  setTimeout(next,700);
 }
 
-// النهاية
-function finish(){
+/* 💾 حفظ */
+async function saveProgress(ok){
+  await client.from("progress").insert([{
+    user_id,
+    word: currentWord.word,
+    correct: ok
+  }]);
+}
 
-  let percent = Math.round((correctCount / total) * 100);
+/* النهاية */
+async function finish(){
 
-  document.getElementById("question").innerHTML =
+  let percent=Math.round((correctCount/total)*100);
+
+  document.getElementById("question").innerHTML=
     `🎉 انتهى الاختبار<br><br>نتيجتك: ${percent}%`;
 
   document.getElementById("input").style.display="none";
   document.getElementById("answers").innerHTML="";
+
+  // 🔥 حفظ النتيجة
+  await client.from("results").insert([{
+    user_id,
+    score: percent
+  }]);
 }
 
-// toast
-function toast(msg, ok){
+/* toast */
+function toast(msg,ok){
   let t=document.getElementById("toast");
   t.innerText=msg;
-  t.className="toast " + (ok?"success":"error");
+  t.className="toast "+(ok?"success":"error");
   t.style.display="block";
-  setTimeout(()=>t.style.display="none",1000);
+  setTimeout(()=>t.style.display="none",800);
 }
 
-// رجوع
 function goHome(){
   window.location.href="index.html";
 }

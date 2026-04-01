@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>📚 مراجعة الدرس</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<title>📚 الوحدات</title>
 
 <style>
 
@@ -17,248 +15,147 @@ body{
   color:white;
 }
 
-/* 🔥 هيدر */
-.header{
+/* الهيدر */
+.top{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   padding:15px;
 }
 
-.user-name{
-  color:#38bdf8;
-  font-size:14px;
-}
-
-.home{
-  background:#1e293b;
-  border:1px solid #334155;
-  padding:6px 12px;
-  border-radius:10px;
-  color:#38bdf8;
-  cursor:pointer;
-  font-size:13px;
-}
-
-/* 📦 */
-.container{
-  max-width:500px;
-  margin:auto;
-  padding:10px;
-}
-
-.card{
-  background:#1e293b;
-  padding:18px;
-  border-radius:18px;
-  margin-bottom:12px;
-}
+.user{color:#38bdf8;}
+.points{color:#facc15;}
 
 .title{
-  font-size:18px;
-  margin-bottom:10px;
-}
-
-/* نفس الحجم */
-.input-group{
-  display:flex;
-  gap:8px;
+  text-align:center;
+  font-size:24px;
   margin-top:10px;
 }
 
-.input-group input{
-  flex:1;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  text-align:center;
+/* الوحدات */
+.container{
+  padding:15px;
 }
 
-.input-group button{
-  flex:1;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  background:#22c55e;
-  color:white;
+.unit{
+  background:#1e293b;
+  border-radius:20px;
+  padding:15px;
+  margin-bottom:15px;
 }
 
-/* كلمات */
-.word{
-  display:flex;
-  justify-content:space-between;
-  border-bottom:1px solid #334155;
-  padding:8px 0;
-}
-
-.en{color:#38bdf8;}
-.ar{color:#f87171;}
-
-.note{
-  background:#0f172a;
-  padding:10px;
-  border-radius:10px;
-  margin-top:8px;
-  color:#cbd5f5;
-}
-
-/* 🔔 */
-.toast{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  padding:18px 25px;
-  border-radius:12px;
-  display:none;
+.unit-title{
   font-size:18px;
+  margin-bottom:10px;
+  color:#38bdf8;
 }
 
-.success{background:#22c55e;}
-.error{background:#ef4444;}
+/* الدروس */
+.lesson{
+  background:#334155;
+  padding:12px;
+  border-radius:12px;
+  margin:6px 0;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.lesson:hover{
+  background:#475569;
+}
+
+/* حالة الدرس */
+.done{
+  border-right:4px solid #22c55e;
+}
+
+.locked{
+  opacity:0.4;
+}
 
 </style>
+
 </head>
 
 <body>
 
-<div class="header">
-  <div id="username" class="user-name">👤</div>
-  <button class="home" onclick="goHome()">🏠 الرئيسية</button>
+<div class="top">
+  <div class="user">👤 أحمد علي</div>
+  <div class="points">⭐ نقاطك: 120</div>
 </div>
 
-<div class="container">
+<div class="title">📚 الوحدات التعليمية</div>
 
-  <!-- 📝 الملاحظات -->
-  <div class="card">
-    <div class="title">📝 ملاحظاتي</div>
-    <div id="notes"></div>
-  </div>
-
-  <!-- ⭐ الكلمات -->
-  <div class="card">
-    <div class="title">⭐ كلمات الدرس</div>
-    <div id="words"></div>
-  </div>
-
-  <!-- 🧠 اختبار -->
-  <div class="card">
-    <div class="title">🧠 اختبار</div>
-    <div id="question"></div>
-
-    <div class="input-group">
-      <input id="input" placeholder="اكتب المعنى">
-      <button onclick="check()">تحقق</button>
-    </div>
-  </div>
-
-</div>
-
-<div id="toast" class="toast"></div>
+<div class="container" id="unitsContainer"></div>
 
 <script>
 
-const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+/* بيانات تجريبية */
+const data = [
+  {
+    unit: "Unit 1 - Basics",
+    lessons: [
+      {title:"Lesson 1 - Greetings", done:true},
+      {title:"Lesson 2 - Introductions", done:false},
+      {title:"Lesson 3 - Daily Words", done:false}
+    ]
+  },
+  {
+    unit: "Unit 2 - Verbs",
+    lessons: [
+      {title:"Lesson 4 - Basic Verbs", done:false},
+      {title:"Lesson 5 - Phrasal Verbs", locked:true}
+    ]
+  }
+];
 
-const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+/* عرض */
+function render(){
 
-let user_id = localStorage.getItem("user_id");
-
-// 👤 الاسم
-let name = localStorage.getItem("user") || "طالب";
-let p = name.split(" ");
-document.getElementById("username").innerText =
-  "👤 " + p[0] + (p[1] ? " " + p[1] : "");
-
-// 📝 الملاحظات
-let notes = JSON.parse(localStorage.getItem("notes") || "[]");
-
-let html="";
-notes.forEach(n=>{
-  html += `<div class="note">• ${n}</div>`;
-});
-
-document.getElementById("notes").innerHTML =
-  html || "لا توجد ملاحظات";
-
-// ⭐ الكلمات من Supabase
-let words = [];
-let current = 0;
-
-async function loadWords(){
-
-  let { data } = await client
-    .from("user_words")
-    .select("*")
-    .eq("user_id", user_id)
-    .order("created_at", { ascending:false })
-    .limit(10);
-
-  words = data || [];
-
-  renderWords();
-  next();
-}
-
-function renderWords(){
   let html="";
-  words.forEach(w=>{
+
+  data.forEach((u,index)=>{
+
     html+=`
-      <div class="word">
-        <div class="ar">${w.translation}</div>
-        <div class="en">${w.word}</div>
-      </div>
+      <div class="unit">
+        <div class="unit-title">${u.unit}</div>
     `;
+
+    u.lessons.forEach((l,i)=>{
+
+      let cls="lesson";
+
+      if(l.done) cls+=" done";
+      if(l.locked) cls+=" locked";
+
+      html+=`
+        <div class="${cls}" onclick="openLesson(${index},${i})">
+          ${l.title}
+        </div>
+      `;
+    });
+
+    html+="</div>";
+
   });
-  document.getElementById("words").innerHTML = html;
+
+  document.getElementById("unitsContainer").innerHTML=html;
 }
 
-// 🧠 اختبار
-function next(){
+/* فتح الدرس */
+function openLesson(unitIndex, lessonIndex){
 
-  if(current >= words.length){
-    question.innerText="🎉 انتهى الدرس";
+  const lesson = data[unitIndex].lessons[lessonIndex];
+
+  if(lesson.locked){
+    alert("🔒 هذا الدرس مقفل");
     return;
   }
 
-  question.innerText = "ما معنى: " + words[current].word;
-  input.value="";
+  // 👉 هنا تربطه بصفحة الدرس
+  window.location.href = "lesson.html?unit="+unitIndex+"&lesson="+lessonIndex;
 }
 
-function check(){
-
-  let val = normalize(input.value);
-  let correct = normalize(words[current].translation);
-
-  let ok = val.includes(correct) || correct.includes(val);
-
-  toast(ok ? "✅ صح" : "❌ " + words[current].translation, ok);
-
-  current++;
-  setTimeout(next,700);
-}
-
-// 🔤
-function normalize(t){
-  return t.replace(/[أإآ]/g,"ا").trim();
-}
-
-// 🔔
-function toast(msg, ok){
-  let t=document.getElementById("toast");
-  t.innerText=msg;
-  t.className="toast "+(ok?"success":"error");
-  t.style.display="block";
-  setTimeout(()=>t.style.display="none",1000);
-}
-
-// 🔙
-function goHome(){
-  location.href="index.html";
-}
-
-loadWords();
+render();
 
 </script>
 

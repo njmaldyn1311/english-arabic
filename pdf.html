@@ -5,37 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>تحليل PDF</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
 <style>
 body {
   font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  background: linear-gradient(135deg, #0f172a, #1e293b);
   margin: 0;
   padding: 20px;
   display: flex;
   justify-content: center;
+  color: white;
 }
 
-/* الحاوية العامة */
 .container {
   width: 100%;
   max-width: 500px;
 }
 
-/* الصندوق الأبيض */
 .box {
-  background: white;
+  background: #1e293b;
   padding: 25px;
   border-radius: 20px;
   width: 98%;
-  box-sizing: border-box;
   text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
   margin-bottom: 20px;
 }
 
-/* الزر */
 button {
-  background: #00c6ff;
+  background: #22c55e;
   color: white;
   border: none;
   padding: 10px 14px;
@@ -45,24 +44,17 @@ button {
 }
 
 button:hover {
-  background: #009edb;
+  background: #16a34a;
 }
 
-/* النتائج */
-#result {
-  width: 100%;
-}
-
-/* عنوان القسم */
 .title {
   margin: 15px 0 10px;
-  text-align: center;
+  color: #facc15;
 }
 
-/* كل كلمة */
 .word {
   padding: 10px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #334155;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -72,25 +64,33 @@ button:hover {
 .en {
   flex: 1;
   text-align: left;
+  color: #38bdf8;
+  font-weight: bold;
 }
 
 .ar {
   flex: 1;
   text-align: right;
+  color: #f87171;
 }
 
-/* موبايل */
-@media (max-width: 480px) {
-  body {
-    padding: 15px;
-  }
-
-  .box {
-    padding: 20px;
-  }
+.actions {
+  display:flex;
+  gap:8px;
 }
+
+.icon {
+  cursor:pointer;
+  background:#0f172a;
+  padding:8px;
+  border-radius:8px;
+}
+
+.icon.saved {
+  background:#22c55e;
+}
+
 </style>
-
 </head>
 
 <body>
@@ -112,15 +112,60 @@ button:hover {
 </div>
 
 <script>
+
+// 🔥 بياناتك
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 🧠 user_id
+let user_id = localStorage.getItem("user_id");
+if(!user_id){
+  user_id = "user_" + Math.random().toString(36).substring(2,10);
+  localStorage.setItem("user_id", user_id);
+}
+
+// ⭐ حفظ الكلمة
+async function saveWord(el,en,ar){
+
+  try{
+
+    // منع التكرار
+    const { data } = await supabase
+      .from("user_words")
+      .select("*")
+      .eq("user_id", user_id)
+      .eq("word", en);
+
+    if(data.length > 0){
+      el.innerText = "✅";
+      el.classList.add("saved");
+      return;
+    }
+
+    await supabase.from("user_words").insert({
+      user_id: user_id,
+      word: en,
+      translation: ar
+    });
+
+    el.innerText = "✅";
+    el.classList.add("saved");
+
+  }catch(e){
+    console.error(e);
+    alert("❌ فشل الحفظ");
+  }
+}
+
 async function upload() {
+
   const file = document.getElementById("file").files[0];
   const status = document.getElementById("status");
   const result = document.getElementById("result");
 
-  if (!file) {
-    alert("اختر ملف");
-    return;
-  }
+  if (!file) return alert("اختر ملف");
 
   const formData = new FormData();
   formData.append("file", file);
@@ -129,6 +174,7 @@ async function upload() {
   result.innerHTML = "";
 
   try {
+
     const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
       method: "POST",
       body: formData
@@ -137,20 +183,23 @@ async function upload() {
     let data = await res.json();
 
     if (data.raw) {
-      try {
-        data = JSON.parse(data.raw);
-      } catch {}
+      try { data = JSON.parse(data.raw); } catch {}
     }
 
     status.innerText = "✅ تم التحليل";
 
     function renderList(list) {
-      if (!list || list.length === 0) return "";
+      if (!list) return "";
 
       return list.map(item => `
         <div class="word">
           <span class="en">${item.word || item.phrase || ""}</span>
-          <button onclick="speak('${item.word || item.phrase}')">🔊</button>
+
+          <div class="actions">
+            <div class="icon" onclick="speak('${item.word || item.phrase}')">🔊</div>
+            <div class="icon" onclick="saveWord(this,'${item.word || item.phrase}','${item.arabic || ""}')">⭐</div>
+          </div>
+
           <span class="ar">${item.arabic || ""}</span>
         </div>
       `).join("");
@@ -177,11 +226,14 @@ async function upload() {
   }
 }
 
+// 🔊 صوت
 function speak(word) {
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.lang = "en-US";
-  speechSynthesis.speak(utterance);
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang = "en-US";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
 }
+
 </script>
 
 </body>

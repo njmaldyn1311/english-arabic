@@ -19,23 +19,27 @@ body{
   color:white;
 }
 
-/* 🔝 */
-.topbar{
+/* 🔥 الهيدر الجديد */
+.header{
   position:absolute;
   top:15px;
+  left:15px;
   right:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
 /* 👤 الاسم */
 .user-name{
-  position:absolute;
-  top:15px;
-  left:15px;
   color:#38bdf8;
   font-size:14px;
+  display:flex;
+  align-items:center;
+  gap:5px;
 }
 
-/* زر نفس ستايل الاسم */
+/* 🏠 زر */
 .home{
   background:#1e293b;
   border:1px solid #334155;
@@ -45,6 +49,7 @@ body{
   cursor:pointer;
 }
 
+/* 📦 */
 .container{
   min-height:100vh;
   display:flex;
@@ -100,15 +105,17 @@ button{
 
 .check{background:#22c55e;}
 
+/* 🔥 alert أقوى */
 .toast{
   position:fixed;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
-  padding:15px 25px;
-  border-radius:12px;
+  padding:18px 30px;
+  border-radius:15px;
   display:none;
-  font-size:18px;
+  font-size:20px;
+  font-weight:bold;
 }
 
 .success{background:#22c55e;}
@@ -119,10 +126,13 @@ button{
 
 <body>
 
-<div class="user-name" id="username">👤</div>
+<!-- 🔥 الهيدر -->
+<div class="header">
 
-<div class="topbar">
+  <div class="user-name" id="username">👤</div>
+
   <button class="home" onclick="goHome()">🏠 الرئيسية</button>
+
 </div>
 
 <div class="container">
@@ -209,13 +219,20 @@ function next(){
 
   total++;
 
+  // 🔥 اختيار بدون تكرار
   if(type === "mcq"){
 
     hideAll();
     document.getElementById("question").innerText = "ما معنى: " + en;
 
-    let options = [...words].sort(()=>0.5-Math.random()).slice(0,3);
-    options.push(currentWord);
+    let unique = [...new Map(words.map(item => [item.translation, item])).values()];
+
+    let options = unique.sort(()=>0.5-Math.random()).slice(0,3);
+
+    if(!options.find(o => o.translation === ar)){
+      options[0] = currentWord;
+    }
+
     options = options.sort(()=>0.5-Math.random());
 
     options.forEach(o=>{
@@ -270,7 +287,9 @@ function play(){
 function checkChoice(selected, correct){
   let ok = selected === correct;
   if(ok) correctCount++;
-  toast(ok ? "✅ صح" : "❌ " + correct, ok);
+
+  toast(ok ? "✅ صحيح" : "❌ خطأ\n" + correct, ok);
+
   nextStep();
 }
 
@@ -286,7 +305,8 @@ function check(){
 
   if(ok) correctCount++;
 
-  toast(ok ? "✅ صح" : "❌ " + correct, ok);
+  toast(ok ? "✅ صحيح" : "❌ خطأ\n" + correct, ok);
+
   nextStep();
 }
 
@@ -296,7 +316,7 @@ function nextStep(){
   setTimeout(next,800);
 }
 
-// النهاية + حفظ
+// النهاية
 async function finish(){
 
   let percent = Math.round((correctCount / total) * 100);
@@ -307,13 +327,11 @@ async function finish(){
   document.getElementById("input").style.display="none";
   document.getElementById("answers").innerHTML="";
 
-  // حفظ في سوبا
   await client.from("results").insert({
     user_id: user_id,
     score: percent
   });
 
-  // تغيير الزر
   let btn = document.getElementById("mainBtn");
   btn.innerText = "🔄 إعادة الاختبار";
   btn.onclick = restart;
@@ -339,7 +357,7 @@ function toast(msg, ok){
   t.innerText=msg;
   t.className="toast " + (ok?"success":"error");
   t.style.display="block";
-  setTimeout(()=>t.style.display="none",1000);
+  setTimeout(()=>t.style.display="none",1200);
 }
 
 // رجوع

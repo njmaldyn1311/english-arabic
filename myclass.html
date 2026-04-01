@@ -119,14 +119,6 @@ body{
   transform:scale(1.1);
 }
 
-.note{
-  background:#0f172a;
-  padding:10px;
-  border-radius:10px;
-  margin-top:8px;
-  color:#cbd5f5;
-}
-
 </style>
 </head>
 
@@ -160,65 +152,29 @@ body{
 
 </div>
 
-<!-- 📝 ملاحظات -->
-<div id="notesCard" class="card" style="display:none;">
-  <div class="section-title">📝 ملاحظاتي</div>
-
-  <div id="notesBox"></div>
-
-  <div style="display:flex;gap:10px;">
-    <input id="noteInput" class="input" placeholder="اكتب ملاحظة...">
-    <button class="btn" style="width:auto;padding:12px 18px;" onclick="addNote()">➕</button>
-  </div>
-</div>
-
 <div id="lesson"></div>
 
 <script>
 
-// 👤 الاسم
+// 🔥 بيانات Supabase
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+
 const fullName = localStorage.getItem("user") || "";
 const nameParts = fullName.split(" ");
-document.getElementById("username").innerText =
-  "👤 " + nameParts.slice(0,2).join(" ");
+const shortName = nameParts.slice(0,2).join(" ");
+document.getElementById("username").innerText = "👤 " + shortName;
 
 function goProfile(){
   window.location.href = "student.html";
 }
 
-// 🧠 الملاحظات
-let lesson_id = null;
-let NOTES_KEY = null;
-
-function loadNotes(){
-  let notes = JSON.parse(localStorage.getItem(NOTES_KEY) || "[]");
-
-  let html="";
-  notes.forEach(n=>{
-    html += `<div class="note">• ${n}</div>`;
-  });
-
-  document.getElementById("notesBox").innerHTML =
-    html || "لا توجد ملاحظات";
+let user_id = localStorage.getItem("user_id");
+if(!user_id){
+  user_id = "user_" + Math.random().toString(36).substring(2,10);
+  localStorage.setItem("user_id", user_id);
 }
 
-function addNote(){
-
-  let input = document.getElementById("noteInput").value.trim();
-  if(!input) return;
-
-  let notes = JSON.parse(localStorage.getItem(NOTES_KEY) || "[]");
-
-  notes.push(input);
-
-  localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
-
-  document.getElementById("noteInput").value="";
-
-  loadNotes();
-}
-
-// 🔧 اختيار النوع
 let selectedType="text";
 
 function toggleOptions(){
@@ -237,14 +193,67 @@ function selectType(type){
   document.getElementById("typeText").innerText=text;
 }
 
-// 🔊 صوت
 function speak(text){
   let utter = new SpeechSynthesisUtterance(text);
   utter.lang="en-US";
   speechSynthesis.speak(utter);
 }
 
-// 🚀 إنشاء الدرس
+/* ⭐ حفظ في Supabase بدل localStorage */
+async function saveWord(el,en,ar){
+
+  try{
+
+    await fetch(SUPABASE_URL + "/rest/v1/user_words", {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+        word: en,
+        translation: ar
+      })
+    });
+
+    // ✅ تغيير الشكل
+    el.innerText = "✅";
+    el.style.background = "#22c55e";
+
+  }catch(err){
+    console.error(err);
+    alert("❌ فشل الحفظ");
+  }
+
+}
+
+/* عرض الكلمات */
+function renderWords(words){
+  let html="";
+  for(let section in words){
+    html+=`<div class="section-title">${section}</div>`;
+    words[section].forEach(w=>{
+      html+=`
+        <div class="word">
+          <div class="ar">${w.ar}</div>
+
+          <div class="actions">
+            <div class="icon" onclick="speak('${w.en}')">🔊</div>
+            <div class="icon" onclick="saveWord(this,'${w.en}','${w.ar}')">⭐</div>
+          </div>
+
+          <div class="en">${w.en}</div>
+        </div>
+      `;
+    });
+  }
+  return html;
+}
+
+/* 🚀 إنشاء الدرس */
 async function generateLesson(){
 
   let input=document.getElementById("textInput").value;
@@ -264,20 +273,14 @@ async function generateLesson(){
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({
         inputPart: input,
-        type: selectedType
+        type: selectedType,
+        user_id: user_id
       })
     });
 
     let data = await res.json();
 
     document.getElementById("textInput").value = "";
-
-    // 🔥 ربط الملاحظات بنفس الدرس
-    lesson_id = input.slice(0,30);
-    NOTES_KEY = "notes_" + lesson_id;
-
-    document.getElementById("notesCard").style.display = "block";
-    loadNotes();
 
     document.getElementById("lesson").innerHTML=`
       <div class="card">
@@ -304,28 +307,6 @@ async function generateLesson(){
       `<div class="loading" style="color:red;">❌ خطأ</div>`;
   }
 
-}
-
-// ⭐ عرض الكلمات
-function renderWords(words){
-  let html="";
-  for(let section in words){
-    html+=`<div class="section-title">${section}</div>`;
-    words[section].forEach(w=>{
-      html+=`
-        <div class="word">
-          <div class="ar">${w.ar}</div>
-
-          <div class="actions">
-            <div class="icon" onclick="speak('${w.en}')">🔊</div>
-          </div>
-
-          <div class="en">${w.en}</div>
-        </div>
-      `;
-    });
-  }
-  return html;
 }
 
 </script>

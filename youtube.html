@@ -49,19 +49,18 @@ button {
   border-radius: 15px;
 }
 
-/* 🎬 فيديو أكبر */
+/* 🎬 فيديو */
 #player {
   width: 100%;
-  height: 320px;
+  height: 300px;
   border-radius: 15px;
 }
 
-/* 🔘 زر CC */
+/* 🔘 CC */
 #ccBtn {
   margin-top:10px;
   background:#00000088;
 }
-
 #ccBtn.active{
   background:#22c55e;
 }
@@ -73,26 +72,34 @@ button {
 
 .sub-en{
   font-size:18px;
-  font-weight:bold;
   color:#38bdf8;
 }
 
 .sub-ar{
-  font-size:16px;
-  color:#f87171;
+  font-size:20px; /* 🔥 أكبر */
+  color:#facc15; /* 🔥 أصفر */
+  font-weight:bold;
 }
 
+/* الكلمات */
 .line {
   text-align: left;
   margin: 10px 0;
+  line-height:1.6;
 }
 
-.en { color: #38bdf8; }
+.en { color: #38bdf8; font-weight:bold; }
 .ar { color: #f87171; }
 
-.star {
-  cursor: pointer;
-  margin-left: 10px;
+.example { color:#e2e8f0; }
+.example-ar { color:#94a3b8; font-size:13px; }
+
+.icon{
+  cursor:pointer;
+  margin-left:8px;
+  background:#0f172a;
+  padding:6px;
+  border-radius:8px;
 }
 </style>
 </head>
@@ -103,12 +110,9 @@ button {
 
 <h2>🎥 تعلم من الفيديو بذكاء</h2>
 
-<input type="text" id="url" placeholder="ضع رابط YouTube">
-
+<input id="url" placeholder="ضع رابط YouTube">
 <br>
-<button onclick="sendUrl()">🔗 تحليل</button>
-
-<p id="loading" style="display:none;">⏳ جاري التحليل...</p>
+<button onclick="sendUrl()">تحليل</button>
 
 <div id="videoBox" class="card" style="display:none;">
   <div id="player"></div>
@@ -134,10 +138,8 @@ let subtitles = [];
 let cc = true;
 
 /* استخراج ID */
-function getVideoId(url) {
-  if (url.includes("youtu.be")) {
-    return url.split("/").pop().split("?")[0];
-  }
+function getVideoId(url){
+  if(url.includes("youtu.be")) return url.split("/").pop();
   return url.split("v=")[1]?.split("&")[0];
 }
 
@@ -148,14 +150,12 @@ function loadVideo(id){
 
   player = new YT.Player("player",{
     videoId:id,
-    events:{
-      onReady: startSync
-    }
+    events:{ onReady:startSync }
   });
 
 }
 
-/* 🔥 مزامنة */
+/* مزامنة */
 function startSync(){
 
   setInterval(()=>{
@@ -166,10 +166,8 @@ function startSync(){
 
     subtitles.forEach(s=>{
       if(t >= s.start && t <= s.end){
-
         document.getElementById("subEn").innerText = s.en;
         document.getElementById("subAr").innerText = s.ar;
-
       }
     });
 
@@ -177,34 +175,27 @@ function startSync(){
 
 }
 
+/* 🔊 صوت */
+function speak(text){
+  let u = new SpeechSynthesisUtterance(text);
+  u.lang="en-US";
+  u.rate=0.9;
+  speechSynthesis.speak(u);
+}
+
 /* CC */
 function toggleCC(){
   cc = !cc;
 
-  let btn = document.getElementById("ccBtn");
+  let btn=document.getElementById("ccBtn");
 
   if(cc){
     btn.classList.add("active");
   }else{
     btn.classList.remove("active");
-    document.getElementById("subEn").innerText="";
-    document.getElementById("subAr").innerText="";
+    subEn.innerText="";
+    subAr.innerText="";
   }
-}
-
-/* ⭐ حفظ */
-async function saveWord(el, word, translation){
-  await fetch("https://ofyugbhplaynjeafdrgx.supabase.co/rest/v1/user_words",{
-    method:"POST",
-    headers:{
-      "apikey":"sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO",
-      "Authorization":"Bearer sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO",
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({word,translation})
-  });
-
-  el.innerText="✅";
 }
 
 /* عرض */
@@ -222,7 +213,7 @@ function show(data){
 
       subtitles.push({
         start:w.time || 0,
-        end:(w.time || 0)+3,
+        end:(w.time||0)+3,
         en:w.example || w.en || "",
         ar:w.example_ar || w.ar || ""
       });
@@ -230,8 +221,12 @@ function show(data){
       html+=`
         <div class="line">
           <span class="en">${w.en || w.word}</span>
+          <span class="icon" onclick="speak('${w.en || w.word}')">🔊</span>
+
           <span class="ar">${w.ar || w.arabic}</span>
-          <span class="star" onclick="saveWord(this,'${w.en}','${w.ar}')">⭐</span>
+
+          <div class="example">${w.example || ""}</div>
+          <div class="example-ar">${w.example_ar || ""}</div>
         </div>
       `;
     });
@@ -242,17 +237,15 @@ function show(data){
   document.getElementById("result").innerHTML=html;
 }
 
-/* 🚀 إرسال */
+/* إرسال */
 async function sendUrl(){
 
   const url = document.getElementById("url").value;
-  if(!url) return alert("اكتب رابط");
+  if(!url) return alert("حط الرابط");
 
-  subtitles = [];
+  subtitles=[];
 
   document.getElementById("videoBox").style.display="block";
-
-  startLoading();
 
   const id = getVideoId(url);
   loadVideo(id);
@@ -265,16 +258,7 @@ async function sendUrl(){
 
   const data = await res.json();
 
-  stopLoading();
   show(data);
-}
-
-function startLoading(){
-  document.getElementById("loading").style.display="block";
-}
-
-function stopLoading(){
-  document.getElementById("loading").style.display="none";
 }
 
 </script>

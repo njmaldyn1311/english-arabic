@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>AI Video Learning</title>
+<title>AI Video Learning PRO</title>
 
 <style>
 body {
@@ -55,7 +55,7 @@ button {
   background: #0f172a;
 }
 
-iframe {
+#player {
   width: 100%;
   height: 260px;
   border-radius: 15px;
@@ -74,8 +74,8 @@ iframe {
 }
 
 .sub-ar{
-  font-size:22px;
-  color:#facc15; /* أصفر */
+  font-size:24px;
+  color:#facc15;
   font-weight:bold;
   margin-top:5px;
 }
@@ -84,6 +84,16 @@ iframe {
 .highlight{
   color:#22c55e;
   font-weight:bold;
+}
+
+/* زر CC */
+.cc-btn{
+  background:#334155;
+  margin-top:10px;
+}
+
+.cc-on{
+  background:#22c55e;
 }
 
 .line {
@@ -115,27 +125,32 @@ iframe {
 <p id="loading" style="display:none;">⏳ جاري التحليل...</p>
 
 <div id="videoBox" class="card" style="display:none;">
-  <iframe id="videoFrame"></iframe>
 
-  <!-- 🔥 الترجمة -->
+  <div id="player"></div>
+
+  <button id="ccBtn" class="cc-btn" onclick="toggleCC()">CC</button>
+
   <div id="subtitleBox">
     <div class="sub-en" id="subEn"></div>
     <div class="sub-ar" id="subAr"></div>
   </div>
+
 </div>
 
 <div id="result"></div>
 
 </div>
 
+<!-- 🔥 YouTube API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
 <script>
 
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 
+let player;
 let subtitles = [];
-let currentIndex = 0;
-let playerTime = 0;
-let videoId = "";
+let ccEnabled = true;
 
 /* استخراج ID */
 function getVideoId(url){
@@ -150,54 +165,67 @@ function getVideoId(url){
   }
 }
 
-/* تشغيل الفيديو */
-function showVideo(url){
-  videoId = getVideoId(url);
+/* إنشاء الفيديو */
+function createPlayer(videoId){
 
-  document.getElementById("videoFrame").src =
-    `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
+  player = new YT.Player('player', {
+    height: '260',
+    width: '100%',
+    videoId: videoId,
+    events: {
+      'onReady': onPlayerReady
+    }
+  });
 
-  document.getElementById("videoBox").style.display="block";
-
-  startFakeTimer();
 }
 
-/* ⏱ محاكاة وقت الفيديو */
-function startFakeTimer(){
-  playerTime = 0;
-  setInterval(()=>{
-    playerTime += 1;
-    updateSubtitle();
-  },1000);
+function onPlayerReady(){
+  setInterval(syncSubtitle, 500);
 }
 
-/* 🔥 تحديث الترجمة */
-function updateSubtitle(){
+/* 🔥 مزامنة حقيقية */
+function syncSubtitle(){
 
-  if(!subtitles.length) return;
+  if(!player || !ccEnabled) return;
 
-  const current = subtitles.find(s => playerTime >= s.time && playerTime < (s.time + 4));
+  const time = player.getCurrentTime();
+
+  const current = subtitles.find(s =>
+    time >= s.time && time < (s.time + 4)
+  );
 
   if(!current) return;
 
-  // تمييز الكلمات
-  let text = current.example || "";
-  let words = current.words || [];
+  let text = current.en;
 
-  words.forEach(w=>{
+  current.words.forEach(w=>{
     const reg = new RegExp(`\\b${w}\\b`, "gi");
     text = text.replace(reg, `<span class="highlight">${w}</span>`);
   });
 
   document.getElementById("subEn").innerHTML = text;
-  document.getElementById("subAr").innerText = current.example_ar || "";
+  document.getElementById("subAr").innerText = current.ar;
 }
 
-/* عرض الكلمات */
+/* CC toggle */
+function toggleCC(){
+  ccEnabled = !ccEnabled;
+
+  const btn = document.getElementById("ccBtn");
+
+  if(ccEnabled){
+    btn.classList.add("cc-on");
+  }else{
+    btn.classList.remove("cc-on");
+    document.getElementById("subEn").innerHTML="";
+    document.getElementById("subAr").innerText="";
+  }
+}
+
+/* عرض */
 function show(data){
 
   subtitles = [];
-
   let html = "";
 
   for(let cat in data){
@@ -210,8 +238,8 @@ function show(data){
 
       subtitles.push({
         time: w.time || 0,
-        example: w.example || "",
-        example_ar: w.example_ar || "",
+        en: w.example || "",
+        ar: w.example_ar || "",
         words: [w.en || w.word || ""]
       });
 
@@ -236,9 +264,13 @@ async function sendUrl(){
   const url = document.getElementById("url").value;
   if(!url) return alert("اكتب رابط");
 
-  document.getElementById("loading").style.display="block";
+  const id = getVideoId(url);
+  if(!id) return alert("❌ رابط غير صحيح");
 
-  showVideo(url);
+  document.getElementById("loading").style.display="block";
+  document.getElementById("videoBox").style.display="block";
+
+  createPlayer(id);
 
   const res = await fetch(WEBHOOK,{
     method:"POST",

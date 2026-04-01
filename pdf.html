@@ -5,17 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>تحليل PDF</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
 <style>
 body {
   font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg,#0f172a,#1e293b);
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
   margin: 0;
   padding: 20px;
   display: flex;
   justify-content: center;
-  color:white;
 }
 
 .container {
@@ -24,54 +21,64 @@ body {
 }
 
 .box {
-  background:#1e293b;
+  background: white;
   padding: 25px;
   border-radius: 20px;
   width: 98%;
+  box-sizing: border-box;
   text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   margin-bottom: 20px;
 }
 
 button {
-  background:#22c55e;
-  color:white;
-  border:none;
-  padding:10px 14px;
-  border-radius:10px;
-  cursor:pointer;
-  font-size:14px;
+  background: #00c6ff;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
 }
 
-button:disabled {
-  opacity:0.6;
+button:hover {
+  background: #009edb;
+}
+
+#result {
+  width: 100%;
 }
 
 .title {
-  margin:15px 0 10px;
-  text-align:center;
+  margin: 15px 0 10px;
+  text-align: center;
 }
 
 .word {
-  padding:10px;
-  border-bottom:1px solid #334155;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.en { flex:1; text-align:left; color:#38bdf8; }
-.ar { flex:1; text-align:right; color:#f87171; }
-
-.icon {
-  cursor:pointer;
-  background:#0f172a;
-  padding:8px;
-  border-radius:8px;
+.en {
+  flex: 1;
+  text-align: left;
 }
 
+.ar {
+  flex: 1;
+  text-align: right;
+}
+
+@media (max-width: 480px) {
+  body { padding: 15px; }
+  .box { padding: 20px; }
+}
 </style>
+
 </head>
 
 <body>
@@ -83,7 +90,7 @@ button:disabled {
 
     <input type="file" id="file" accept="application/pdf"><br><br>
 
-    <button id="analyzeBtn" onclick="upload()">🚀 تحليل</button>
+    <button onclick="upload()">🚀 تحليل</button>
 
     <p id="status"></p>
   </div>
@@ -94,127 +101,65 @@ button:disabled {
 
 <script>
 
-// 🔥 Supabase
-const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+// 🔥 حل المشكلة هنا فقط
+document.getElementById("file").addEventListener("change", () => {
 
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let user_id = localStorage.getItem("user_id") || "user_" + Math.random();
-
-// 🔄 تصفير الحالة عند تغيير الملف
-document.getElementById("file").addEventListener("change", (e) => {
-
-  const file = e.target.files[0];
   const status = document.getElementById("status");
-  const btn = document.getElementById("analyzeBtn");
 
-  // إعادة الحالة
-  status.innerHTML = "";
-  status.style.color = "white";
-  btn.disabled = false;
-  btn.innerText = "🚀 تحليل";
-
-  // عرض اسم الملف (تحسين بسيط 🔥)
-  if(file){
-    const sizeMB = (file.size / (1024*1024)).toFixed(2);
-    status.innerHTML = `📄 ${file.name} (${sizeMB} MB)`;
-    status.style.color = "#38bdf8";
-  }
+  // تصفير الرسالة
+  status.innerText = "";
 
 });
 
-// 🔊 صوت
-function speak(word){
-  const u = new SpeechSynthesisUtterance(word);
-  u.lang="en-US";
-  speechSynthesis.speak(u);
-}
-
-// ⭐ حفظ
-async function saveWord(el,en,ar){
-
-  try{
-    await client.from("user_words").insert({
-      user_id:user_id,
-      word:en,
-      translation:ar
-    });
-
-    el.innerText="✅";
-    el.style.background="#22c55e";
-
-  }catch(e){
-    alert("❌ خطأ");
-  }
-
-}
-
 // 🚀 رفع
-async function upload(){
+async function upload() {
 
-  const file = document.getElementById("file").files[0];
+  const fileInput = document.getElementById("file");
+  const file = fileInput.files[0];
   const status = document.getElementById("status");
   const result = document.getElementById("result");
-  const btn = document.getElementById("analyzeBtn");
 
-  if(!file) return alert("اختر ملف");
-
-  const maxSize = 5 * 1024 * 1024;
-
-  // ❌ إذا كبير
-  if(file.size > maxSize){
-
-    status.innerHTML="⚠️ الملف كبير (5MB max)";
-    status.style.color="#f87171";
-
-    btn.disabled = false;
-    btn.innerText = "🚀 تحليل";
-
+  if (!file) {
+    alert("اختر ملف");
     return;
   }
 
-  // 🔥 تحميل
-  btn.disabled=true;
-  btn.innerText="⏳ جاري التحليل...";
-  status.innerHTML="⏳ جاري التحليل...";
-  status.style.color="#facc15";
+  // ✅ فحص الحجم
+  const maxSize = 5 * 1024 * 1024;
 
-  result.innerHTML="";
+  if (file.size > maxSize) {
+    status.innerText = "⚠️ الملف كبير (5MB max)";
+    return;
+  }
+
+  status.innerText = "⏳ جاري التحليل...";
+  result.innerHTML = "";
 
   const formData = new FormData();
   formData.append("file", file);
 
-  try{
+  try {
 
-    const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf",{
-      method:"POST",
-      body:formData
+    const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
+      method: "POST",
+      body: formData
     });
 
     let data = await res.json();
 
-    if(data.raw){
-      try{ data = JSON.parse(data.raw); }catch{}
+    if (data.raw) {
+      try { data = JSON.parse(data.raw); } catch {}
     }
 
-    status.innerHTML="✅ تم التحليل";
-    status.style.color="#22c55e";
-    btn.disabled=false;
-    btn.innerText="🚀 تحليل";
+    status.innerText = "✅ تم التحليل";
 
-    function renderList(list){
-      if(!list) return "";
+    function renderList(list) {
+      if (!list || list.length === 0) return "";
 
-      return list.map(item=>`
+      return list.map(item => `
         <div class="word">
           <span class="en">${item.word || item.phrase || ""}</span>
-
-          <div style="display:flex; gap:8px;">
-            <div class="icon" onclick="speak('${item.word || item.phrase}')">🔊</div>
-            <div class="icon" onclick="saveWord(this,'${item.word || item.phrase}','${item.arabic || ""}')">⭐</div>
-          </div>
-
+          <button onclick="speak('${item.word || item.phrase}')">🔊</button>
           <span class="ar">${item.arabic || ""}</span>
         </div>
       `).join("");
@@ -230,13 +175,20 @@ async function upload(){
         : ""}
     `;
 
-  }catch(err){
-    status.innerHTML="❌ خطأ في الاتصال";
-    status.style.color="#ef4444";
-    btn.disabled=false;
-    btn.innerText="🚀 تحليل";
-  }
+    // 🔥 أهم سطر: يسمح بإعادة اختيار نفس الملف
+    fileInput.value = "";
 
+  } catch (err) {
+    console.error(err);
+    status.innerText = "❌ خطأ في الاتصال";
+  }
+}
+
+// 🔊 صوت
+function speak(word) {
+  const utterance = new SpeechSynthesisUtterance(word);
+  utterance.lang = "en-US";
+  speechSynthesis.speak(utterance);
 }
 
 </script>

@@ -19,7 +19,7 @@ body{
   color:white;
 }
 
-/* 🔥 الهيدر الجديد */
+/* 🔥 الهيدر */
 .header{
   position:absolute;
   top:15px;
@@ -30,16 +30,11 @@ body{
   align-items:center;
 }
 
-/* 👤 الاسم */
 .user-name{
   color:#38bdf8;
   font-size:14px;
-  display:flex;
-  align-items:center;
-  gap:5px;
 }
 
-/* 🏠 زر */
 .home{
   background:#1e293b;
   border:1px solid #334155;
@@ -105,17 +100,18 @@ button{
 
 .check{background:#22c55e;}
 
-/* 🔥 alert أقوى */
+/* 🔥 alert */
 .toast{
   position:fixed;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
-  padding:18px 30px;
-  border-radius:15px;
+  padding:20px 35px;
+  border-radius:18px;
   display:none;
-  font-size:20px;
+  font-size:22px;
   font-weight:bold;
+  text-align:center;
 }
 
 .success{background:#22c55e;}
@@ -126,13 +122,9 @@ button{
 
 <body>
 
-<!-- 🔥 الهيدر -->
 <div class="header">
-
   <div class="user-name" id="username">👤</div>
-
   <button class="home" onclick="goHome()">🏠 الرئيسية</button>
-
 </div>
 
 <div class="container">
@@ -180,6 +172,15 @@ let currentWord = null;
 let correctCount = 0;
 let total = 0;
 
+// 🧠 تطبيع عربي
+function normalizeArabic(text){
+  return text
+    .replace(/ال/g,"")
+    .replace(/[يتن]/g,"")
+    .replace(/[أإآ]/g,"ا")
+    .trim();
+}
+
 // تحميل
 async function load(){
 
@@ -219,31 +220,25 @@ function next(){
 
   total++;
 
-  // 🔥 اختيار بدون تكرار
   if(type === "mcq"){
 
     hideAll();
     document.getElementById("question").innerText = "ما معنى: " + en;
 
-    let unique = [...new Map(words.map(item => [item.translation, item])).values()];
-
+    let unique = [...new Map(words.map(i => [i.translation,i])).values()];
     let options = unique.sort(()=>0.5-Math.random()).slice(0,3);
 
-    if(!options.find(o => o.translation === ar)){
-      options[0] = currentWord;
+    if(!options.find(o=>o.translation===ar)){
+      options[0]=currentWord;
     }
 
     options = options.sort(()=>0.5-Math.random());
 
     options.forEach(o=>{
-      let btn = document.createElement("button");
+      let btn=document.createElement("button");
       btn.className="option";
-      btn.innerText = o.translation;
-
-      btn.onclick=()=>{
-        checkChoice(btn.innerText, ar);
-      };
-
+      btn.innerText=o.translation;
+      btn.onclick=()=>checkChoice(btn.innerText, ar);
       document.getElementById("answers").appendChild(btn);
     });
   }
@@ -261,21 +256,20 @@ function next(){
 }
 
 function hideAll(){
-  document.getElementById("speaker").style.display="none";
-  document.getElementById("input").style.display="none";
+  speaker.style.display="none";
+  input.style.display="none";
 }
 
 function showInput(){
-  document.getElementById("speaker").style.display="block";
-  document.getElementById("input").style.display="block";
+  speaker.style.display="block";
+  input.style.display="block";
 }
 
 // صوت
 function speak(text){
   speechSynthesis.cancel();
-  let u = new SpeechSynthesisUtterance(text);
+  let u=new SpeechSynthesisUtterance(text);
   u.lang="en-US";
-  u.rate=0.9;
   speechSynthesis.speak(u);
 }
 
@@ -288,25 +282,25 @@ function checkChoice(selected, correct){
   let ok = selected === correct;
   if(ok) correctCount++;
 
-  toast(ok ? "✅ صحيح" : "❌ خطأ\n" + correct, ok);
-
+  toast(correct, ok);
   nextStep();
 }
 
 // كتابة
 function check(){
 
-  if(type === "mcq") return;
+  if(type==="mcq") return;
 
-  let val = document.getElementById("input").value.trim().toLowerCase();
-  let correct = currentWord.translation.toLowerCase();
+  let val = document.getElementById("input").value.trim();
+  let correct = currentWord.translation;
 
-  let ok = val === correct;
+  let ok =
+    normalizeArabic(val).includes(normalizeArabic(correct)) ||
+    normalizeArabic(correct).includes(normalizeArabic(val));
 
   if(ok) correctCount++;
 
-  toast(ok ? "✅ صحيح" : "❌ خطأ\n" + correct, ok);
-
+  toast(correct, ok);
   nextStep();
 }
 
@@ -319,44 +313,50 @@ function nextStep(){
 // النهاية
 async function finish(){
 
-  let percent = Math.round((correctCount / total) * 100);
+  let percent=Math.round((correctCount/total)*100);
 
-  document.getElementById("question").innerHTML =
-    `🎉 انتهى الاختبار<br><br>نتيجتك: ${percent}%`;
+  question.innerHTML = `🎉 انتهى الاختبار<br><br>نتيجتك: ${percent}%`;
 
-  document.getElementById("input").style.display="none";
-  document.getElementById("answers").innerHTML="";
+  input.style.display="none";
+  answers.innerHTML="";
 
   await client.from("results").insert({
-    user_id: user_id,
-    score: percent
+    user_id:user_id,
+    score:percent
   });
 
-  let btn = document.getElementById("mainBtn");
-  btn.innerText = "🔄 إعادة الاختبار";
-  btn.onclick = restart;
+  mainBtn.innerText="🔄 إعادة الاختبار";
+  mainBtn.onclick=restart;
 }
 
 // إعادة
 function restart(){
-  current = 0;
-  correctCount = 0;
-  total = 0;
+  current=0;
+  correctCount=0;
+  total=0;
 
-  document.getElementById("mainBtn").innerText = "تحقق";
-  document.getElementById("mainBtn").onclick = check;
+  mainBtn.innerText="تحقق";
+  mainBtn.onclick=check;
 
-  document.getElementById("input").style.display="block";
+  input.style.display="block";
 
   next();
 }
 
-// toast
-function toast(msg, ok){
+// 🔥 alert
+function toast(correct, ok){
+
   let t=document.getElementById("toast");
-  t.innerText=msg;
-  t.className="toast " + (ok?"success":"error");
+
+  if(ok){
+    t.innerHTML = "✅<br>إجابة صحيحة";
+  }else{
+    t.innerHTML = "❌<br>" + correct;
+  }
+
+  t.className="toast "+(ok?"success":"error");
   t.style.display="block";
+
   setTimeout(()=>t.style.display="none",1200);
 }
 

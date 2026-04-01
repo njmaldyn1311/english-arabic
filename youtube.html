@@ -52,7 +52,7 @@ button {
   border-radius: 15px;
 }
 
-/* 🔥 الفيديو */
+/* الفيديو */
 #videoBox {
   position: sticky;
   top: 0;
@@ -67,19 +67,17 @@ iframe {
   border-radius: 15px;
 }
 
-/* 🔥 Subtitle Netflix Style */
+/* 🔥 subtitle Netflix */
 .subtitle-box {
   position: absolute;
   bottom: 15px;
   width: 100%;
   text-align: center;
-  pointer-events: none;
 }
 
 .subtitle-en {
   font-size: 16px;
   font-weight: bold;
-  color: white;
   text-shadow: 0 0 6px black;
 }
 
@@ -89,7 +87,6 @@ iframe {
   text-shadow: 0 0 6px black;
 }
 
-/* النص */
 .line {
   text-align: left;
   margin: 10px 0;
@@ -103,7 +100,6 @@ iframe {
 .example-ar { color: #94a3b8; font-size: 13px; }
 
 .star { cursor: pointer; margin-left: 10px; }
-
 </style>
 </head>
 
@@ -124,7 +120,7 @@ iframe {
 <div id="videoBox" class="card" style="display:none;">
   <iframe id="videoFrame"></iframe>
 
-  <!-- 🔥 Subtitle -->
+  <!-- subtitle -->
   <div class="subtitle-box">
     <div id="subEn" class="subtitle-en"></div>
     <div id="subAr" class="subtitle-ar"></div>
@@ -143,9 +139,9 @@ const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 let user_id = localStorage.getItem("user_id");
-
 let videoId = "";
 
+/* استخراج ID */
 function getVideoId(url) {
   if (url.includes("youtu.be")) {
     return url.split("/").pop().split("?")[0];
@@ -153,6 +149,7 @@ function getVideoId(url) {
   return url.split("v=")[1]?.split("&")[0];
 }
 
+/* عرض الفيديو */
 function showVideo(url) {
   videoId = getVideoId(url);
   document.getElementById("videoFrame").src =
@@ -160,7 +157,7 @@ function showVideo(url) {
   document.getElementById("videoBox").style.display = "block";
 }
 
-/* 🔥 تشغيل + ترجمة */
+/* تشغيل + subtitle */
 function playWithSubtitle(sec, en, ar){
 
   document.getElementById("videoFrame").src =
@@ -175,7 +172,7 @@ function playWithSubtitle(sec, en, ar){
   }, 5000);
 }
 
-/* ⭐ حفظ */
+/* حفظ */
 async function saveWord(el, word, translation){
 
   await fetch(SUPABASE_URL + "/rest/v1/user_words", {
@@ -196,13 +193,15 @@ async function saveWord(el, word, translation){
   el.style.background = "#22c55e";
 }
 
-/* عرض */
+/* 🔥 عرض (مع إصلاح الخطأ) */
 function show(data) {
 
   let html = "";
 
   for (let cat in data) {
-    if (!data[cat]) continue;
+
+    // ✅ الحل هنا
+    if (!Array.isArray(data[cat]) || data[cat].length === 0) continue;
 
     html += `<div class="card"><h3>${cat}</h3>`;
 
@@ -234,28 +233,42 @@ function show(data) {
   document.getElementById("result").innerHTML = html;
 }
 
-/* 🚀 إرسال */
+/* إرسال */
 async function sendUrl() {
 
   const url = document.getElementById("url").value;
   if (!url) return alert("اكتب رابط");
 
+  document.getElementById("result").innerHTML = "";
+
   startLoading();
   showVideo(url);
 
-  const res = await fetch(WEBHOOK, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ url })
-  });
+  try{
 
-  const data = await res.json();
+    const res = await fetch(WEBHOOK, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ url })
+    });
 
-  stopLoading();
-  show(data);
+    let data = await res.json();
+
+    // 🔥 دعم n8n raw
+    if(data.raw){
+      try{ data = JSON.parse(data.raw); }catch{}
+    }
+
+    stopLoading();
+    show(data);
+
+  }catch(e){
+    stopLoading();
+    alert("❌ خطأ في الاتصال");
+  }
 }
 
-/* 🔊 صوت */
+/* صوت */
 function speak(text) {
   speechSynthesis.cancel();
   const msg = new SpeechSynthesisUtterance(text);

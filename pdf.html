@@ -5,14 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>تحليل PDF</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
 <style>
 body {
   font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  background: linear-gradient(135deg,#0f172a,#1e293b);
   margin: 0;
   padding: 20px;
   display: flex;
   justify-content: center;
+  color:white;
 }
 
 .container {
@@ -21,64 +24,56 @@ body {
 }
 
 .box {
-  background: white;
+  background:#1e293b;
   padding: 25px;
   border-radius: 20px;
   width: 98%;
   box-sizing: border-box;
   text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
   margin-bottom: 20px;
 }
 
 button {
-  background: #00c6ff;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 14px;
+  background:#22c55e;
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:14px;
 }
 
-button:hover {
-  background: #009edb;
+button:disabled{
+  opacity:0.6;
 }
 
-#result {
-  width: 100%;
-}
+#result { width:100%; }
 
 .title {
-  margin: 15px 0 10px;
-  text-align: center;
+  margin:15px 0 10px;
+  text-align:center;
 }
 
 .word {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  padding:10px;
+  border-bottom:1px solid #334155;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
 }
 
-.en {
-  flex: 1;
-  text-align: left;
-}
+.en { flex:1; text-align:left; color:#38bdf8; }
+.ar { flex:1; text-align:right; color:#f87171; }
 
-.ar {
-  flex: 1;
-  text-align: right;
-}
-
-@media (max-width: 480px) {
-  body { padding: 15px; }
-  .box { padding: 20px; }
+.icon{
+  cursor:pointer;
+  background:#0f172a;
+  padding:8px;
+  border-radius:8px;
 }
 </style>
-
 </head>
 
 <body>
@@ -90,7 +85,7 @@ button:hover {
 
     <input type="file" id="file" accept="application/pdf"><br><br>
 
-    <button onclick="upload()">🚀 تحليل</button>
+    <button id="analyzeBtn" onclick="upload()">🚀 تحليل</button>
 
     <p id="status"></p>
   </div>
@@ -101,65 +96,114 @@ button:hover {
 
 <script>
 
-// 🔥 حل المشكلة هنا فقط
+// 🔥 Supabase
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let user_id = localStorage.getItem("user_id") || "user_" + Math.random();
+
+// 🔄 حل المشكلة هنا (تصفير الحالة عند تغيير الملف)
 document.getElementById("file").addEventListener("change", () => {
 
   const status = document.getElementById("status");
+  const btn = document.getElementById("analyzeBtn");
 
-  // تصفير الرسالة
-  status.innerText = "";
+  status.innerHTML = "";
+  status.style.color = "white";
+
+  btn.disabled = false;
+  btn.innerText = "🚀 تحليل";
 
 });
 
+// 🔊 صوت
+function speak(word){
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang="en-US";
+  speechSynthesis.speak(u);
+}
+
+// ⭐ حفظ
+async function saveWord(el,en,ar){
+
+  try{
+    await client.from("user_words").insert({
+      user_id:user_id,
+      word:en,
+      translation:ar
+    });
+
+    el.innerText="✅";
+    el.style.background="#22c55e";
+
+  }catch(e){
+    console.log(e);
+    alert("❌ خطأ في الحفظ");
+  }
+
+}
+
 // 🚀 رفع
-async function upload() {
+async function upload(){
 
   const fileInput = document.getElementById("file");
   const file = fileInput.files[0];
   const status = document.getElementById("status");
   const result = document.getElementById("result");
+  const btn = document.getElementById("analyzeBtn");
 
-  if (!file) {
-    alert("اختر ملف");
-    return;
-  }
+  if(!file) return alert("اختر ملف");
 
-  // ✅ فحص الحجم
   const maxSize = 5 * 1024 * 1024;
 
-  if (file.size > maxSize) {
-    status.innerText = "⚠️ الملف كبير (5MB max)";
+  if(file.size > maxSize){
+    status.innerHTML="⚠️ الملف كبير (5MB max)";
+    status.style.color="#f87171";
     return;
   }
 
-  status.innerText = "⏳ جاري التحليل...";
-  result.innerHTML = "";
+  btn.disabled=true;
+  btn.innerText="⏳ جاري التحليل...";
+  status.innerHTML="⏳ جاري التحليل...";
+  status.style.color="#facc15";
+
+  result.innerHTML="";
 
   const formData = new FormData();
   formData.append("file", file);
 
-  try {
+  try{
 
-    const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
-      method: "POST",
-      body: formData
+    const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf",{
+      method:"POST",
+      body:formData
     });
 
     let data = await res.json();
 
-    if (data.raw) {
-      try { data = JSON.parse(data.raw); } catch {}
+    if(data.raw){
+      try{ data = JSON.parse(data.raw); }catch{}
     }
 
-    status.innerText = "✅ تم التحليل";
+    status.innerHTML="✅ تم التحليل";
+    status.style.color="#22c55e";
+    btn.disabled=false;
+    btn.innerText="🚀 تحليل";
 
-    function renderList(list) {
-      if (!list || list.length === 0) return "";
+    function renderList(list){
+      if(!list || list.length===0) return "";
 
-      return list.map(item => `
+      return list.map(item=>`
         <div class="word">
           <span class="en">${item.word || item.phrase || ""}</span>
-          <button onclick="speak('${item.word || item.phrase}')">🔊</button>
+
+          <div style="display:flex; gap:8px;">
+            <div class="icon" onclick="speak('${item.word || item.phrase}')">🔊</div>
+            <div class="icon" onclick="saveWord(this,'${item.word || item.phrase}','${item.arabic || ""}')">⭐</div>
+          </div>
+
           <span class="ar">${item.arabic || ""}</span>
         </div>
       `).join("");
@@ -175,20 +219,17 @@ async function upload() {
         : ""}
     `;
 
-    // 🔥 أهم سطر: يسمح بإعادة اختيار نفس الملف
+    // 🔥 أهم سطر
     fileInput.value = "";
 
-  } catch (err) {
+  }catch(err){
     console.error(err);
-    status.innerText = "❌ خطأ في الاتصال";
+    status.innerHTML="❌ خطأ في الاتصال";
+    status.style.color="#ef4444";
+    btn.disabled=false;
+    btn.innerText="🚀 تحليل";
   }
-}
 
-// 🔊 صوت
-function speak(word) {
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.lang = "en-US";
-  speechSynthesis.speak(utterance);
 }
 
 </script>

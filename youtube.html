@@ -21,11 +21,6 @@ body {
   padding: 15px;
 }
 
-.input-box {
-  display: flex;
-  justify-content: center;
-}
-
 input {
   padding: 10px;
   width: 90%;
@@ -52,12 +47,8 @@ button {
   border-radius: 15px;
 }
 
-/* الفيديو */
+/* 🎬 الفيديو */
 #videoBox {
-  position: sticky;
-  top: 0;
-  z-index: 999;
-  background: #0f172a;
   position: relative;
 }
 
@@ -67,36 +58,50 @@ iframe {
   border-radius: 15px;
 }
 
-/* 🔥 Netflix subtitle */
-.subtitle-box {
-  position: absolute;
-  bottom: 15px;
-  width: 100%;
-  text-align: center;
+/* 🎯 زر CC */
+#ccBtn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:rgba(0,0,0,0.6);
+  color:white;
+  border:none;
+  padding:6px 10px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:12px;
 }
 
-.subtitle-en {
-  font-size: 16px;
-  font-weight: bold;
-  text-shadow: 0 0 6px black;
+#ccBtn.active{
+  background:#22c55e;
 }
 
-.subtitle-ar {
-  font-size: 14px;
-  color: #facc15;
-  text-shadow: 0 0 6px black;
+/* 🔥 الترجمة */
+#subtitleBox{
+  position:absolute;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  width:90%;
+  text-align:center;
 }
 
-/* النص */
-.line {
-  text-align: left;
-  margin: 10px 0;
-  line-height: 1.8;
+.subtitle-en{
+  font-size:16px;
+  font-weight:bold;
+  color:white;
 }
 
-.en { color: #38bdf8; font-weight: bold; }
-.ar { color: #f87171; margin-left: 10px; }
-.star { cursor: pointer; margin-left: 10px; }
+.subtitle-ar{
+  font-size:14px;
+  color:#f87171;
+}
+
+/* ⭐ تمييز الكلمات */
+.highlight{
+  color:#38bdf8;
+  font-weight:bold;
+}
 </style>
 </head>
 
@@ -104,20 +109,18 @@ iframe {
 
 <div class="container">
 
-<h2>🎥 تعلم من الفيديو بذكاء</h2>
+<h2>🎥 تعلم من الفيديو</h2>
 
-<div class="input-box">
-  <input type="text" id="url" placeholder="ضع رابط YouTube">
-</div>
-
-<button onclick="sendUrl()">🔗 تحليل</button>
-
-<p id="loading" style="display:none;">⏳ جاري التحليل...</p>
+<input type="text" id="url" placeholder="ضع رابط YouTube">
+<br>
+<button onclick="sendUrl()">تحليل</button>
 
 <div id="videoBox" class="card" style="display:none;">
+  <button id="ccBtn" onclick="toggleSubtitle()">CC</button>
+
   <iframe id="videoFrame"></iframe>
 
-  <div class="subtitle-box">
+  <div id="subtitleBox">
     <div id="subEn" class="subtitle-en"></div>
     <div id="subAr" class="subtitle-ar"></div>
   </div>
@@ -131,16 +134,10 @@ iframe {
 
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 
-const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
-
-let user_id = localStorage.getItem("user_id");
 let videoId = "";
-
 let subtitles = [];
-let subtitleInterval = null;
+let subtitleOn = true;
 
-/* استخراج ID */
 function getVideoId(url) {
   if (url.includes("youtu.be")) {
     return url.split("/").pop().split("?")[0];
@@ -148,140 +145,133 @@ function getVideoId(url) {
   return url.split("v=")[1]?.split("&")[0];
 }
 
-/* عرض الفيديو */
 function showVideo(url) {
   videoId = getVideoId(url);
 
   document.getElementById("videoFrame").src =
-    `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
 
   document.getElementById("videoBox").style.display = "block";
+
+  document.getElementById("ccBtn").classList.add("active");
+
+  startSubtitle();
 }
 
-/* حفظ */
-async function saveWord(el, word, translation){
-  await fetch(SUPABASE_URL + "/rest/v1/user_words", {
-    method:"POST",
-    headers:{
-      "apikey": SUPABASE_KEY,
-      "Authorization":"Bearer "+SUPABASE_KEY,
-      "Content-Type":"application/json"
-    },
-    body: JSON.stringify({
-      user_id,
-      word,
-      translation
-    })
-  });
+/* 🔥 تشغيل الترجمة */
+function startSubtitle(){
 
-  el.innerText = "✅";
+  setInterval(()=>{
+
+    if(!subtitleOn) return;
+
+    const iframe = document.getElementById("videoFrame");
+
+    iframe.contentWindow.postMessage(
+      '{"event":"command","func":"getCurrentTime","args":""}',
+      '*'
+    );
+
+  },1000);
+
 }
 
-/* عرض البيانات */
-function show(data) {
+/* استقبال الوقت */
+window.addEventListener("message", function(e){
 
-  let html = "";
-  subtitles = [];
+  if(typeof e.data === "string" && e.data.includes("infoDelivery")){
+    try{
+      const data = JSON.parse(e.data);
+      const time = data.info.currentTime;
 
-  for (let cat in data) {
+      if(!time) return;
 
-    if (!Array.isArray(data[cat])) continue;
+      updateSubtitle(time);
 
-    data[cat].forEach(w => {
-
-      // 🔥 جمع الترجمة
-      subtitles.push({
-        time: w.time || 0,
-        en: w.example || "",
-        ar: w.example_ar || ""
-      });
-
-      const word = w.en || w.word || "";
-      const arabic = w.ar || w.arabic || "";
-
-      html += `
-        <div class="line">
-          <span class="en">${word}</span>
-          <span class="ar">${arabic}</span>
-          <span class="star" onclick="saveWord(this,'${word}','${arabic}')">⭐</span>
-        </div>
-      `;
-    });
+    }catch{}
   }
 
-  subtitles.sort((a,b)=>a.time - b.time);
+});
 
-  document.getElementById("result").innerHTML = html;
+/* تحديث الترجمة */
+function updateSubtitle(time){
 
-  startAutoSubtitle();
-}
+  for(let i=0;i<subtitles.length;i++){
 
-/* 🔥 ترجمة تلقائية */
-function startAutoSubtitle(){
+    if(time >= subtitles[i].start && time <= subtitles[i].end){
 
-  let startTime = Date.now();
-  let i = 0;
-
-  if(subtitleInterval) clearInterval(subtitleInterval);
-
-  subtitleInterval = setInterval(()=>{
-
-    let current = (Date.now() - startTime) / 1000;
-
-    if(i >= subtitles.length) return;
-
-    if(current >= subtitles[i].time){
-
-      document.getElementById("subEn").innerText = subtitles[i].en;
+      document.getElementById("subEn").innerHTML = highlightWords(subtitles[i].en);
       document.getElementById("subAr").innerText = subtitles[i].ar;
 
-      i++;
+      break;
     }
 
-  }, 300);
+  }
+
 }
 
-/* إرسال */
-async function sendUrl() {
+/* 🎯 تمييز الكلمات */
+function highlightWords(text){
 
-  const url = document.getElementById("url").value;
-  if (!url) return alert("اكتب رابط");
+  return text.replace(/\\b(\\w+)\\b/g, `<span class="highlight">$1</span>`);
 
-  document.getElementById("result").innerHTML = "";
+}
 
-  startLoading();
-  showVideo(url);
+/* زر CC */
+function toggleSubtitle(){
 
-  try{
+  subtitleOn = !subtitleOn;
 
-    const res = await fetch(WEBHOOK, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ url })
-    });
+  const btn = document.getElementById("ccBtn");
 
-    let data = await res.json();
-
-    if(data.raw){
-      try{ data = JSON.parse(data.raw); }catch{}
-    }
-
-    stopLoading();
-    show(data);
-
-  }catch(e){
-    stopLoading();
-    alert("❌ خطأ في الاتصال");
+  if(subtitleOn){
+    btn.classList.add("active");
+  }else{
+    btn.classList.remove("active");
+    document.getElementById("subEn").innerText = "";
+    document.getElementById("subAr").innerText = "";
   }
 }
 
-/* تحميل */
-function startLoading() {
-  document.getElementById("loading").style.display = "block";
-}
+/* 🚀 إرسال */
+async function sendUrl(){
 
-function stopLoading() {
-  document.getElementById("loading").style.display = "none";
+  const url = document.getElementById("url").value;
+  if(!url) return alert("اكتب رابط");
+
+  showVideo(url);
+
+  const res = await fetch(WEBHOOK,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ url })
+  });
+
+  const data = await res.json();
+
+  subtitles = [];
+
+  for(let cat in data){
+
+    if(!Array.isArray(data[cat])) continue;
+
+    data[cat].forEach(w=>{
+
+      if(w.time !== undefined){
+
+        subtitles.push({
+          start: w.time,
+          end: w.time + 3,
+          en: w.example || w.en || "",
+          ar: w.example_ar || w.ar || ""
+        });
+
+      }
+
+    });
+
+  }
+
 }
 
 </script>

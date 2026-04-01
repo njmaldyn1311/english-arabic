@@ -18,11 +18,13 @@ body {
   color: white;
 }
 
+/* الحاوية */
 .container {
   width: 100%;
   max-width: 500px;
 }
 
+/* الكرت */
 .box {
   background: #1e293b;
   padding: 25px;
@@ -33,32 +35,34 @@ body {
   margin-bottom: 20px;
 }
 
+/* زر */
 button {
   background: #22c55e;
   color: white;
   border: none;
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 12px 18px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 button:hover {
   background: #16a34a;
 }
 
+/* عنوان */
 .title {
   margin: 15px 0 10px;
   color: #facc15;
 }
 
+/* كلمة */
 .word {
   padding: 10px;
   border-bottom: 1px solid #334155;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
 }
 
 .en {
@@ -74,23 +78,36 @@ button:hover {
   color: #f87171;
 }
 
+/* الأزرار الصغيرة */
 .actions {
   display:flex;
-  gap:8px;
+  gap:6px;
 }
 
 .icon {
   cursor:pointer;
   background:#0f172a;
-  padding:8px;
+  padding:6px 8px;
   border-radius:8px;
+  font-size:14px;
 }
 
 .icon.saved {
   background:#22c55e;
 }
 
+/* تحسين input */
+input[type="file"]{
+  background:#334155;
+  color:white;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  width:100%;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -113,25 +130,24 @@ button:hover {
 
 <script>
 
-// 🔥 بياناتك
+// 🔥 Supabase
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🧠 user_id
+// user
 let user_id = localStorage.getItem("user_id");
 if(!user_id){
   user_id = "user_" + Math.random().toString(36).substring(2,10);
   localStorage.setItem("user_id", user_id);
 }
 
-// ⭐ حفظ الكلمة
+// ⭐ حفظ
 async function saveWord(el,en,ar){
 
   try{
 
-    // منع التكرار
     const { data } = await supabase
       .from("user_words")
       .select("*")
@@ -154,11 +170,11 @@ async function saveWord(el,en,ar){
     el.classList.add("saved");
 
   }catch(e){
-    console.error(e);
-    alert("❌ فشل الحفظ");
+    alert("❌ خطأ");
   }
 }
 
+// رفع
 async function upload() {
 
   const file = document.getElementById("file").files[0];
@@ -221,8 +237,7 @@ async function upload() {
     `;
 
   } catch (err) {
-    console.error(err);
-    status.innerText = "❌ خطأ في الاتصال";
+    status.innerText = "❌ خطأ";
   }
 }
 

@@ -17,7 +17,7 @@ body{
   color:white;
 }
 
-/* 🔥 هيدر مرتب */
+/* 🔥 هيدر */
 .header{
   display:flex;
   justify-content:space-between;
@@ -59,7 +59,7 @@ body{
   margin-bottom:10px;
 }
 
-/* ✏️ نفس الحجم */
+/* نفس الحجم */
 .input-group{
   display:flex;
   gap:8px;
@@ -83,7 +83,7 @@ body{
   color:white;
 }
 
-/* الكلمات */
+/* كلمات */
 .word{
   display:flex;
   justify-content:space-between;
@@ -93,6 +93,14 @@ body{
 
 .en{color:#38bdf8;}
 .ar{color:#f87171;}
+
+.note{
+  background:#0f172a;
+  padding:10px;
+  border-radius:10px;
+  margin-top:8px;
+  color:#cbd5f5;
+}
 
 /* 🔔 */
 .toast{
@@ -109,14 +117,6 @@ body{
 .success{background:#22c55e;}
 .error{background:#ef4444;}
 
-.note{
-  background:#0f172a;
-  padding:10px;
-  border-radius:10px;
-  margin-top:8px;
-  color:#cbd5f5;
-}
-
 </style>
 </head>
 
@@ -129,13 +129,7 @@ body{
 
 <div class="container">
 
-  <!-- 📖 القصة -->
-  <div class="card">
-    <div class="title">📖 القصة</div>
-    <div id="story"></div>
-  </div>
-
-  <!-- 📝 الملاحظات (عرض فقط) -->
+  <!-- 📝 الملاحظات -->
   <div class="card">
     <div class="title">📝 ملاحظاتي</div>
     <div id="notes"></div>
@@ -177,20 +171,16 @@ let p = name.split(" ");
 document.getElementById("username").innerText =
   "👤 " + p[0] + (p[1] ? " " + p[1] : "");
 
-// 📖 القصة من local
-document.getElementById("story").innerText =
-  localStorage.getItem("story") || "لا توجد قصة";
-
-// 📝 الملاحظات من local
+// 📝 الملاحظات
 let notes = JSON.parse(localStorage.getItem("notes") || "[]");
 
-let notesHtml="";
+let html="";
 notes.forEach(n=>{
-  notesHtml += `<div class="note">• ${n}</div>`;
+  html += `<div class="note">• ${n}</div>`;
 });
 
 document.getElementById("notes").innerHTML =
-  notesHtml || "لا توجد ملاحظات";
+  html || "لا توجد ملاحظات";
 
 // ⭐ الكلمات من Supabase
 let words = [];

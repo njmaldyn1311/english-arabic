@@ -18,13 +18,11 @@ body {
   color: white;
 }
 
-/* الحاوية */
 .container {
   width: 100%;
   max-width: 500px;
 }
 
-/* الصندوق */
 .box {
   background: #1e293b;
   padding: 25px;
@@ -36,7 +34,6 @@ body {
   margin-bottom: 20px;
 }
 
-/* الزر */
 button {
   background: #22c55e;
   color: white;
@@ -51,19 +48,16 @@ button:hover {
   background: #16a34a;
 }
 
-/* النتائج */
-#result {
-  width: 100%;
+button:disabled {
+  opacity: 0.6;
 }
 
-/* عنوان */
 .title {
   margin: 15px 0 10px;
   text-align: center;
   color: #facc15;
 }
 
-/* الكلمة */
 .word {
   padding: 10px;
   border-bottom: 1px solid #334155;
@@ -86,7 +80,6 @@ button:hover {
   color: #f87171;
 }
 
-/* ⭐ زر */
 .star {
   cursor: pointer;
   font-size: 18px;
@@ -96,15 +89,9 @@ button:hover {
   color: #22c55e;
 }
 
-/* موبايل */
 @media (max-width: 480px) {
-  body {
-    padding: 15px;
-  }
-
-  .box {
-    padding: 20px;
-  }
+  body { padding: 15px; }
+  .box { padding: 20px; }
 }
 </style>
 
@@ -119,7 +106,7 @@ button:hover {
 
     <input type="file" id="file" accept="application/pdf"><br><br>
 
-    <button onclick="upload()">🚀 تحليل</button>
+    <button id="analyzeBtn" onclick="upload()">🚀 تحليل</button>
 
     <p id="status"></p>
   </div>
@@ -130,13 +117,13 @@ button:hover {
 
 <script>
 
-// 🔥 Supabase
+// ✅ Supabase (تم تغيير الاسم لتجنب الخطأ)
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🧠 user
+// user
 let user_id = localStorage.getItem("user_id");
 if(!user_id){
   user_id = "user_" + Math.random().toString(36).substring(2,10);
@@ -147,8 +134,7 @@ if(!user_id){
 async function saveWord(el,en,ar){
 
   try{
-
-    const { data } = await supabase
+    const { data } = await client
       .from("user_words")
       .select("*")
       .eq("user_id", user_id)
@@ -160,7 +146,7 @@ async function saveWord(el,en,ar){
       return;
     }
 
-    await supabase.from("user_words").insert({
+    await client.from("user_words").insert({
       user_id: user_id,
       word: en,
       translation: ar
@@ -176,22 +162,27 @@ async function saveWord(el,en,ar){
 
 // 🚀 رفع
 async function upload() {
+
   const file = document.getElementById("file").files[0];
   const status = document.getElementById("status");
   const result = document.getElementById("result");
+  const btn = document.getElementById("analyzeBtn");
 
-  if (!file) {
-    alert("اختر ملف");
-    return;
-  }
+  if (!file) return alert("اختر ملف");
 
-  const formData = new FormData();
-  formData.append("file", file);
+  // 🔥 حالة التحميل
+  btn.disabled = true;
+  btn.innerText = "⏳ جاري التحليل...";
+  status.innerHTML = "⏳ جاري التحليل...";
+  status.style.color = "#facc15";
 
-  status.innerText = "⏳ جاري التحليل...";
   result.innerHTML = "";
 
   try {
+
+    const formData = new FormData();
+    formData.append("file", file);
+
     const res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/upload-pdf", {
       method: "POST",
       body: formData
@@ -200,12 +191,14 @@ async function upload() {
     let data = await res.json();
 
     if (data.raw) {
-      try {
-        data = JSON.parse(data.raw);
-      } catch {}
+      try { data = JSON.parse(data.raw); } catch {}
     }
 
-    status.innerText = "✅ تم التحليل";
+    // ✅ تم
+    status.innerHTML = "✅ تم التحليل";
+    status.style.color = "#22c55e";
+    btn.disabled = false;
+    btn.innerText = "🚀 تحليل";
 
     function renderList(list) {
       if (!list || list.length === 0) return "";
@@ -239,8 +232,10 @@ async function upload() {
     `;
 
   } catch (err) {
-    console.error(err);
-    status.innerText = "❌ خطأ في الاتصال";
+    status.innerHTML = "❌ خطأ في الاتصال";
+    status.style.color = "#ef4444";
+    btn.disabled = false;
+    btn.innerText = "🚀 تحليل";
   }
 }
 

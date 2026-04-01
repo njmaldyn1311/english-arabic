@@ -6,7 +6,6 @@
 <title>الفصل الذكي</title>
 
 <style>
-
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
@@ -53,7 +52,6 @@ body{
   border:none;
   border-radius:15px;
   margin-top:10px;
-  box-sizing:border-box;
 }
 
 .btn{
@@ -66,29 +64,11 @@ body{
   margin-top:10px;
 }
 
-.loading{text-align:center;margin-top:20px;}
+.story{line-height:2;font-size:17px;margin-bottom:15px;}
+.story-en{direction:ltr;text-align:justify;}
+.story-ar{text-align:justify;}
 
-.story{
-  line-height:2;
-  font-size:17px;
-  margin-bottom:15px;
-}
-
-.story-en{
-  direction:ltr;
-  text-align:justify;
-}
-
-.story-ar{
-  direction:rtl;
-  text-align:justify;
-}
-
-.section-title{
-  margin-top:20px;
-  font-weight:bold;
-  font-size:20px;
-}
+.section-title{margin-top:20px;font-weight:bold;font-size:20px;}
 
 .word{
   display:flex;
@@ -101,24 +81,22 @@ body{
 .en{color:#38bdf8;}
 .ar{color:#facc15;}
 
-.actions{
-  display:flex;
-  gap:15px;
-}
+.actions{display:flex;gap:15px;}
 
 .icon{
   cursor:pointer;
   background:#0f172a;
   padding:10px;
   border-radius:10px;
-  font-size:18px;
-  transition:0.2s;
 }
 
-.icon:hover{
-  transform:scale(1.1);
+.note{
+  background:#0f172a;
+  padding:10px;
+  border-radius:10px;
+  margin-top:8px;
+  color:#cbd5f5;
 }
-
 </style>
 </head>
 
@@ -152,161 +130,89 @@ body{
 
 </div>
 
+<!-- 📝 ملاحظات -->
+<div id="notesCard" class="card" style="display:none;">
+  <div class="section-title">📝 ملاحظاتي</div>
+  <div id="notesBox"></div>
+
+  <div style="display:flex;gap:10px;margin-top:10px;">
+    <input id="noteInput" class="input" placeholder="اكتب ملاحظة...">
+    <button class="btn" style="width:auto;padding:12px 18px;" onclick="addNote()">➕</button>
+  </div>
+</div>
+
 <div id="lesson"></div>
 
 <script>
 
-// 🔥 بيانات Supabase
-const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
-
+// 👤 الاسم
 const fullName = localStorage.getItem("user") || "";
-const nameParts = fullName.split(" ");
-const shortName = nameParts.slice(0,2).join(" ");
-document.getElementById("username").innerText = "👤 " + shortName;
+document.getElementById("username").innerText = "👤 " + fullName.split(" ").slice(0,2).join(" ");
 
-function goProfile(){
-  window.location.href = "student.html";
-}
+let user_id = localStorage.getItem("user_id") || "user_" + Math.random();
 
-let user_id = localStorage.getItem("user_id");
-if(!user_id){
-  user_id = "user_" + Math.random().toString(36).substring(2,10);
-  localStorage.setItem("user_id", user_id);
-}
+// 🔥 الملاحظات
+let lesson_id = null;
+let NOTES_KEY = null;
 
-let selectedType="text";
-
-function toggleOptions(){
-  let o=document.getElementById("options");
-  o.style.display=o.style.display==="block"?"none":"block";
-}
-
-function selectType(type){
-  selectedType=type;
-  document.getElementById("options").style.display="none";
-
-  let text="📝 نص";
-  if(type==="link") text="🔗 رابط";
-  if(type==="pdf") text="📄 PDF";
-
-  document.getElementById("typeText").innerText=text;
-}
-
-function speak(text){
-  let utter = new SpeechSynthesisUtterance(text);
-  utter.lang="en-US";
-  speechSynthesis.speak(utter);
-}
-
-/* ⭐ حفظ في Supabase بدل localStorage */
-async function saveWord(el,en,ar){
-
-  try{
-
-    await fetch(SUPABASE_URL + "/rest/v1/user_words", {
-      method: "POST",
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + SUPABASE_KEY,
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal"
-      },
-      body: JSON.stringify({
-        user_id: user_id,
-        word: en,
-        translation: ar
-      })
-    });
-
-    // ✅ تغيير الشكل
-    el.innerText = "✅";
-    el.style.background = "#22c55e";
-
-  }catch(err){
-    console.error(err);
-    alert("❌ فشل الحفظ");
-  }
-
-}
-
-/* عرض الكلمات */
-function renderWords(words){
+function loadNotes(){
+  let notes = JSON.parse(localStorage.getItem(NOTES_KEY) || "[]");
   let html="";
-  for(let section in words){
-    html+=`<div class="section-title">${section}</div>`;
-    words[section].forEach(w=>{
-      html+=`
-        <div class="word">
-          <div class="ar">${w.ar}</div>
-
-          <div class="actions">
-            <div class="icon" onclick="speak('${w.en}')">🔊</div>
-            <div class="icon" onclick="saveWord(this,'${w.en}','${w.ar}')">⭐</div>
-          </div>
-
-          <div class="en">${w.en}</div>
-        </div>
-      `;
-    });
-  }
-  return html;
+  notes.forEach(n=> html += `<div class="note">• ${n}</div>`);
+  document.getElementById("notesBox").innerHTML = html || "لا توجد ملاحظات";
 }
 
-/* 🚀 إنشاء الدرس */
+function addNote(){
+  let input = noteInput.value.trim();
+  if(!input) return;
+
+  let notes = JSON.parse(localStorage.getItem(NOTES_KEY) || "[]");
+  notes.push(input);
+  localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+
+  noteInput.value="";
+  loadNotes();
+}
+
+// 🎯 إنشاء الدرس
 async function generateLesson(){
 
   let input=document.getElementById("textInput").value;
+  if(!input) return alert("اكتب شي");
 
-  if(!input){
-    alert("اكتب شي");
-    return;
-  }
+  lesson.innerHTML = "⏳ جاري التحليل...";
 
-  document.getElementById("lesson").innerHTML =
-    `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;
+  let res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/lesson",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({inputPart:input})
+  });
 
-  try{
+  let data = await res.json();
 
-    let res = await fetch("https://n8n.srv1495053.hstgr.cloud/webhook/lesson",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        inputPart: input,
-        type: selectedType,
-        user_id: user_id
-      })
-    });
+  // 🔥 ربط الملاحظات بالدرس
+  lesson_id = input.slice(0,30); // نفس النص = نفس الدرس
+  NOTES_KEY = "notes_" + lesson_id;
 
-    let data = await res.json();
+  document.getElementById("notesCard").style.display="block";
+  loadNotes();
 
-    document.getElementById("textInput").value = "";
+  lesson.innerHTML=`
+    <div class="card">
 
-    document.getElementById("lesson").innerHTML=`
-      <div class="card">
+      <div class="section-title">📖 القصة</div>
+      <div class="story story-en">${(data.story||"").replace(/\n/g,"<br>")}</div>
 
-        <div class="section-title">📖 القصة</div>
-        <div class="story story-en">
-          ${(data.story || "").replace(/\n/g,"<br>")}
-        </div>
+      <div class="section-title">🌍 الترجمة</div>
+      <div class="story story-ar">${data.translation||""}</div>
 
-        <hr>
+    </div>
+  `;
 
-        <div class="section-title">🌍 الترجمة</div>
-        <div class="story story-ar">
-          ${(data.translation || "⚠️ لا توجد ترجمة")}
-        </div>
+}
 
-        ${data.words ? renderWords(data.words) : ""}
-
-      </div>
-    `;
-
-  }catch(e){
-    document.getElementById("lesson").innerHTML =
-      `<div class="loading" style="color:red;">❌ خطأ</div>`;
-  }
-
+function goProfile(){
+  location.href="student.html";
 }
 
 </script>

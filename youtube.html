@@ -6,8 +6,6 @@
 
 <title>AI Video Learning</title>
 
-<script src="https://www.youtube.com/iframe_api"></script>
-
 <style>
 body {
   background: linear-gradient(135deg, #0f172a, #1e293b);
@@ -21,6 +19,11 @@ body {
   max-width: 700px;
   margin: auto;
   padding: 15px;
+}
+
+.input-box {
+  display: flex;
+  justify-content: center;
 }
 
 input {
@@ -49,57 +52,42 @@ button {
   border-radius: 15px;
 }
 
-/* 🎬 فيديو */
-#player {
+#videoBox {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: #0f172a;
+}
+
+iframe {
   width: 100%;
-  height: 300px;
+  height: 250px;
   border-radius: 15px;
 }
 
-/* 🔘 CC */
-#ccBtn {
-  margin-top:10px;
-  background:#00000088;
-}
-#ccBtn.active{
-  background:#22c55e;
-}
-
-/* 📝 الترجمة */
-#subtitleBox{
-  margin-top:10px;
-}
-
-.sub-en{
-  font-size:18px;
-  color:#38bdf8;
-}
-
-.sub-ar{
-  font-size:20px; /* 🔥 أكبر */
-  color:#facc15; /* 🔥 أصفر */
-  font-weight:bold;
-}
-
-/* الكلمات */
 .line {
   text-align: left;
   margin: 10px 0;
-  line-height:1.6;
+  line-height: 1.8;
 }
 
-.en { color: #38bdf8; font-weight:bold; }
-.ar { color: #f87171; }
+.en { color: #38bdf8; font-weight: bold; cursor: pointer; }
+.ar { color: #f87171; margin-left: 10px; }
 
-.example { color:#e2e8f0; }
-.example-ar { color:#94a3b8; font-size:13px; }
+.example { color: #e2e8f0; display: block; cursor: pointer; }
+.example-ar { color: #facc15; font-size: 15px; }
+
+.star {
+  cursor: pointer;
+  margin-left: 10px;
+}
 
 .icon{
   cursor:pointer;
-  margin-left:8px;
   background:#0f172a;
   padding:6px;
-  border-radius:8px;
+  border-radius:6px;
+  margin-left:5px;
 }
 </style>
 </head>
@@ -110,19 +98,16 @@ button {
 
 <h2>🎥 تعلم من الفيديو بذكاء</h2>
 
-<input id="url" placeholder="ضع رابط YouTube">
-<br>
-<button onclick="sendUrl()">تحليل</button>
+<div class="input-box">
+  <input type="text" id="url" placeholder="ضع رابط YouTube">
+</div>
+
+<button onclick="sendUrl()">🔗 تحليل</button>
+
+<p id="loading" style="display:none;">⏳ جاري التحليل...</p>
 
 <div id="videoBox" class="card" style="display:none;">
-  <div id="player"></div>
-
-  <button id="ccBtn" onclick="toggleCC()">CC</button>
-
-  <div id="subtitleBox">
-    <div id="subEn" class="sub-en"></div>
-    <div id="subAr" class="sub-ar"></div>
-  </div>
+  <iframe id="videoFrame"></iframe>
 </div>
 
 <div id="result"></div>
@@ -133,75 +118,93 @@ button {
 
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 
-let player;
-let subtitles = [];
-let cc = true;
+/* 🔥 Supabase */
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-/* استخراج ID */
+let user_id = localStorage.getItem("user_id");
+
+let videoId = "";
+
+/* ✅ إصلاح استخراج ID */
 function getVideoId(url){
-  if(url.includes("youtu.be")) return url.split("/").pop();
-  return url.split("v=")[1]?.split("&")[0];
+  try{
+    if(url.includes("youtu.be")){
+      return url.split("/").pop().split("?")[0];
+    }
+    if(url.includes("youtube.com")){
+      const u = new URL(url);
+      return u.searchParams.get("v");
+    }
+    return url;
+  }catch{
+    return null;
+  }
 }
 
-/* تشغيل الفيديو */
-function loadVideo(id){
-
-  if(player) player.destroy();
-
-  player = new YT.Player("player",{
-    videoId:id,
-    events:{ onReady:startSync }
-  });
-
+function showVideo(url){
+  videoId = getVideoId(url);
+  document.getElementById("videoFrame").src =
+    `https://www.youtube.com/embed/${videoId}?cc_load_policy=1`;
+  document.getElementById("videoBox").style.display = "block";
 }
 
-/* مزامنة */
-function startSync(){
-
-  setInterval(()=>{
-
-    if(!cc || !player) return;
-
-    let t = player.getCurrentTime();
-
-    subtitles.forEach(s=>{
-      if(t >= s.start && t <= s.end){
-        document.getElementById("subEn").innerText = s.en;
-        document.getElementById("subAr").innerText = s.ar;
-      }
-    });
-
-  },300);
-
+function goToTime(sec){
+  document.getElementById("videoFrame").src =
+    `https://www.youtube.com/embed/${videoId}?start=${sec}&autoplay=1&cc_load_policy=1`;
 }
 
 /* 🔊 صوت */
 function speak(text){
-  let u = new SpeechSynthesisUtterance(text);
-  u.lang="en-US";
-  u.rate=0.9;
-  speechSynthesis.speak(u);
+  speechSynthesis.cancel();
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang="en-US";
+  speechSynthesis.speak(msg);
 }
 
-/* CC */
-function toggleCC(){
-  cc = !cc;
+/* ⭐ حفظ */
+async function saveWord(el, word, translation){
 
-  let btn=document.getElementById("ccBtn");
+  const check = await fetch(
+    `${SUPABASE_URL}/rest/v1/user_words?user_id=eq.${user_id}&word=eq.${encodeURIComponent(word)}`,
+    {
+      headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization":"Bearer "+SUPABASE_KEY
+      }
+    }
+  );
 
-  if(cc){
-    btn.classList.add("active");
-  }else{
-    btn.classList.remove("active");
-    subEn.innerText="";
-    subAr.innerText="";
+  const existing = await check.json();
+
+  if(existing.length > 0){
+    el.innerText = "✅";
+    el.style.background = "#22c55e";
+    return;
   }
+
+  await fetch(SUPABASE_URL + "/rest/v1/user_words", {
+    method:"POST",
+    headers:{
+      "apikey": SUPABASE_KEY,
+      "Authorization":"Bearer "+SUPABASE_KEY,
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
+      user_id,
+      word,
+      translation
+    })
+  });
+
+  el.innerText = "✅";
+  el.style.background = "#22c55e";
 }
 
-/* عرض */
+/* ✅ عرض بدون crash */
 function show(data){
 
-  let html="";
+  let html = "";
 
   for(let cat in data){
 
@@ -211,22 +214,24 @@ function show(data){
 
     data[cat].forEach(w=>{
 
-      subtitles.push({
-        start:w.time || 0,
-        end:(w.time||0)+3,
-        en:w.example || w.en || "",
-        ar:w.example_ar || w.ar || ""
-      });
+      const word = w.en || w.word || "";
+      const ar = w.ar || w.arabic || "";
 
-      html+=`
+      html += `
         <div class="line">
-          <span class="en">${w.en || w.word}</span>
-          <span class="icon" onclick="speak('${w.en || w.word}')">🔊</span>
+          <span class="en" onclick="speak('${word}')">${word}</span>
+          <span class="ar">${ar}</span>
 
-          <span class="ar">${w.ar || w.arabic}</span>
+          <span class="icon" onclick="speak('${word}')">🔊</span>
+          <span class="star" onclick="saveWord(this,'${word}','${ar}')">⭐</span>
 
-          <div class="example">${w.example || ""}</div>
-          <div class="example-ar">${w.example_ar || ""}</div>
+          <span class="example" onclick="goToTime(${w.time || 0})">
+            ${w.example || ""}
+          </span>
+
+          <span class="example-ar">
+            ${w.example_ar || ""}
+          </span>
         </div>
       `;
     });
@@ -234,31 +239,63 @@ function show(data){
     html += `</div>`;
   }
 
-  document.getElementById("result").innerHTML=html;
+  document.getElementById("result").innerHTML = html;
 }
 
-/* إرسال */
+/* 🚀 إرسال */
 async function sendUrl(){
 
   const url = document.getElementById("url").value;
-  if(!url) return alert("حط الرابط");
 
-  subtitles=[];
-
-  document.getElementById("videoBox").style.display="block";
+  if(!url) return alert("اكتب رابط");
 
   const id = getVideoId(url);
-  loadVideo(id);
 
-  const res = await fetch(WEBHOOK,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({url})
-  });
+  if(!id){
+    alert("❌ رابط غير صحيح");
+    return;
+  }
 
-  const data = await res.json();
+  document.getElementById("result").innerHTML = "";
 
-  show(data);
+  startLoading();
+  showVideo(url);
+
+  try{
+
+    const res = await fetch(WEBHOOK,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ url })
+    });
+
+    let data;
+
+    try{
+      const text = await res.text();
+      data = JSON.parse(text);
+    }catch{
+      alert("❌ السيرفر رجع بيانات غلط");
+      stopLoading();
+      return;
+    }
+
+    stopLoading();
+    show(data);
+
+  }catch(e){
+    stopLoading();
+    alert("❌ خطأ في الاتصال");
+  }
+}
+
+/* loading */
+function startLoading(){
+  document.getElementById("loading").style.display="block";
+}
+
+function stopLoading(){
+  document.getElementById("loading").style.display="none";
 }
 
 </script>

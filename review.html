@@ -31,12 +31,25 @@ body{
 }
 
 button{
-  background:#22c55e;
   border:none;
-  padding:10px 15px;
-  border-radius:10px;
+  padding:12px;
+  border-radius:12px;
   color:white;
   cursor:pointer;
+  width:100%;
+  margin-top:10px;
+}
+
+.open{background:#22c55e;}
+.buy{background:#f59e0b;}
+.download{background:#3b82f6;}
+
+.viewer{
+  width:100%;
+  height:70vh;
+  border:none;
+  border-radius:15px;
+  display:none;
 }
 
 /* 🔥 Alert */
@@ -50,7 +63,6 @@ button{
   display:none;
   justify-content:center;
   align-items:center;
-  z-index:999;
 }
 
 .alert{
@@ -58,63 +70,45 @@ button{
   padding:20px;
   border-radius:15px;
   width:90%;
-  max-width:300px;
-  text-align:center;
-}
-
-.alert h3{
-  margin-bottom:10px;
-}
-
-.alert button{
-  width:100%;
-  margin-top:10px;
-}
-
-.whatsapp{
-  background:#25D366;
-}
-
-/* 📖 viewer */
-.viewer{
-  width:100%;
-  height:70vh;
-  border:none;
-  border-radius:15px;
-  display:none;
+  max-width:320px;
 }
 </style>
 
 </head>
 
-<body>
+<body oncontextmenu="return false">
 
 <div class="container">
 
-  <h2>📘 كتابي</h2>
+<h2>📘 كتابي</h2>
 
-  <!-- الكارد -->
-  <div class="card">
+<div class="card">
 
-    <h3>newHEADWAYbeginnerstudentbook.pdf</h3>
+  <!-- 💰 السعر -->
+  <h2>💰 سعر الكتاب: 250 ريال</h2>
 
-    <button onclick="openBook()">فتح</button>
+  <!-- زر فتح -->
+  <button class="open" onclick="openBook()">📖 فتح الكتاب</button>
 
-    <!-- PDF -->
-    <iframe id="pdf" class="viewer"></iframe>
+  <!-- زر تحميل -->
+  <button class="download" onclick="downloadBook()">📥 تحميل</button>
 
-  </div>
+  <!-- PDF -->
+  <iframe id="pdf" class="viewer"></iframe>
+
+</div>
 
 </div>
 
 <!-- 🔥 Alert -->
 <div class="overlay" id="alertBox">
   <div class="alert">
-    <h3>🔒 الكتاب للمشتركين فقط</h3>
-    <p>اشترك للوصول الكامل</p>
 
-    <button onclick="buy()">📲 شراء عبر واتساب</button>
+    <h3>🔒 الكتاب للمشتركين فقط</h3>
+
+    <button class="buy" onclick="buy()">📲 شراء عبر واتساب</button>
     <button onclick="closeAlert()">إغلاق</button>
+
   </div>
 </div>
 
@@ -129,24 +123,42 @@ const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/publ
 
 let userId = localStorage.getItem("user_id");
 let isPaid = false;
+let page = 1;
 
-// 🔥 فتح الكتاب
+// 🔥 فتح
 async function openBook(){
 
   await checkUser();
 
   if(!isPaid){
-    document.getElementById("alertBox").style.display="flex";
+    showAlert();
     return;
   }
 
-  // ✅ فتح داخل الصفحة
   document.getElementById("pdf").style.display="block";
-  document.getElementById("pdf").src = PDF_URL;
+  document.getElementById("pdf").src = PDF_URL + "#toolbar=0";
 
+  trackRead();
 }
 
-// 🔒 تحقق من الاشتراك
+// 📥 تحميل
+async function downloadBook(){
+
+  await checkUser();
+
+  if(!isPaid){
+    showAlert();
+    return;
+  }
+
+  // تحميل محلي
+  let a = document.createElement("a");
+  a.href = PDF_URL;
+  a.download = "book.pdf";
+  a.click();
+}
+
+// 🔒 تحقق
 async function checkUser(){
 
   if(!userId) return;
@@ -160,20 +172,40 @@ async function checkUser(){
   isPaid = data?.plan === "paid";
 }
 
-// ❌ اغلاق alert
-function closeAlert(){
-  document.getElementById("alertBox").style.display="none";
+// 📊 تتبع القراءة
+async function trackRead(){
+
+  if(!userId) return;
+
+  await client.from("users").update({
+    last_page: "book",
+    last_active: new Date(),
+    book_opened: true
+  }).eq("id", userId);
 }
 
-// 💰 شراء واتساب
-function buy(){
+// 🎯 تتبع الشراء
+async function buy(){
 
-  let phone = "966509079576"; // 🔥 حط رقمك
-  let msg = "السلام عليكم، أبغى اشتراك في الكتاب";
+  if(userId){
+    await client.from("users").update({
+      clicked_buy: true
+    }).eq("id", userId);
+  }
 
-  let url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  let phone = "966XXXXXXXXX";
+  let msg = "أبغى شراء الكتاب";
 
-  window.open(url, "_blank");
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`);
+}
+
+// alert
+function showAlert(){
+  document.getElementById("alertBox").style.display="flex";
+}
+
+function closeAlert(){
+  document.getElementById("alertBox").style.display="none";
 }
 
 </script>

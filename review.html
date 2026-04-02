@@ -1,7 +1,8 @@
 <!DOCTYPE html><html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dashboard</title><script src="https://unpkg.com/@supabase/supabase-js@2"></script><style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title><script src="https://unpkg.com/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
 body{
   background:#0f172a;
   color:white;
@@ -15,10 +16,9 @@ body{
   padding:15px;
 }
 
-/* 🔥 إحصائيات */
 .stats{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
   gap:10px;
   margin-bottom:20px;
 }
@@ -36,17 +36,15 @@ body{
   color:#38bdf8;
 }
 
-/* 🔍 البحث */
 .search{
   width:100%;
-  max-width:300px;
+  max-width:280px;
   padding:8px;
   border-radius:8px;
   border:none;
   margin-bottom:15px;
 }
 
-/* 👤 المستخدم */
 .card{
   background:#1e293b;
   padding:12px;
@@ -76,15 +74,17 @@ button{
 
 .ban{background:#ef4444;color:white;}
 .unban{background:#22c55e;color:white;}
-.plan{background:#38bdf8;color:white;}
-</style></head><body><div class="container"><h3>📊 Dashboard</h3><!-- 🔥 الإحصائيات --><div class="stats">
+.plan{color:white;}
+</style></head><body><div class="container"><h3>📊 Dashboard</h3><div class="stats">
   <div class="stat">👥 المستخدمين <div id="total" class="num">0</div></div>
   <div class="stat">💰 المدفوع <div id="paid" class="num">0</div></div>
   <div class="stat">🆓 مجاني <div id="free" class="num">0</div></div>
   <div class="stat">🚫 محظور <div id="banned" class="num">0</div></div>
   <div class="stat">📈 نشط اليوم <div id="active" class="num">0</div></div>
-  <div class="stat">⏱️ متوسط الوقت <div id="time" class="num">0</div></div>
-</div><input id="search" class="search" placeholder="🔍 بحث"><div id="users"></div></div><script>
+  <div class="stat">💰 أرباح <div id="revenue" class="num">0</div></div>
+</div><canvas id="chart"></canvas>
+
+<input id="search" class="search" placeholder="🔍 بحث"><div id="users"></div></div><script>
 
 const client = supabase.createClient(
   "https://ofyugbhplaynjeafdrgx.supabase.co",
@@ -93,19 +93,21 @@ const client = supabase.createClient(
 
 let users=[];
 
-// 🔥 تحميل البيانات
 async function load(){
 
-  const { data } = await client.from("users").select("*");
+  const { data } = await client
+    .from("users")
+    .select("*")
+    .order("created_at",{ascending:false});
 
   users=data;
 
-  renderStats(data);
-  renderUsers(data);
+  stats(data);
+  render(data);
+  drawChart(data);
 }
 
-// 📊 الإحصائيات
-function renderStats(data){
+function stats(data){
 
   const today = new Date().toISOString().slice(0,10);
 
@@ -123,21 +125,45 @@ function renderStats(data){
   document.getElementById("active").innerText =
     data.filter(u=>u.last_active?.startsWith(today)).length;
 
-  let avg=0;
-  if(data.length){
-    avg = data.reduce((a,b)=>a+(b.total_time||0),0)/data.length;
-  }
-
-  document.getElementById("time").innerText =
-    Math.round(avg)+"s";
+  let revenue = data.reduce((sum,u)=> sum+(u.price||0),0);
+  document.getElementById("revenue").innerText = revenue+"$";
 }
 
-// 👤 عرض المستخدمين
-function renderUsers(list){
+function drawChart(data){
+
+  let map={};
+
+  data.forEach(u=>{
+    let d=u.created_at?.slice(0,10);
+    if(!d) return;
+    map[d]=(map[d]||0)+1;
+  });
+
+  new Chart(document.getElementById("chart"),{
+    type:'line',
+    data:{
+      labels:Object.keys(map),
+      datasets:[{
+        label:'Users',
+        data:Object.values(map)
+      }]
+    }
+  });
+}
+
+function render(list){
 
   let html="";
 
   list.forEach(u=>{
+
+    let remaining="";
+
+    if(u.subscription_end){
+      let diff = new Date(u.subscription_end)-new Date();
+      let days = Math.floor(diff/(1000*60*60*24));
+      remaining = days>0 ? `⏳ ${days} يوم` : "❌ انتهى";
+    }
 
     html+=`
     <div class="card">
@@ -145,18 +171,17 @@ function renderUsers(list){
       <div class="row">
         <div>
           <strong>${u.name||"بدون اسم"}</strong>
-          <div class="small">${u.email}</div>
+          <div class="small">${u.email||""}</div>
         </div>
 
-        <div>
-          ${u.plan}
-          ${u.status==="banned"?"🚫":""}
-        </div>
+        <div>${u.plan}</div>
       </div>
 
       <div class="small">
         ⏱️ ${u.total_time||0}s | 📅 ${u.last_active||"-"}
       </div>
+
+      <div class="small">${remaining}</div>
 
       <div>
         ${
@@ -165,8 +190,12 @@ function renderUsers(list){
           : `<button class="ban" onclick="ban('${u.id}')">حظر</button>`
         }
 
-        <button class="plan" onclick="togglePlan('${u.id}','${u.plan}')">
-          اشتراك
+        <button class="plan" style="
+          background:${u.plan==='paid'?'#22c55e':'#38bdf8'}
+        " onclick="toggle('${u.id}','${u.plan}')">
+
+          ${u.plan==='paid'?'مدفوع':'تفعيل'}
+
         </button>
       </div>
 
@@ -176,32 +205,35 @@ function renderUsers(list){
   document.getElementById("users").innerHTML=html;
 }
 
-// 🔍 البحث
 document.getElementById("search").oninput=(e)=>{
-  const v=e.target.value.toLowerCase();
-
-  renderUsers(users.filter(u=>
+  let v=e.target.value.toLowerCase();
+  render(users.filter(u=>
     (u.name||"").toLowerCase().includes(v) ||
     (u.email||"").toLowerCase().includes(v)
   ));
 };
 
-// 🚫
 async function ban(id){
   await client.from("users").update({status:"banned"}).eq("id",id);
   load();
 }
 
-// ✅
 async function unban(id){
   await client.from("users").update({status:"active"}).eq("id",id);
   load();
 }
 
-// 💰
-async function togglePlan(id,plan){
-  const newPlan=plan==="paid"?"free":"paid";
-  await client.from("users").update({plan:newPlan}).eq("id",id);
+async function toggle(id,plan){
+  let newPlan=plan==="paid"?"free":"paid";
+
+  await client.from("users").update({
+    plan:newPlan,
+    purchased:newPlan==="paid",
+    subscription_end:newPlan==="paid"
+      ? new Date(Date.now()+30*24*60*60*1000)
+      : null
+  }).eq("id",id);
+
   load();
 }
 

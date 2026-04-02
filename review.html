@@ -1,7 +1,14 @@
-<!DOCTYPE html><html lang="ar">
+<!DOCTYPE html>
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>الكتاب</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script><style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>الكتاب</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
 body {
   background: linear-gradient(135deg,#0f172a,#1e293b);
   color:white;
@@ -80,18 +87,31 @@ button {
   color:white;
   cursor:pointer;
 }
-</style></head><body><div class="container"><div id="index"></div>
-<div id="lesson"></div>
-<div id="nav"></div>
-<div id="grammar"></div>
-<div id="words"></div></div><script>
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div id="index"></div>
+  <div id="lesson"></div>
+  <div id="nav"></div>
+  <div id="grammar"></div>
+  <div id="words"></div>
+</div>
+
+<script>
 
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let LESSON_NUMBER = null;
+// ✅ نخزن الفهرس (حل البطء)
+let cachedUnits = null;
+
+// ✅ نستخدم ID بدل الرقم
+let LESSON_ID = null;
 
 // 🔊 صوت
 function speak(text){
@@ -103,25 +123,20 @@ function speak(text){
 
 // ⭐ حفظ
 async function saveWord(el, word, translation){
-  await client.from("book_user_words").insert({
-    word,
-    translation
-  });
+  await client.from("book_user_words").insert({ word, translation });
   el.innerText="✅";
 }
 
 // 🔁 فتح درس
-function goLesson(num){
-  LESSON_NUMBER = num;
-
+function goLesson(id){
+  LESSON_ID = id;
   document.getElementById("index").innerHTML = "";
-
   loadLesson();
 }
 
-// 🔙 رجوع للفهرس
+// 🔙 رجوع
 function backToIndex(){
-  LESSON_NUMBER = null;
+  LESSON_ID = null;
 
   document.getElementById("lesson").innerHTML = "";
   document.getElementById("nav").innerHTML = "";
@@ -134,21 +149,25 @@ function backToIndex(){
 // 📚 الفهرس
 async function loadIndex(){
 
-  const { data: units } = await client
-    .from("book_units")
-    .select(`
-      unit_number,
-      book_lessons (
-        id,
-        title,
-        lesson_number
-      )
-    `)
-    .order("unit_number");
+  if(!cachedUnits){
+    const { data } = await client
+      .from("book_units")
+      .select(`
+        unit_number,
+        book_lessons (
+          id,
+          title,
+          lesson_number
+        )
+      `)
+      .order("unit_number");
+
+    cachedUnits = data;
+  }
 
   let html = `<div class="card"><h2>📚 فهرس الكتاب</h2></div>`;
 
-  units.forEach(u => {
+  cachedUnits.forEach(u => {
 
     html += `<div class="card">`;
     html += `<h3 style="color:#38bdf8;">📘 Unit ${u.unit_number}</h3>`;
@@ -158,7 +177,7 @@ async function loadIndex(){
       .forEach(l => {
 
         html += `
-          <div class="word" onclick="goLesson(${l.lesson_number})">
+          <div class="word" onclick="goLesson(${l.id})">
             Lesson ${l.lesson_number} - ${l.title}
           </div>
         `;
@@ -185,12 +204,10 @@ async function loadLesson(){
         unit_number
       )
     `)
-    .eq("lesson_number", LESSON_NUMBER)
+    .eq("id", LESSON_ID)
     .single();
 
   if(!lesson) return;
-
-  const LESSON_ID = lesson.id;
 
   document.getElementById("lesson").innerHTML = `
     <div class="card">
@@ -203,10 +220,10 @@ async function loadLesson(){
     </div>
   `;
 
-  // تنقل
+  // ⬅️➡️ تنقل
   let { data: prev } = await client
     .from("book_lessons")
-    .select("lesson_number")
+    .select("id")
     .eq("unit_id", lesson.unit_id)
     .lt("lesson_number", lesson.lesson_number)
     .order("lesson_number", { ascending: false })
@@ -214,7 +231,7 @@ async function loadLesson(){
 
   let { data: next } = await client
     .from("book_lessons")
-    .select("lesson_number")
+    .select("id")
     .eq("unit_id", lesson.unit_id)
     .gt("lesson_number", lesson.lesson_number)
     .order("lesson_number", { ascending: true })
@@ -226,13 +243,13 @@ async function loadLesson(){
 
       ${
         prev?.length
-        ? `<button onclick="goLesson(${prev[0].lesson_number})">⬅️ السابق</button>`
+        ? `<button onclick="goLesson(${prev[0].id})">⬅️ السابق</button>`
         : `<div></div>`
       }
 
       ${
         next?.length
-        ? `<button onclick="goLesson(${next[0].lesson_number})">التالي ➡️</button>`
+        ? `<button onclick="goLesson(${next[0].id})">التالي ➡️</button>`
         : `<div></div>`
       }
     </div>
@@ -269,13 +286,11 @@ async function loadLesson(){
   words?.forEach(w => {
     wHTML += `
       <div class="card word">
-
         <div class="top">
           <div>
             <span class="en">${w.word}</span>
             <span class="ar">${w.translation}</span>
           </div>
-
           <div>
             <span class="icon" onclick="speak('${w.word}')">🔊</span>
             <span class="icon" onclick="saveWord(this,'${w.word}','${w.translation}')">⭐</span>
@@ -289,7 +304,6 @@ async function loadLesson(){
         <div class="example-ar">
           ${w.example_ar || ""}
         </div>
-
       </div>
     `;
   });
@@ -301,5 +315,7 @@ async function loadLesson(){
 // 🚀 تشغيل
 loadIndex();
 
-</script></body>
+</script>
+
+</body>
 </html>

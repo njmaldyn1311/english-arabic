@@ -1,356 +1,107 @@
-<!DOCTYPE html>
-<html lang="ar">
+<!DOCTYPE html><html lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>الكتاب</title>
-
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-<style>
+<title>Dashboard</title><script src="https://unpkg.com/@supabase/supabase-js@2"></script><style>
 body {
-  background: linear-gradient(135deg,#0f172a,#1e293b);
+  background:#0f172a;
   color:white;
   font-family:Arial;
   margin:0;
-  text-align:center;
 }
 
 .container{
-  max-width:750px;
+  max-width:1000px;
   margin:auto;
-  padding:15px;
+  padding:20px;
 }
 
 .card{
   background:#1e293b;
-  padding:18px;
-  margin:15px 0;
+  padding:20px;
+  margin:10px;
   border-radius:15px;
+  text-align:center;
 }
 
-.title{
-  font-size:24px;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+}
+
+.big{
+  font-size:28px;
   font-weight:bold;
-}
-
-.grammar{
-  text-align:right;
-}
-
-.word{
-  border-bottom:1px solid #334155;
-  padding:12px;
-  text-align:left;
-  cursor:pointer;
-}
-
-.top{
-  display:flex;
-  justify-content:space-between;
-}
-
-.en{
   color:#38bdf8;
-  font-weight:bold;
-  font-size:18px;
 }
-
-.ar{
-  color:#f87171;
-  margin-left:10px;
-}
-
-.example{
-  margin-top:8px;
-  color:#e2e8f0;
-  cursor:pointer;
-}
-
-.example-ar{
-  color:#facc15;
-  font-size:18px;
-  font-weight:bold;
-}
-
-.icon{
-  cursor:pointer;
-  margin-left:10px;
-}
-
-button {
-  background:#22c55e;
-  border:none;
-  padding:10px 18px;
-  border-radius:10px;
-  color:white;
-  cursor:pointer;
-}
-
-/* 💬 المحادثة */
-.chat{
-  text-align:left;
-}
-
-.msg{
-  margin:10px 0;
-  padding:10px;
-  border-radius:10px;
-  background:#334155;
-}
-
-.speaker{
-  color:#22c55e;
-  font-weight:bold;
-  margin-bottom:5px;
-}
-
-.translation{
-  color:#facc15;
-  margin-top:5px;
-  font-size:15px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-  <div id="index"></div>
-  <div id="lesson"></div>
-  <div id="nav"></div>
-  <div id="grammar"></div>
-  <div id="words"></div>
-  <div id="conversation"></div>
-</div>
-
-<script>
+</style></head><body><div class="container"><h2>📊 Dashboard</h2><div class="grid"><div class="card">
+  👥 عدد المستخدمين
+  <div id="totalUsers" class="big">0</div>
+</div><div class="card">
+  💰 المشتركون (Paid)
+  <div id="paidUsers" class="big">0</div>
+</div><div class="card">
+  🆓 المستخدمين المجانيين
+  <div id="freeUsers" class="big">0</div>
+</div><div class="card">
+  ⏱️ متوسط وقت الاستخدام
+  <div id="avgTime" class="big">0</div>
+</div><div class="card">
+  📈 النشطين اليوم
+  <div id="activeToday" class="big">0</div>
+</div><div class="card">
+  🎯 المستخدمين المستهدفين
+  <div id="targetUsers" class="big">0</div>
+</div></div></div><script>
 
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let cachedUnits = null;
-let LESSON_ID = null;
+async function loadDashboard(){
 
-// 🔊 صوت
-function speak(text){
-  if(!text) return;
-  let u = new SpeechSynthesisUtterance(text);
-  u.lang="en-US";
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
-}
+  // 👥 كل المستخدمين
+  const { data: users } = await client.from("users").select("*");
 
-// فتح درس
-function goLesson(id){
-  LESSON_ID = id;
-  document.getElementById("index").innerHTML = "";
-  document.getElementById("lesson").innerHTML = "⏳ جاري التحميل...";
-  loadLesson();
-}
+  document.getElementById("totalUsers").innerText = users.length;
 
-// رجوع
-function backToIndex(){
-  LESSON_ID = null;
-  document.getElementById("lesson").innerHTML = "";
-  document.getElementById("nav").innerHTML = "";
-  document.getElementById("grammar").innerHTML = "";
-  document.getElementById("words").innerHTML = "";
-  document.getElementById("conversation").innerHTML = "";
-  loadIndex();
-}
+  // 💰 المدفوع
+  const paid = users.filter(u => u.plan === "paid");
+  document.getElementById("paidUsers").innerText = paid.length;
 
-// 📚 الفهرس
-async function loadIndex(){
+  // 🆓 المجاني
+  const free = users.filter(u => u.plan === "free");
+  document.getElementById("freeUsers").innerText = free.length;
 
-  if(!cachedUnits){
-    const { data } = await client
-      .from("book_units")
-      .select(`
-        unit_number,
-        book_lessons (
-          id,
-          title,
-          lesson_number
-        )
-      `)
-      .order("unit_number");
+  // 📈 النشطين اليوم
+  const today = new Date().toISOString().slice(0,10);
 
-    cachedUnits = data;
+  const active = users.filter(u =>
+    u.last_active?.startsWith(today)
+  );
+
+  document.getElementById("activeToday").innerText = active.length;
+
+  // ⏱️ متوسط الوقت
+  const { data: sessions } = await client
+    .from("sessions")
+    .select("duration");
+
+  let avg = 0;
+  if(sessions.length){
+    avg = sessions.reduce((a,b)=>a+b.duration,0)/sessions.length;
   }
 
-  let html = `<div class="card"><h2>📚 فهرس الكتاب</h2></div>`;
+  document.getElementById("avgTime").innerText = Math.round(avg) + "s";
 
-  cachedUnits.forEach(u => {
+  // 🎯 المستهدفين (مثال: مستخدمين مجانيين)
+  document.getElementById("targetUsers").innerText = free.length;
 
-    html += `<div class="card">`;
-    html += `<h3 style="color:#38bdf8;">📘 Unit ${u.unit_number}</h3>`;
-
-    u.book_lessons
-      .sort((a,b)=>a.lesson_number - b.lesson_number)
-      .forEach(l => {
-
-        html += `
-          <div class="word" onclick="goLesson(${l.id})">
-            Lesson ${l.lesson_number} - ${l.title}
-          </div>
-        `;
-
-      });
-
-    html += `</div>`;
-  });
-
-  document.getElementById("index").innerHTML = html;
 }
 
-// 📖 تحميل الدرس
-async function loadLesson(){
+loadDashboard();
 
-  document.getElementById("lesson").innerHTML = "";
-  document.getElementById("nav").innerHTML = "";
-  document.getElementById("grammar").innerHTML = "";
-  document.getElementById("words").innerHTML = "";
-  document.getElementById("conversation").innerHTML = "";
-
-  const { data: lesson } = await client
-    .from("book_lessons")
-    .select(`
-      id,
-      title,
-      lesson_number,
-      unit_id,
-      book_units (unit_number)
-    `)
-    .eq("id", LESSON_ID)
-    .single();
-
-  if(!lesson) return;
-
-  document.getElementById("lesson").innerHTML = `
-    <div class="card">
-      <div class="title">
-        Unit ${lesson.book_units?.unit_number}
-        - Lesson ${lesson.lesson_number}
-        <br>
-        📘 ${lesson.title}
-      </div>
-    </div>
-  `;
-
-  // التنقل
-  let { data: prev } = await client
-    .from("book_lessons")
-    .select("id")
-    .eq("unit_id", lesson.unit_id)
-    .lt("lesson_number", lesson.lesson_number)
-    .order("lesson_number", { ascending: false })
-    .limit(1);
-
-  let { data: next } = await client
-    .from("book_lessons")
-    .select("id")
-    .eq("unit_id", lesson.unit_id)
-    .gt("lesson_number", lesson.lesson_number)
-    .order("lesson_number", { ascending: true })
-    .limit(1);
-
-  document.getElementById("nav").innerHTML = `
-    <div class="card" style="display:flex;justify-content:space-between;">
-      <button onclick="backToIndex()">📚 الفهرس</button>
-      ${prev?.length ? `<button onclick="goLesson(${prev[0].id})">⬅️ السابق</button>` : `<div></div>`}
-      ${next?.length ? `<button onclick="goLesson(${next[0].id})">التالي ➡️</button>` : `<div></div>`}
-    </div>
-  `;
-
-  // القواعد
-  const { data: grammar } = await client
-    .from("book_grammar")
-    .select("*")
-    .eq("lesson_id", LESSON_ID);
-
-  let gHTML = "";
-  grammar?.forEach(g => {
-    gHTML += `
-      <div class="card grammar">
-        <h3>📖 ${g.title}</h3>
-        <p>${(g.explanation || "").replace(/\n/g,"<br>")}</p>
-        <div>${(g.examples || "").replace(/\n/g,"<br>")}</div>
-      </div>
-    `;
-  });
-
-  document.getElementById("grammar").innerHTML = gHTML;
-
-  // الكلمات
-  const { data: words } = await client
-    .from("book_words")
-    .select("*")
-    .eq("lesson_id", LESSON_ID);
-
-  let wHTML = "";
-  words?.forEach(w => {
-    wHTML += `
-      <div class="card word">
-        <div class="top">
-          <div>
-            <span class="en">${w.word}</span>
-            <span class="ar">${w.translation}</span>
-          </div>
-          <div>
-            <span class="icon" onclick="speak('${w.word}')">🔊</span>
-          </div>
-        </div>
-
-        <div class="example" onclick="speak('${w.example || ""}')">
-          ${w.example || ""}
-        </div>
-
-        <div class="example-ar">
-          ${w.example_ar || ""}
-        </div>
-      </div>
-    `;
-  });
-
-  document.getElementById("words").innerHTML = wHTML;
-
-  // 💬 المحادثة + الترجمة (هنا الإصلاح 🔥)
-  const { data: conv } = await client
-    .from("book_conversations")
-    .select("*")
-    .eq("lesson_id", LESSON_ID)
-    .order("id");
-
-  let cHTML = `<div class="card chat"><h3>💬 Conversation</h3></div>`;
-
-  conv?.forEach(c => {
-    cHTML += `
-      <div class="msg">
-        <div class="speaker">${c.speaker}</div>
-
-        <div>${c.sentence}</div>
-
-        <!-- ✅ الترجمة -->
-        <div class="translation">
-          ${c.translation || ""}
-        </div>
-
-        <span class="icon" onclick="speak('${c.sentence}')">🔊</span>
-      </div>
-    `;
-  });
-
-  document.getElementById("conversation").innerHTML = cHTML;
-}
-
-// تشغيل
-loadIndex();
-
-</script>
-
-</body>
+</script></body>
 </html>

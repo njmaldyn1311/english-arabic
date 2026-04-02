@@ -30,18 +30,15 @@ body {
   border-radius:15px;
 }
 
-/* العنوان */
 .title{
   font-size:24px;
   font-weight:bold;
 }
 
-/* القاعدة */
 .grammar{
   text-align:right;
 }
 
-/* الكلمات */
 .word{
   border-bottom:1px solid #334155;
   padding:12px;
@@ -111,13 +108,9 @@ const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🧠 ناخذ lesson_id من الرابط
+// 🧠 قراءة الرابط
 const params = new URLSearchParams(window.location.search);
-const LESSON_ID = params.get("lesson");
-
-if(!LESSON_ID){
-  alert("❌ ضع lesson id في الرابط");
-}
+let LESSON_ID = params.get("lesson");
 
 // 🔊 صوت
 function speak(text){
@@ -133,7 +126,6 @@ async function saveWord(el, word, translation){
     word,
     translation
   });
-
   el.innerText="✅";
 }
 
@@ -142,9 +134,24 @@ function goLesson(id){
   window.location.href = `?lesson=${id}`;
 }
 
+// 🧠 إذا ما فيه lesson → نجيب أول درس
+async function getLessonId(){
+
+  if(LESSON_ID) return;
+
+  const { data } = await client
+    .from("book_lessons")
+    .select("id")
+    .order("id")
+    .limit(1)
+    .single();
+
+  LESSON_ID = data.id;
+}
+
+// 🚀 تحميل الدرس
 async function loadLesson(){
 
-  // 📘 الدرس + الوحدة
   const { data: lesson } = await client
     .from("book_lessons")
     .select(`
@@ -159,6 +166,11 @@ async function loadLesson(){
     .eq("id", LESSON_ID)
     .single();
 
+  if(!lesson){
+    document.getElementById("lesson").innerHTML = "❌ لا يوجد درس";
+    return;
+  }
+
   document.getElementById("lesson").innerHTML = `
     <div class="card">
       <div class="title">
@@ -170,7 +182,7 @@ async function loadLesson(){
     </div>
   `;
 
-  // ⬅️➡️ السابق / التالي
+  // ⬅️➡️ تنقل
   let { data: prev } = await client
     .from("book_lessons")
     .select("id")
@@ -191,13 +203,13 @@ async function loadLesson(){
     <div class="card" style="display:flex;justify-content:space-between;">
 
       ${
-        prev.length
+        prev?.length
         ? `<button onclick="goLesson('${prev[0].id}')">⬅️ السابق</button>`
         : `<div></div>`
       }
 
       ${
-        next.length
+        next?.length
         ? `<button onclick="goLesson('${next[0].id}')">التالي ➡️</button>`
         : `<div></div>`
       }
@@ -205,7 +217,7 @@ async function loadLesson(){
     </div>
   `;
 
-  // 📖 القواعد
+  // 📖 القواعد (حل \n)
   const { data: grammar } = await client
     .from("book_grammar")
     .select("*")
@@ -213,12 +225,12 @@ async function loadLesson(){
 
   let gHTML = "";
 
-  grammar.forEach(g => {
+  grammar?.forEach(g => {
     gHTML += `
       <div class="card grammar">
         <h3>📖 ${g.title}</h3>
-        <p>${g.explanation}</p>
-        <pre>${g.examples}</pre>
+        <p>${(g.explanation || "").replace(/\n/g, "<br>")}</p>
+        <div>${(g.examples || "").replace(/\n/g, "<br>")}</div>
       </div>
     `;
   });
@@ -233,7 +245,7 @@ async function loadLesson(){
 
   let wHTML = "";
 
-  words.forEach(w => {
+  words?.forEach(w => {
     wHTML += `
       <div class="card word">
 
@@ -265,7 +277,13 @@ async function loadLesson(){
 
 }
 
-loadLesson();
+// 🚀 تشغيل
+async function start(){
+  await getLessonId();
+  loadLesson();
+}
+
+start();
 
 </script>
 

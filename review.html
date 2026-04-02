@@ -1,106 +1,3 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>عرض الدرس</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
-<style>
-body {
-  background: linear-gradient(135deg,#0f172a,#1e293b);
-  color:white;
-  font-family:Arial;
-  margin:0;
-  text-align:center;
-}
-
-.container{
-  max-width:750px;
-  margin:auto;
-  padding:15px;
-}
-
-.card{
-  background:#1e293b;
-  padding:18px;
-  margin:15px 0;
-  border-radius:15px;
-}
-
-.title{
-  font-size:24px;
-  font-weight:bold;
-}
-
-.grammar{
-  text-align:right;
-}
-
-.word{
-  border-bottom:1px solid #334155;
-  padding:12px;
-  text-align:left;
-}
-
-.top{
-  display:flex;
-  justify-content:space-between;
-}
-
-.en{
-  color:#38bdf8;
-  font-weight:bold;
-  font-size:18px;
-}
-
-.ar{
-  color:#f87171;
-  margin-left:10px;
-}
-
-.example{
-  margin-top:8px;
-  color:#e2e8f0;
-  cursor:pointer;
-}
-
-.example-ar{
-  color:#facc15;
-  font-size:18px;
-  font-weight:bold;
-}
-
-.icon{
-  cursor:pointer;
-  margin-left:10px;
-}
-
-button {
-  background:#22c55e;
-  border:none;
-  padding:10px 18px;
-  border-radius:10px;
-  color:white;
-  cursor:pointer;
-}
-</style>
-
-</head>
-
-<body>
-
-<div class="container">
-
-<div id="lesson"></div>
-<div id="nav"></div>
-<div id="grammar"></div>
-<div id="words"></div>
-
-</div>
-
 <script>
 
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
@@ -108,9 +5,9 @@ const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🧠 قراءة الرابط
+// 🧠 قراءة الرابط (lesson_number)
 const params = new URLSearchParams(window.location.search);
-let LESSON_ID = params.get("lesson");
+let LESSON_NUMBER = params.get("lesson");
 
 // 🔊 صوت
 function speak(text){
@@ -130,28 +27,29 @@ async function saveWord(el, word, translation){
 }
 
 // 🔁 تنقل
-function goLesson(id){
-  window.location.href = `?lesson=${id}`;
+function goLesson(num){
+  window.location.href = `?lesson=${num}`;
 }
 
-// 🧠 إذا ما فيه lesson → نجيب أول درس
-async function getLessonId(){
+// 🧠 إذا ما فيه lesson → نجيب أول درس (بالترتيب الصحيح)
+async function getLessonNumber(){
 
-  if(LESSON_ID) return;
+  if(LESSON_NUMBER) return;
 
   const { data } = await client
     .from("book_lessons")
-    .select("id")
-    .order("id")
+    .select("lesson_number")
+    .order("lesson_number", { ascending: true })
     .limit(1)
     .single();
 
-  LESSON_ID = data.id;
+  LESSON_NUMBER = data.lesson_number;
 }
 
 // 🚀 تحميل الدرس
 async function loadLesson(){
 
+  // 📘 نجيب الدرس حسب الترتيب
   const { data: lesson } = await client
     .from("book_lessons")
     .select(`
@@ -163,7 +61,7 @@ async function loadLesson(){
         unit_number
       )
     `)
-    .eq("id", LESSON_ID)
+    .eq("lesson_number", LESSON_NUMBER)
     .single();
 
   if(!lesson){
@@ -171,6 +69,9 @@ async function loadLesson(){
     return;
   }
 
+  const LESSON_ID = lesson.id; // نستخدمه داخليًا فقط
+
+  // 📘 العنوان
   document.getElementById("lesson").innerHTML = `
     <div class="card">
       <div class="title">
@@ -182,10 +83,10 @@ async function loadLesson(){
     </div>
   `;
 
-  // ⬅️➡️ تنقل
+  // ⬅️➡️ التنقل (حسب الترتيب)
   let { data: prev } = await client
     .from("book_lessons")
-    .select("id")
+    .select("lesson_number")
     .eq("unit_id", lesson.unit_id)
     .lt("lesson_number", lesson.lesson_number)
     .order("lesson_number", { ascending: false })
@@ -193,7 +94,7 @@ async function loadLesson(){
 
   let { data: next } = await client
     .from("book_lessons")
-    .select("id")
+    .select("lesson_number")
     .eq("unit_id", lesson.unit_id)
     .gt("lesson_number", lesson.lesson_number)
     .order("lesson_number", { ascending: true })
@@ -204,20 +105,20 @@ async function loadLesson(){
 
       ${
         prev?.length
-        ? `<button onclick="goLesson('${prev[0].id}')">⬅️ السابق</button>`
+        ? `<button onclick="goLesson('${prev[0].lesson_number}')">⬅️ السابق</button>`
         : `<div></div>`
       }
 
       ${
         next?.length
-        ? `<button onclick="goLesson('${next[0].id}')">التالي ➡️</button>`
+        ? `<button onclick="goLesson('${next[0].lesson_number}')">التالي ➡️</button>`
         : `<div></div>`
       }
 
     </div>
   `;
 
-  // 📖 القواعد (حل \n)
+  // 📖 القواعد
   const { data: grammar } = await client
     .from("book_grammar")
     .select("*")
@@ -229,8 +130,8 @@ async function loadLesson(){
     gHTML += `
       <div class="card grammar">
         <h3>📖 ${g.title}</h3>
-        <p>${(g.explanation || "").replace(/\n/g, "<br>")}</p>
-        <div>${(g.examples || "").replace(/\n/g, "<br>")}</div>
+        <p>${(g.explanation || "").replace(/\\n|\n/g, "<br>")}</p>
+        <div>${(g.examples || "").replace(/\\n|\n/g, "<br>")}</div>
       </div>
     `;
   });
@@ -279,13 +180,10 @@ async function loadLesson(){
 
 // 🚀 تشغيل
 async function start(){
-  await getLessonId();
+  await getLessonNumber();
   loadLesson();
 }
 
 start();
 
 </script>
-
-</body>
-</html>

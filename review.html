@@ -19,8 +19,9 @@ body{
 
 canvas{
   width:100%;
-  border-radius:10px;
+  border-radius:12px;
   margin-top:10px;
+  box-shadow:0 0 10px rgba(0,0,0,0.5);
 }
 
 .controls{
@@ -28,13 +29,18 @@ canvas{
 }
 
 button{
-  padding:10px;
+  padding:10px 14px;
   margin:5px;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   background:#22c55e;
   color:white;
   cursor:pointer;
+  font-size:14px;
+}
+
+button:hover{
+  background:#16a34a;
 }
 </style></head><body><div class="container"><h3>📘 كتابي</h3><div class="controls">
   <button onclick="prev()">⬅️ السابق</button>
@@ -44,20 +50,19 @@ button{
 
 </div><script>
 
-// 🔗 حط رابط الكتاب هنا
-const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf 
-";
+// 🔗 رابط كتابك
+const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
 let pdfDoc = null;
 let pageNum = 1;
 
 // 🔥 يرجع لآخر صفحة
-let saved = localStorage.getItem("lastPage");
+let saved = localStorage.getItem("bookPage");
 if(saved){
   pageNum = parseInt(saved);
 }
 
-// 🚀 تحميل الكتاب
+// 🚀 تحميل PDF
 pdfjsLib.getDocument(PDF_URL).promise.then(pdf=>{
   pdfDoc = pdf;
   renderPage(pageNum);
@@ -71,7 +76,7 @@ function renderPage(num){
     let canvas = document.getElementById("pdf");
     let ctx = canvas.getContext("2d");
 
-    let viewport = page.getViewport({scale:1.5});
+    let viewport = page.getViewport({scale:1.4});
     canvas.height = viewport.height;
     canvas.width = viewport.width;
 
@@ -81,7 +86,7 @@ function renderPage(num){
       `صفحة ${num} / ${pdfDoc.numPages}`;
 
     // 💾 حفظ الصفحة
-    localStorage.setItem("lastPage", num);
+    localStorage.setItem("bookPage", num);
   });
 }
 

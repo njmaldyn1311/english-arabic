@@ -15,6 +15,7 @@ body{
   color:white;
   font-family:Arial;
   text-align:center;
+  user-select:none; /* 🔒 منع النسخ */
 }
 
 .container{
@@ -44,7 +45,7 @@ body{
 
 .viewer{
   width:100%;
-  height:75vh;
+  height:70vh;
   border:none;
   border-radius:15px;
   background:white;
@@ -52,17 +53,23 @@ body{
 
 .controls{
   display:flex;
-  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
   margin-top:10px;
 }
 
 button{
   background:#22c55e;
   border:none;
-  padding:10px 15px;
+  padding:8px 12px;
   border-radius:10px;
   color:white;
   cursor:pointer;
+}
+
+.lock{
+  background:#ef4444;
 }
 
 .page{
@@ -74,11 +81,11 @@ button{
 
 </head>
 
-<body>
+<body oncontextmenu="return false"> <!-- 🔒 منع كلك يمين -->
 
 <div class="container">
 
-  <!-- 🔥 الهيدر -->
+  <!-- header -->
   <div class="header">
     <div class="username" id="username">...</div>
     <div class="home" onclick="goHome()">🏠 الرئيسية</div>
@@ -86,13 +93,17 @@ button{
 
   <h2>📘 كتابي</h2>
 
-  <!-- 📖 عرض الكتاب -->
   <iframe id="pdf" class="viewer"></iframe>
 
-  <!-- 🔘 الأزرار (تحت 👇) -->
+  <!-- الأزرار -->
   <div class="controls">
     <button onclick="prev()">⬅️ السابق</button>
     <button onclick="next()">التالي ➡️</button>
+
+    <button onclick="savePage()">⭐ حفظ</button>
+    <button onclick="speakPage()">🔊 قراءة</button>
+
+    <button id="downloadBtn" onclick="downloadBook()">📥 تحميل</button>
   </div>
 
   <div class="page" id="page">صفحة 1</div>
@@ -101,73 +112,99 @@ button{
 
 <script>
 
-// 🔗 Supabase
 const client = supabase.createClient(
   "https://ofyugbhplaynjeafdrgx.supabase.co",
   "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
 );
 
-// 📄 رابط الكتاب
 const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
 let page = 1;
 let userId = localStorage.getItem("user_id");
+let isPaid = false;
 
 // تحميل الصفحة
 function loadPage(){
   document.getElementById("pdf").src = PDF_URL + "#page=" + page;
   document.getElementById("page").innerText = "صفحة " + page;
 
-  track(); // 🔥 تتبع
+  track();
 }
 
-// التالي
-function next(){
-  page++;
-  loadPage();
-}
-
-// السابق
-function prev(){
-  if(page > 1){
-    page--;
-    loadPage();
-  }
-}
+// التنقل
+function next(){ page++; loadPage(); }
+function prev(){ if(page>1){page--; loadPage();} }
 
 // الرئيسية
-function goHome(){
-  window.location.href = "/";
+function goHome(){ window.location.href="/"; }
+
+// ⭐ حفظ الصفحة
+function savePage(){
+  localStorage.setItem("saved_page", page);
+  alert("تم حفظ الصفحة ✅");
 }
 
-// 🔥 جلب اسم المستخدم
+// 🔊 قراءة صوتية
+function speakPage(){
+  let text = "You are reading page " + page;
+  let u = new SpeechSynthesisUtterance(text);
+  u.lang="en-US";
+  speechSynthesis.speak(u);
+}
+
+// 🔒 تحميل
+function downloadBook(){
+
+  if(!isPaid){
+    alert("🔒 الكتاب للمشتركين فقط\nاشترك للوصول الكامل");
+    return;
+  }
+
+  window.open(PDF_URL);
+}
+
+// 👤 جلب المستخدم
 async function loadUser(){
 
   if(!userId){
-    document.getElementById("username").innerText = "زائر";
+    document.getElementById("username").innerText="زائر";
     return;
   }
 
   const { data } = await client
     .from("users")
-    .select("name")
-    .eq("id", userId)
+    .select("*")
+    .eq("id",userId)
     .single();
 
-  document.getElementById("username").innerText =
-    data?.name || "بدون اسم";
+  document.getElementById("username").innerText = data?.name || "بدون اسم";
+
+  isPaid = data?.plan === "paid";
+
+  // تغيير لون زر التحميل
+  if(!isPaid){
+    document.getElementById("downloadBtn").classList.add("lock");
+  }
+
+  // رجوع لآخر صفحة
+  if(data?.last_page_number){
+    page = data.last_page_number;
+  }
+
 }
 
-// 🔥 تتبع الاستخدام (يرتبط بالداتا بيز)
+// 📊 تتبع
 async function track(){
 
   if(!userId) return;
 
   await client.from("users").update({
     last_page: "book",
+    last_page_number: page,
     last_active: new Date(),
-    book_count: 1
+    total_pages_read: (page || 1)
   }).eq("id", userId);
+
 }
 
 // 🚀 تشغيل

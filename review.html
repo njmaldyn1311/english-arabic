@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>كتابي</title>
+<title>الرئيسية</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
@@ -23,10 +23,12 @@ body{
   padding:10px;
 }
 
+/* الهيدر */
 .topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
+  margin-bottom:10px;
 }
 
 .home{
@@ -36,6 +38,7 @@ body{
   cursor:pointer;
 }
 
+/* الكرت */
 .card{
   background:#e5e7eb;
   color:black;
@@ -43,6 +46,7 @@ body{
   padding:20px;
 }
 
+/* زر */
 button{
   border:none;
   padding:14px;
@@ -56,6 +60,7 @@ button{
 
 .download{background:#3b82f6;}
 
+/* PDF */
 .viewer{
   width:100%;
   height:75vh;
@@ -96,9 +101,10 @@ button{
 
 <div class="container">
 
+<!-- الهيدر -->
 <div class="topbar">
   <div id="username">...</div>
-  <div class="home" onclick="location.href='/'">🏠 الرئيسية</div>
+  <div class="home" onclick="location.href='index.html'">🏠 الرئيسية</div>
 </div>
 
 <h2>📘 كتابي</h2>
@@ -107,10 +113,8 @@ button{
 
   <h2>💰 سعر الكتاب: 250 ريال</h2>
 
-  <!-- زر واحد فقط -->
   <button class="download" onclick="openInside()">📥 تحميل وفتح</button>
 
-  <!-- PDF -->
   <iframe id="pdf" class="viewer"></iframe>
 
 </div>
@@ -122,7 +126,7 @@ button{
   <div class="alert">
     <h4>🔒 الكتاب للمشتركين فقط</h4>
 
-    <button class="buy" onclick="buy()">📲 شراء</button>
+    <button class="buy" onclick="buy()">📲 شراء عبر واتساب</button>
     <button class="close" onclick="closeAlert()">إغلاق</button>
   </div>
 </div>
@@ -139,8 +143,9 @@ const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/publ
 let userId = localStorage.getItem("user_id");
 let isPaid = false;
 
-// تحميل اسم المستخدم
+/* 👤 تحميل الاسم (أول + ثاني فقط) */
 async function loadUser(){
+
   if(!userId) return;
 
   const { data } = await client
@@ -150,11 +155,15 @@ async function loadUser(){
     .single();
 
   if(data?.name){
-    document.getElementById("username").innerText = data.name;
+
+    let parts = data.name.split(" ");
+    let shortName = parts.slice(0,2).join(" ");
+
+    document.getElementById("username").innerText = shortName;
   }
 }
 
-// تحقق الاشتراك
+/* 🔐 تحقق الاشتراك */
 async function checkUser(){
 
   if(!userId) return;
@@ -168,7 +177,7 @@ async function checkUser(){
   isPaid = data?.plan === "paid";
 }
 
-// 🔥 فتح داخل الصفحة فقط (بدون أي تحميل خارجي)
+/* 📥 فتح داخلي بدون Chrome */
 async function openInside(){
 
   await checkUser();
@@ -180,22 +189,25 @@ async function openInside(){
 
   let viewer = document.getElementById("pdf");
 
-  // أهم سطر يمنع أي فتح خارجي
-  viewer.src = PDF_URL + "#toolbar=0&navpanes=0&scrollbar=0";
+  // 🔥 تحميل محلي
+  const res = await fetch(PDF_URL);
+  const blob = await res.blob();
+  const localUrl = URL.createObjectURL(blob);
 
+  viewer.src = localUrl;
   viewer.style.display = "block";
-
 }
 
-// شراء
+/* شراء */
 function buy(){
-  let phone = "966509079576";
-  let msg = "أبغى شراء الكتاب";
+
+  let phone = "966XXXXXXXXX";
+  let msg = "أبغى شراء كتاب اللغة";
 
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`);
 }
 
-// alert
+/* alert */
 function showAlert(){
   document.getElementById("alertBox").style.display="flex";
 }
@@ -204,7 +216,7 @@ function closeAlert(){
   document.getElementById("alertBox").style.display="none";
 }
 
-// تشغيل
+/* تشغيل */
 loadUser();
 
 </script>

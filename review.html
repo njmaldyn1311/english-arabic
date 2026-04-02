@@ -2,12 +2,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الكتاب</title><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><style>
+<title>كتابي</title><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><style>
 body{
   margin:0;
   background:#0f172a;
-  text-align:center;
   color:white;
+  text-align:center;
 }
 
 canvas{
@@ -19,6 +19,7 @@ canvas{
 .controls{
   margin:10px;
 }
+
 button{
   padding:10px;
   margin:5px;
@@ -27,24 +28,49 @@ button{
   background:#22c55e;
   color:white;
 }
-</style></head><body><h3>📘 الكتاب</h3><div class="controls">
-  <button onclick="prev()">⬅️ السابق</button>
+</style></head><body><h3>📘 كتابي</h3><div class="controls">
+  <button onclick="prev()">⬅️</button>
   <span id="page"></span>
-  <button onclick="next()">التالي ➡️</button>
+  <button onclick="next()">➡️</button>
 </div><canvas id="pdf"></canvas>
 
 <script>
 
-const url = "https://YOUR-PDF-LINK.pdf";
+const PDF_URL = "https://YOUR-PDF-LINK.pdf";
 
 let pdfDoc = null;
 let pageNum = 1;
 
-pdfjsLib.getDocument(url).promise.then(pdf=>{
-  pdfDoc = pdf;
-  renderPage(pageNum);
-});
+// 🔥 تحميل من الكاش أو الإنترنت
+async function loadPDF(){
 
+  let cached = localStorage.getItem("myBook");
+
+  if(cached){
+    console.log("📦 من الكاش");
+    let bytes = Uint8Array.from(atob(cached), c=>c.charCodeAt(0));
+    pdfDoc = await pdfjsLib.getDocument({data:bytes}).promise;
+  }else{
+    console.log("🌐 تحميل أول مرة");
+
+    let res = await fetch(PDF_URL);
+    let buffer = await res.arrayBuffer();
+
+    // حفظ في الكاش
+    let base64 = btoa(
+      new Uint8Array(buffer)
+        .reduce((data,byte)=>data+String.fromCharCode(byte),"")
+    );
+
+    localStorage.setItem("myBook", base64);
+
+    pdfDoc = await pdfjsLib.getDocument({data:buffer}).promise;
+  }
+
+  renderPage(pageNum);
+}
+
+// 📄 عرض الصفحة
 function renderPage(num){
 
   pdfDoc.getPage(num).then(page=>{
@@ -63,6 +89,7 @@ function renderPage(num){
   });
 }
 
+// ➡️➡️
 function next(){
   if(pageNum < pdfDoc.numPages){
     pageNum++;
@@ -70,12 +97,16 @@ function next(){
   }
 }
 
+// ⬅️⬅️
 function prev(){
   if(pageNum > 1){
     pageNum--;
     renderPage(pageNum);
   }
 }
+
+// 🚀 تشغيل
+loadPDF();
 
 </script></body>
 </html>

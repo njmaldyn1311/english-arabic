@@ -1,287 +1,266 @@
-<!DOCTYPE html><html lang="ar">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title><script src="https://unpkg.com/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
+
+<title>📚 مراجعة الدرس</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+
 body{
-  background:#0f172a;
-  color:white;
-  font-family:Arial;
   margin:0;
+  font-family:"Cairo", sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
 }
 
-.container{
-  max-width:1100px;
-  margin:auto;
+/* 🔥 هيدر */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   padding:15px;
 }
 
-.stats{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:10px;
-  margin-bottom:20px;
-}
-
-.stat{
-  background:#1e293b;
-  padding:15px;
-  border-radius:12px;
-  text-align:center;
-}
-
-.num{
-  font-size:22px;
-  font-weight:bold;
+.user-name{
   color:#38bdf8;
+  font-size:14px;
 }
 
-.search{
-  width:100%;
-  max-width:280px;
-  padding:8px;
-  border-radius:8px;
-  border:none;
-  margin-bottom:15px;
+.home{
+  background:#1e293b;
+  border:1px solid #334155;
+  padding:6px 12px;
+  border-radius:10px;
+  color:#38bdf8;
+  cursor:pointer;
+  font-size:13px;
+}
+
+/* 📦 */
+.container{
+  max-width:500px;
+  margin:auto;
+  padding:10px;
 }
 
 .card{
   background:#1e293b;
-  padding:12px;
-  margin-bottom:10px;
-  border-radius:10px;
-  cursor:pointer;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:12px;
 }
 
-.row{
+.title{
+  font-size:18px;
+  margin-bottom:10px;
+}
+
+/* نفس الحجم */
+.input-group{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+
+.input-group input{
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  text-align:center;
+}
+
+.input-group button{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  color:white;
+}
+
+/* كلمات */
+.word{
   display:flex;
   justify-content:space-between;
-  flex-wrap:wrap;
+  border-bottom:1px solid #334155;
+  padding:8px 0;
 }
 
-.small{
-  font-size:12px;
-  color:#94a3b8;
+.en{color:#38bdf8;}
+.ar{color:#f87171;}
+
+.note{
+  background:#0f172a;
+  padding:10px;
+  border-radius:10px;
+  margin-top:8px;
+  color:#cbd5f5;
 }
 
-button{
-  margin:5px;
-  padding:5px 8px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  font-size:12px;
+/* 🔔 */
+.toast{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  padding:18px 25px;
+  border-radius:12px;
+  display:none;
+  font-size:18px;
 }
 
-.ban{background:#ef4444;color:white;}
-.unban{background:#22c55e;color:white;}
-.plan{color:white;}
-</style></head><body><div class="container"><h3>📊 Dashboard</h3><div class="stats">
-  <div class="stat">👥 المستخدمين <div id="total" class="num">0</div></div>
-  <div class="stat">💰 المدفوع <div id="paid" class="num">0</div></div>
-  <div class="stat">🆓 مجاني <div id="free" class="num">0</div></div>
-  <div class="stat">🚫 محظور <div id="banned" class="num">0</div></div>
-  <div class="stat">📈 نشط اليوم <div id="active" class="num">0</div></div>
-  <div class="stat">💰 أرباح <div id="revenue" class="num">0</div></div>
-</div><canvas id="chart"></canvas>
+.success{background:#22c55e;}
+.error{background:#ef4444;}
 
-<input id="search" class="search" placeholder="🔍 بحث"><div id="users"></div></div><script>
+</style>
+</head>
 
-const client = supabase.createClient(
-  "https://ofyugbhplaynjeafdrgx.supabase.co",
-  "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
-);
+<body>
 
-let users=[];
+<div class="header">
+  <div id="username" class="user-name">👤</div>
+  <button class="home" onclick="goHome()">🏠 الرئيسية</button>
+</div>
 
-// 🔥 تحميل البيانات
-async function load(){
+<div class="container">
 
-  const { data } = await client
-    .from("users")
+  <!-- 📝 الملاحظات -->
+  <div class="card">
+    <div class="title">📝 ملاحظاتي</div>
+    <div id="notes"></div>
+  </div>
+
+  <!-- ⭐ الكلمات -->
+  <div class="card">
+    <div class="title">⭐ كلمات الدرس</div>
+    <div id="words"></div>
+  </div>
+
+  <!-- 🧠 اختبار -->
+  <div class="card">
+    <div class="title">🧠 اختبار</div>
+    <div id="question"></div>
+
+    <div class="input-group">
+      <input id="input" placeholder="اكتب المعنى">
+      <button onclick="check()">تحقق</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let user_id = localStorage.getItem("user_id");
+
+// 👤 الاسم
+let name = localStorage.getItem("user") || "طالب";
+let p = name.split(" ");
+document.getElementById("username").innerText =
+  "👤 " + p[0] + (p[1] ? " " + p[1] : "");
+
+// 📝 الملاحظات
+let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+
+let html="";
+notes.forEach(n=>{
+  html += `<div class="note">• ${n}</div>`;
+});
+
+document.getElementById("notes").innerHTML =
+  html || "لا توجد ملاحظات";
+
+// ⭐ الكلمات من Supabase
+let words = [];
+let current = 0;
+
+async function loadWords(){
+
+  let { data } = await client
+    .from("user_words")
     .select("*")
-    .order("created_at",{ascending:false});
+    .eq("user_id", user_id)
+    .order("created_at", { ascending:false })
+    .limit(10);
 
-  users=data;
+  words = data || [];
 
-  stats(data);
-  render(data);
-  drawChart(data);
+  renderWords();
+  next();
 }
 
-// 📊 الإحصائيات
-function stats(data){
-
-  const today = new Date().toISOString().slice(0,10);
-
-  document.getElementById("total").innerText = data.length;
-  document.getElementById("paid").innerText = data.filter(u=>u.plan==="paid").length;
-  document.getElementById("free").innerText = data.filter(u=>u.plan==="free").length;
-  document.getElementById("banned").innerText = data.filter(u=>u.status==="banned").length;
-  document.getElementById("active").innerText = data.filter(u=>u.last_active?.startsWith(today)).length;
-
-  let revenue = data.reduce((sum,u)=> sum+(u.price||0),0);
-  document.getElementById("revenue").innerText = revenue+"$";
-}
-
-// 📈 الرسم البياني
-function drawChart(data){
-
-  let map={};
-
-  data.forEach(u=>{
-    let d=u.created_at?.slice(0,10);
-    if(!d) return;
-    map[d]=(map[d]||0)+1;
-  });
-
-  new Chart(document.getElementById("chart"),{
-    type:'line',
-    data:{
-      labels:Object.keys(map),
-      datasets:[{
-        label:'Users',
-        data:Object.values(map)
-      }]
-    }
-  });
-}
-
-// 🔽 فتح التفاصيل
-function toggleDetails(id){
-  let el=document.getElementById("details-"+id);
-  el.style.display = el.style.display==="block" ? "none" : "block";
-}
-
-// 🎨 عرض المستخدمين
-function render(list){
-
+function renderWords(){
   let html="";
-
-  list.forEach(u=>{
-
-    let remaining="";
-
-    if(u.subscription_end){
-      let diff = new Date(u.subscription_end)-new Date();
-      let days = Math.floor(diff/(1000*60*60*24));
-      remaining = days>0 ? `⏳ ${days} يوم` : "❌ انتهى";
-    }
-
-    let usage = {
-      video: u.video_time || 0,
-      pdf: u.pdf_time || 0,
-      word: u.word_time || 0,
-      class: u.class_time || 0,
-      exam: u.exam_time || 0,
-      review: u.review_time || 0
-    };
-
-    let top = Object.keys(usage).reduce((a,b)=> usage[a]>usage[b]?a:b);
-
+  words.forEach(w=>{
     html+=`
-    <div class="card" onclick="toggleDetails('${u.id}')">
-
-      <div class="row" style="direction:rtl">
-
-        <div style="text-align:right">
-          <strong>${u.name||"بدون اسم"}</strong>
-          <div class="small" style="direction:ltr">${u.email||""}</div>
-        </div>
-
-        <div>${u.plan}</div>
-
+      <div class="word">
+        <div class="ar">${w.translation}</div>
+        <div class="en">${w.word}</div>
       </div>
-
-      <div class="small">
-        ⏱️ ${Math.floor((u.total_time||0)/60)} دقيقة
-        | 📅 ${u.last_active||"-"}
-      </div>
-
-      <div class="small">${remaining}</div>
-
-      <div>
-        ${
-          u.status==="banned"
-          ? `<button class="unban" onclick="event.stopPropagation(); unban('${u.id}')">فك</button>`
-          : `<button class="ban" onclick="event.stopPropagation(); ban('${u.id}')">حظر</button>`
-        }
-
-        <button class="plan" style="
-          background:${u.plan==='paid'?'#22c55e':'#38bdf8'}
-        " onclick="event.stopPropagation(); toggle('${u.id}','${u.plan}')">
-
-          ${u.plan==='paid'?'مدفوع':'تفعيل'}
-
-        </button>
-      </div>
-
-      <!-- 🔽 التفاصيل -->
-      <div id="details-${u.id}" style="display:none;margin-top:10px;background:#0f172a;padding:10px;border-radius:8px">
-
-        <div class="small">📌 المصدر: ${u.source || "غير معروف"}</div>
-        <div class="small">🔥 أكثر استخدام: ${top}</div>
-
-        <hr>
-
-        <div class="small">🎥 فيديو: ${Math.floor(usage.video/60)} دقيقة</div>
-        <div class="small">📄 PDF: ${Math.floor(usage.pdf/60)} دقيقة</div>
-        <div class="small">📚 كلمات: ${Math.floor(usage.word/60)} دقيقة</div>
-        <div class="small">🏫 فصل: ${Math.floor(usage.class/60)} دقيقة</div>
-        <div class="small">📝 اختبار: ${Math.floor(usage.exam/60)} دقيقة</div>
-        <div class="small">🔁 مراجعة: ${Math.floor(usage.review/60)} دقيقة</div>
-
-        <hr>
-
-        <div class="small">📅 تاريخ التسجيل: ${u.created_at}</div>
-        <div class="small">🕒 آخر نشاط: ${u.last_active || "-"}</div>
-        <div class="small">📄 آخر صفحة: ${u.last_page || "-"}</div>
-
-      </div>
-
-    </div>`;
+    `;
   });
-
-  document.getElementById("users").innerHTML=html;
+  document.getElementById("words").innerHTML = html;
 }
 
-// 🔍 البحث
-document.getElementById("search").oninput=(e)=>{
-  let v=e.target.value.toLowerCase();
-  render(users.filter(u=>
-    (u.name||"").toLowerCase().includes(v) ||
-    (u.email||"").toLowerCase().includes(v)
-  ));
-};
+// 🧠 اختبار
+function next(){
 
-// 🚫
-async function ban(id){
-  await client.from("users").update({status:"banned"}).eq("id",id);
-  load();
+  if(current >= words.length){
+    question.innerText="🎉 انتهى الدرس";
+    return;
+  }
+
+  question.innerText = "ما معنى: " + words[current].word;
+  input.value="";
 }
 
-// ✅
-async function unban(id){
-  await client.from("users").update({status:"active"}).eq("id",id);
-  load();
+function check(){
+
+  let val = normalize(input.value);
+  let correct = normalize(words[current].translation);
+
+  let ok = val.includes(correct) || correct.includes(val);
+
+  toast(ok ? "✅ صح" : "❌ " + words[current].translation, ok);
+
+  current++;
+  setTimeout(next,700);
 }
 
-// 💰
-async function toggle(id,plan){
-  let newPlan=plan==="paid"?"free":"paid";
-
-  await client.from("users").update({
-    plan:newPlan,
-    purchased:newPlan==="paid",
-    subscription_end:newPlan==="paid"
-      ? new Date(Date.now()+30*24*60*60*1000)
-      : null
-  }).eq("id",id);
-
-  load();
+// 🔤
+function normalize(t){
+  return t.replace(/[أإآ]/g,"ا").trim();
 }
 
-load();
+// 🔔
+function toast(msg, ok){
+  let t=document.getElementById("toast");
+  t.innerText=msg;
+  t.className="toast "+(ok?"success":"error");
+  t.style.display="block";
+  setTimeout(()=>t.style.display="none",1000);
+}
 
-</script></body>
+// 🔙
+function goHome(){
+  location.href="index.html";
+}
+
+loadWords();
+
+</script>
+
+</body>
 </html>

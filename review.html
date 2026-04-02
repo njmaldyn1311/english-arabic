@@ -18,34 +18,35 @@ body {
 }
 
 .container{
-  max-width:700px;
+  max-width:750px;
   margin:auto;
   padding:15px;
 }
 
 .card{
   background:#1e293b;
-  padding:15px;
+  padding:18px;
   margin:15px 0;
   border-radius:15px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.3);
 }
 
 /* العنوان */
 .title{
-  font-size:22px;
+  font-size:24px;
   font-weight:bold;
 }
 
 /* القاعدة */
 .grammar{
   text-align:right;
-  line-height:1.8;
+  line-height:1.9;
 }
 
 /* الكلمات */
 .word{
   border-bottom:1px solid #334155;
-  padding:10px;
+  padding:12px;
   text-align:left;
 }
 
@@ -55,22 +56,39 @@ body {
   align-items:center;
 }
 
-.en{color:#38bdf8;font-weight:bold;}
-.ar{color:#f87171;}
+.en{
+  color:#38bdf8;
+  font-weight:bold;
+  font-size:18px;
+}
 
+.ar{
+  color:#f87171;
+  margin-left:10px;
+}
+
+/* المثال */
 .example{
-  margin-top:5px;
+  margin-top:8px;
   color:#e2e8f0;
+  cursor:pointer;
 }
 
 .example-ar{
   color:#facc15;
-  font-size:16px;
+  font-size:18px;
+  font-weight:bold;
 }
 
+/* أيقونات */
 .icon{
   cursor:pointer;
-  margin-left:8px;
+  margin-left:10px;
+  font-size:18px;
+}
+
+.icon:hover{
+  transform:scale(1.2);
 }
 </style>
 
@@ -90,17 +108,24 @@ body {
 
 // 🔥 بياناتك
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+const SUPABASE_KEY = "YOUR_KEY";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ⚠️ حط هنا lesson_id
-const LESSON_ID = 2;
+// ✅ ناخذ lesson_id من الرابط
+const params = new URLSearchParams(window.location.search);
+const LESSON_ID = params.get("lesson");
+
+if(!LESSON_ID){
+  alert("❌ لازم تضيف ?lesson=ID في الرابط");
+}
 
 // 🔊 صوت
 function speak(text){
+  if(!text) return;
   let u = new SpeechSynthesisUtterance(text);
   u.lang="en-US";
+  speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }
 
@@ -117,16 +142,29 @@ async function saveWord(el, word, translation){
 // 🚀 تحميل البيانات
 async function loadLesson(){
 
-  // 1️⃣ الدرس
+  // 1️⃣ الدرس + الوحدة
   const { data: lesson } = await client
     .from("book_lessons")
-    .select("*")
+    .select(`
+      id,
+      title,
+      lesson_number,
+      book_units (
+        unit_number,
+        title
+      )
+    `)
     .eq("id", LESSON_ID)
     .single();
 
   document.getElementById("lesson").innerHTML = `
     <div class="card">
-      <div class="title">📘 ${lesson.title}</div>
+      <div class="title">
+        Unit ${lesson.book_units?.unit_number || ""}
+        - Lesson ${lesson.lesson_number || ""}
+        <br>
+        📘 ${lesson.title}
+      </div>
     </div>
   `;
 
@@ -138,15 +176,17 @@ async function loadLesson(){
 
   let gHTML = "";
 
-  grammar.forEach(g => {
-    gHTML += `
-      <div class="card grammar">
-        <h3>📖 ${g.title}</h3>
-        <p>${g.explanation}</p>
-        <pre>${g.examples}</pre>
-      </div>
-    `;
-  });
+  if(grammar && grammar.length){
+    grammar.forEach(g => {
+      gHTML += `
+        <div class="card grammar">
+          <h3>📖 ${g.title || ""}</h3>
+          <p>${g.explanation || ""}</p>
+          <pre>${g.examples || ""}</pre>
+        </div>
+      `;
+    });
+  }
 
   document.getElementById("grammar").innerHTML = gHTML;
 
@@ -159,13 +199,14 @@ async function loadLesson(){
   let wHTML = "";
 
   words.forEach(w => {
+
     wHTML += `
       <div class="card word">
 
         <div class="top">
           <div>
-            <span class="en">${w.word}</span>
-            <span class="ar">${w.translation}</span>
+            <span class="en">${w.word || ""}</span>
+            <span class="ar">${w.translation || ""}</span>
           </div>
 
           <div>
@@ -174,8 +215,13 @@ async function loadLesson(){
           </div>
         </div>
 
-        <div class="example">${w.example || ""}</div>
-        <div class="example-ar">${w.example_ar || ""}</div>
+        <div class="example" onclick="speak('${w.example || ""}')">
+          ${w.example || ""}
+        </div>
+
+        <div class="example-ar">
+          ${w.example_ar || ""}
+        </div>
 
       </div>
     `;

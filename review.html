@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>الرئيسية</title>
+<title>كتابي</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 
 <style>
 body{
@@ -23,12 +24,10 @@ body{
   padding:10px;
 }
 
-/* الهيدر */
 .topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:10px;
 }
 
 .home{
@@ -38,7 +37,6 @@ body{
   cursor:pointer;
 }
 
-/* الكرت */
 .card{
   background:#e5e7eb;
   color:black;
@@ -46,7 +44,6 @@ body{
   padding:20px;
 }
 
-/* زر */
 button{
   border:none;
   padding:14px;
@@ -60,14 +57,10 @@ button{
 
 .download{background:#3b82f6;}
 
-/* PDF */
-.viewer{
+#pdfContainer canvas{
   width:100%;
-  height:75vh;
-  border:none;
-  border-radius:15px;
-  margin-top:15px;
-  display:none;
+  margin-top:10px;
+  border-radius:10px;
 }
 
 /* alert */
@@ -101,7 +94,6 @@ button{
 
 <div class="container">
 
-<!-- الهيدر -->
 <div class="topbar">
   <div id="username">...</div>
   <div class="home" onclick="location.href='index.html'">🏠 الرئيسية</div>
@@ -115,7 +107,7 @@ button{
 
   <button class="download" onclick="openInside()">📥 تحميل وفتح</button>
 
-  <iframe id="pdf" class="viewer"></iframe>
+  <div id="pdfContainer"></div>
 
 </div>
 
@@ -125,8 +117,7 @@ button{
 <div class="overlay" id="alertBox">
   <div class="alert">
     <h4>🔒 الكتاب للمشتركين فقط</h4>
-
-    <button class="buy" onclick="buy()">📲 شراء عبر واتساب</button>
+    <button class="buy" onclick="buy()">📲 شراء</button>
     <button class="close" onclick="closeAlert()">إغلاق</button>
   </div>
 </div>
@@ -143,7 +134,7 @@ const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/publ
 let userId = localStorage.getItem("user_id");
 let isPaid = false;
 
-/* 👤 تحميل الاسم (أول + ثاني فقط) */
+/* 👤 الاسم */
 async function loadUser(){
 
   if(!userId) return;
@@ -155,15 +146,12 @@ async function loadUser(){
     .single();
 
   if(data?.name){
-
     let parts = data.name.split(" ");
-    let shortName = parts.slice(0,2).join(" ");
-
-    document.getElementById("username").innerText = shortName;
+    document.getElementById("username").innerText = parts.slice(0,2).join(" ");
   }
 }
 
-/* 🔐 تحقق الاشتراك */
+/* 🔐 تحقق */
 async function checkUser(){
 
   if(!userId) return;
@@ -177,7 +165,7 @@ async function checkUser(){
   isPaid = data?.plan === "paid";
 }
 
-/* 📥 فتح داخلي بدون Chrome */
+/* 🔥 عرض PDF بدون Chrome */
 async function openInside(){
 
   await checkUser();
@@ -187,23 +175,39 @@ async function openInside(){
     return;
   }
 
-  let viewer = document.getElementById("pdf");
+  const container = document.getElementById("pdfContainer");
+  container.innerHTML = "⏳ جاري تحميل الكتاب...";
 
-  // 🔥 تحميل محلي
-  const res = await fetch(PDF_URL);
-  const blob = await res.blob();
-  const localUrl = URL.createObjectURL(blob);
+  const loadingTask = pdfjsLib.getDocument(PDF_URL);
+  const pdf = await loadingTask.promise;
 
-  viewer.src = localUrl;
-  viewer.style.display = "block";
+  container.innerHTML = "";
+
+  for(let i=1;i<=pdf.numPages;i++){
+
+    const page = await pdf.getPage(i);
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    const viewport = page.getViewport({ scale: 1.2 });
+
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    await page.render({
+      canvasContext: context,
+      viewport: viewport
+    }).promise;
+
+    container.appendChild(canvas);
+  }
 }
 
 /* شراء */
 function buy(){
-
-  let phone = "966XXXXXXXXX";
-  let msg = "أبغى شراء كتاب اللغة";
-
+  let phone = "966509079576";
+  let msg = "أبغى شراء الكتاب";
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`);
 }
 
@@ -216,7 +220,6 @@ function closeAlert(){
   document.getElementById("alertBox").style.display="none";
 }
 
-/* تشغيل */
 loadUser();
 
 </script>

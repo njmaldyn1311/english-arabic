@@ -2,22 +2,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>كتابي</title><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><style>
+<title>📘 كتابي</title><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><style>
 body{
   margin:0;
   background:#0f172a;
   color:white;
   text-align:center;
+  font-family:Arial;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:10px;
 }
 
 canvas{
   width:100%;
-  max-width:800px;
-  margin:auto;
+  border-radius:10px;
+  margin-top:10px;
 }
 
 .controls{
-  margin:10px;
+  margin-top:10px;
 }
 
 button{
@@ -27,48 +34,33 @@ button{
   border-radius:8px;
   background:#22c55e;
   color:white;
+  cursor:pointer;
 }
-</style></head><body><h3>📘 كتابي</h3><div class="controls">
-  <button onclick="prev()">⬅️</button>
-  <span id="page"></span>
-  <button onclick="next()">➡️</button>
+</style></head><body><div class="container"><h3>📘 كتابي</h3><div class="controls">
+  <button onclick="prev()">⬅️ السابق</button>
+  <span id="page">...</span>
+  <button onclick="next()">التالي ➡️</button>
 </div><canvas id="pdf"></canvas>
 
-<script>
+</div><script>
 
-const PDF_URL = "https://YOUR-PDF-LINK.pdf";
+// 🔗 حط رابط الكتاب هنا
+const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/book.pdf";
 
 let pdfDoc = null;
 let pageNum = 1;
 
-// 🔥 تحميل من الكاش أو الإنترنت
-async function loadPDF(){
-
-  let cached = localStorage.getItem("myBook");
-
-  if(cached){
-    console.log("📦 من الكاش");
-    let bytes = Uint8Array.from(atob(cached), c=>c.charCodeAt(0));
-    pdfDoc = await pdfjsLib.getDocument({data:bytes}).promise;
-  }else{
-    console.log("🌐 تحميل أول مرة");
-
-    let res = await fetch(https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf);
-    let buffer = await res.arrayBuffer();
-
-    // حفظ في الكاش
-    let base64 = btoa(
-      new Uint8Array(buffer)
-        .reduce((data,byte)=>data+String.fromCharCode(byte),"")
-    );
-
-    localStorage.setItem("myBook", base64);
-
-    pdfDoc = await pdfjsLib.getDocument({data:buffer}).promise;
-  }
-
-  renderPage(pageNum);
+// 🔥 يرجع لآخر صفحة
+let saved = localStorage.getItem("lastPage");
+if(saved){
+  pageNum = parseInt(saved);
 }
+
+// 🚀 تحميل الكتاب
+pdfjsLib.getDocument(PDF_URL).promise.then(pdf=>{
+  pdfDoc = pdf;
+  renderPage(pageNum);
+});
 
 // 📄 عرض الصفحة
 function renderPage(num){
@@ -86,10 +78,13 @@ function renderPage(num){
 
     document.getElementById("page").innerText =
       `صفحة ${num} / ${pdfDoc.numPages}`;
+
+    // 💾 حفظ الصفحة
+    localStorage.setItem("lastPage", num);
   });
 }
 
-// ➡️➡️
+// ➡️
 function next(){
   if(pageNum < pdfDoc.numPages){
     pageNum++;
@@ -97,16 +92,13 @@ function next(){
   }
 }
 
-// ⬅️⬅️
+// ⬅️
 function prev(){
   if(pageNum > 1){
     pageNum--;
     renderPage(pageNum);
   }
 }
-
-// 🚀 تشغيل
-loadPDF();
 
 </script></body>
 </html>

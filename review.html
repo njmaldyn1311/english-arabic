@@ -18,68 +18,73 @@ body {
 }
 
 .container{
-  max-width:700px;
+  max-width:750px;
   margin:auto;
   padding:15px;
 }
 
 .card{
   background:#1e293b;
-  padding:15px;
+  padding:18px;
   margin:15px 0;
   border-radius:15px;
 }
 
+/* العنوان */
 .title{
-  font-size:22px;
+  font-size:24px;
   font-weight:bold;
 }
 
+/* القاعدة */
 .grammar{
   text-align:right;
-  line-height:1.8;
 }
 
+/* الكلمات */
 .word{
   border-bottom:1px solid #334155;
-  padding:10px;
+  padding:12px;
   text-align:left;
 }
 
 .top{
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
 
-.en{color:#38bdf8;font-weight:bold;}
-.ar{color:#f87171;}
+.en{
+  color:#38bdf8;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.ar{
+  color:#f87171;
+  margin-left:10px;
+}
 
 .example{
-  margin-top:5px;
+  margin-top:8px;
   color:#e2e8f0;
+  cursor:pointer;
 }
 
 .example-ar{
   color:#facc15;
-  font-size:16px;
+  font-size:18px;
+  font-weight:bold;
 }
 
 .icon{
   cursor:pointer;
-  margin-left:8px;
+  margin-left:10px;
 }
 
-.nav{
-  display:flex;
-  justify-content:space-between;
-  margin-top:10px;
-}
-
-button{
+button {
   background:#22c55e;
   border:none;
-  padding:10px 20px;
+  padding:10px 18px;
   border-radius:10px;
   color:white;
   cursor:pointer;
@@ -92,12 +97,8 @@ button{
 
 <div class="container">
 
-<div class="nav">
-  <button onclick="prevLesson()">⬅ السابق</button>
-  <button onclick="nextLesson()">التالي ➡</button>
-</div>
-
 <div id="lesson"></div>
+<div id="nav"></div>
 <div id="grammar"></div>
 <div id="words"></div>
 
@@ -105,20 +106,24 @@ button{
 
 <script>
 
-// 🔥 بياناتك
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY = "YOUR_KEY";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 📌 قراءة الرابط
-const urlParams = new URLSearchParams(window.location.search);
-let LESSON_ID = parseInt(urlParams.get("lesson"));
+// 🧠 ناخذ lesson_id من الرابط
+const params = new URLSearchParams(window.location.search);
+const LESSON_ID = params.get("lesson");
+
+if(!LESSON_ID){
+  alert("❌ ضع lesson id في الرابط");
+}
 
 // 🔊 صوت
 function speak(text){
   let u = new SpeechSynthesisUtterance(text);
   u.lang="en-US";
+  speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }
 
@@ -128,60 +133,75 @@ async function saveWord(el, word, translation){
     word,
     translation
   });
+
   el.innerText="✅";
 }
 
-// ⬅ السابق
-function prevLesson(){
-  let prev = LESSON_ID - 1;
-  if(prev <= 0) return;
-  window.location.href = "?lesson=" + prev;
+// 🔁 تنقل
+function goLesson(id){
+  window.location.href = `?lesson=${id}`;
 }
 
-// ➡ التالي
-function nextLesson(){
-  let next = LESSON_ID + 1;
-  window.location.href = "?lesson=" + next;
-}
-
-// 🧠 تحديد الدرس
-async function getLessonId(){
-
-  // ✅ إذا فيه lesson في الرابط
-  if(LESSON_ID){
-    LESSON_ID = LESSON_ID - 1; // حل +1
-    if(LESSON_ID <= 0) LESSON_ID = 1;
-    return;
-  }
-
-  // 🔥 إذا ما فيه → أول درس
-  const { data } = await client
-    .from("book_lessons")
-    .select("id")
-    .order("id")
-    .limit(1)
-    .single();
-
-  LESSON_ID = data.id;
-}
-
-// 🚀 تحميل البيانات
 async function loadLesson(){
 
+  // 📘 الدرس + الوحدة
   const { data: lesson } = await client
     .from("book_lessons")
-    .select("*")
+    .select(`
+      id,
+      title,
+      lesson_number,
+      unit_id,
+      book_units (
+        unit_number
+      )
+    `)
     .eq("id", LESSON_ID)
     .single();
 
-  if(!lesson){
-    document.getElementById("lesson").innerHTML = "❌ لا يوجد درس";
-    return;
-  }
-
   document.getElementById("lesson").innerHTML = `
     <div class="card">
-      <div class="title">📘 ${lesson.title}</div>
+      <div class="title">
+        Unit ${lesson.book_units?.unit_number}
+        - Lesson ${lesson.lesson_number}
+        <br>
+        📘 ${lesson.title}
+      </div>
+    </div>
+  `;
+
+  // ⬅️➡️ السابق / التالي
+  let { data: prev } = await client
+    .from("book_lessons")
+    .select("id")
+    .eq("unit_id", lesson.unit_id)
+    .lt("lesson_number", lesson.lesson_number)
+    .order("lesson_number", { ascending: false })
+    .limit(1);
+
+  let { data: next } = await client
+    .from("book_lessons")
+    .select("id")
+    .eq("unit_id", lesson.unit_id)
+    .gt("lesson_number", lesson.lesson_number)
+    .order("lesson_number", { ascending: true })
+    .limit(1);
+
+  document.getElementById("nav").innerHTML = `
+    <div class="card" style="display:flex;justify-content:space-between;">
+
+      ${
+        prev.length
+        ? `<button onclick="goLesson('${prev[0].id}')">⬅️ السابق</button>`
+        : `<div></div>`
+      }
+
+      ${
+        next.length
+        ? `<button onclick="goLesson('${next[0].id}')">التالي ➡️</button>`
+        : `<div></div>`
+      }
+
     </div>
   `;
 
@@ -193,19 +213,19 @@ async function loadLesson(){
 
   let gHTML = "";
 
-  grammar?.forEach(g => {
+  grammar.forEach(g => {
     gHTML += `
       <div class="card grammar">
         <h3>📖 ${g.title}</h3>
-        <p>${(g.explanation || "").replace(/\n/g, "<br>")}</p>
-        <div>${(g.examples || "").replace(/\n/g, "<br>")}</div>
+        <p>${g.explanation}</p>
+        <pre>${g.examples}</pre>
       </div>
     `;
   });
 
   document.getElementById("grammar").innerHTML = gHTML;
 
-  // 🔤 الكلمات
+  // 📚 الكلمات
   const { data: words } = await client
     .from("book_words")
     .select("*")
@@ -213,7 +233,7 @@ async function loadLesson(){
 
   let wHTML = "";
 
-  words?.forEach(w => {
+  words.forEach(w => {
     wHTML += `
       <div class="card word">
 
@@ -229,8 +249,13 @@ async function loadLesson(){
           </div>
         </div>
 
-        <div class="example">${w.example || ""}</div>
-        <div class="example-ar">${w.example_ar || ""}</div>
+        <div class="example" onclick="speak('${w.example || ""}')">
+          ${w.example || ""}
+        </div>
+
+        <div class="example-ar">
+          ${w.example_ar || ""}
+        </div>
 
       </div>
     `;
@@ -240,13 +265,7 @@ async function loadLesson(){
 
 }
 
-// 🚀 تشغيل
-async function start(){
-  await getLessonId();
-  loadLesson();
-}
-
-start();
+loadLesson();
 
 </script>
 

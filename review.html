@@ -15,7 +15,6 @@ body{
   color:white;
   font-family:Arial;
   text-align:center;
-  user-select:none; /* 🔒 منع النسخ */
 }
 
 .container{
@@ -24,90 +23,99 @@ body{
   padding:10px;
 }
 
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:10px;
-}
-
-.username{
-  font-size:14px;
-  color:#94a3b8;
-}
-
-.home{
-  background:#38bdf8;
-  padding:6px 10px;
-  border-radius:8px;
-  cursor:pointer;
-}
-
-.viewer{
-  width:100%;
-  height:70vh;
-  border:none;
-  border-radius:15px;
-  background:white;
-}
-
-.controls{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  justify-content:center;
-  margin-top:10px;
+.card{
+  background:#e5e7eb;
+  color:black;
+  border-radius:20px;
+  padding:20px;
 }
 
 button{
   background:#22c55e;
   border:none;
-  padding:8px 12px;
+  padding:10px 15px;
   border-radius:10px;
   color:white;
   cursor:pointer;
 }
 
-.lock{
-  background:#ef4444;
+/* 🔥 Alert */
+.overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
 }
 
-.page{
+.alert{
+  background:#1e293b;
+  padding:20px;
+  border-radius:15px;
+  width:90%;
+  max-width:300px;
+  text-align:center;
+}
+
+.alert h3{
+  margin-bottom:10px;
+}
+
+.alert button{
+  width:100%;
   margin-top:10px;
-  font-size:14px;
-  color:#cbd5f5;
+}
+
+.whatsapp{
+  background:#25D366;
+}
+
+/* 📖 viewer */
+.viewer{
+  width:100%;
+  height:70vh;
+  border:none;
+  border-radius:15px;
+  display:none;
 }
 </style>
 
 </head>
 
-<body oncontextmenu="return false"> <!-- 🔒 منع كلك يمين -->
+<body>
 
 <div class="container">
 
-  <!-- header -->
-  <div class="header">
-    <div class="username" id="username">...</div>
-    <div class="home" onclick="goHome()">🏠 الرئيسية</div>
-  </div>
-
   <h2>📘 كتابي</h2>
 
-  <iframe id="pdf" class="viewer"></iframe>
+  <!-- الكارد -->
+  <div class="card">
 
-  <!-- الأزرار -->
-  <div class="controls">
-    <button onclick="prev()">⬅️ السابق</button>
-    <button onclick="next()">التالي ➡️</button>
+    <h3>newHEADWAYbeginnerstudentbook.pdf</h3>
 
-    <button onclick="savePage()">⭐ حفظ</button>
-    <button onclick="speakPage()">🔊 قراءة</button>
+    <button onclick="openBook()">فتح</button>
 
-    <button id="downloadBtn" onclick="downloadBook()">📥 تحميل</button>
+    <!-- PDF -->
+    <iframe id="pdf" class="viewer"></iframe>
+
   </div>
 
-  <div class="page" id="page">صفحة 1</div>
+</div>
 
+<!-- 🔥 Alert -->
+<div class="overlay" id="alertBox">
+  <div class="alert">
+    <h3>🔒 الكتاب للمشتركين فقط</h3>
+    <p>اشترك للوصول الكامل</p>
+
+    <button onclick="buy()">📲 شراء عبر واتساب</button>
+    <button onclick="closeAlert()">إغلاق</button>
+  </div>
 </div>
 
 <script>
@@ -119,97 +127,54 @@ const client = supabase.createClient(
 
 const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
-let page = 1;
 let userId = localStorage.getItem("user_id");
 let isPaid = false;
 
-// تحميل الصفحة
-function loadPage(){
-  document.getElementById("pdf").src = PDF_URL + "#page=" + page;
-  document.getElementById("page").innerText = "صفحة " + page;
+// 🔥 فتح الكتاب
+async function openBook(){
 
-  track();
-}
-
-// التنقل
-function next(){ page++; loadPage(); }
-function prev(){ if(page>1){page--; loadPage();} }
-
-// الرئيسية
-function goHome(){ window.location.href="/"; }
-
-// ⭐ حفظ الصفحة
-function savePage(){
-  localStorage.setItem("saved_page", page);
-  alert("تم حفظ الصفحة ✅");
-}
-
-// 🔊 قراءة صوتية
-function speakPage(){
-  let text = "You are reading page " + page;
-  let u = new SpeechSynthesisUtterance(text);
-  u.lang="en-US";
-  speechSynthesis.speak(u);
-}
-
-// 🔒 تحميل
-function downloadBook(){
+  await checkUser();
 
   if(!isPaid){
-    alert("🔒 الكتاب للمشتركين فقط\nاشترك للوصول الكامل");
+    document.getElementById("alertBox").style.display="flex";
     return;
   }
 
-  window.open(PDF_URL);
-}
-
-// 👤 جلب المستخدم
-async function loadUser(){
-
-  if(!userId){
-    document.getElementById("username").innerText="زائر";
-    return;
-  }
-
-  const { data } = await client
-    .from("users")
-    .select("*")
-    .eq("id",userId)
-    .single();
-
-  document.getElementById("username").innerText = data?.name || "بدون اسم";
-
-  isPaid = data?.plan === "paid";
-
-  // تغيير لون زر التحميل
-  if(!isPaid){
-    document.getElementById("downloadBtn").classList.add("lock");
-  }
-
-  // رجوع لآخر صفحة
-  if(data?.last_page_number){
-    page = data.last_page_number;
-  }
+  // ✅ فتح داخل الصفحة
+  document.getElementById("pdf").style.display="block";
+  document.getElementById("pdf").src = PDF_URL;
 
 }
 
-// 📊 تتبع
-async function track(){
+// 🔒 تحقق من الاشتراك
+async function checkUser(){
 
   if(!userId) return;
 
-  await client.from("users").update({
-    last_page: "book",
-    last_page_number: page,
-    last_active: new Date(),
-    total_pages_read: (page || 1)
-  }).eq("id", userId);
+  const { data } = await client
+    .from("users")
+    .select("plan")
+    .eq("id",userId)
+    .single();
 
+  isPaid = data?.plan === "paid";
 }
 
-// 🚀 تشغيل
-loadUser();
-loadPage();
+// ❌ اغلاق alert
+function closeAlert(){
+  document.getElementById("alertBox").style.display="none";
+}
+
+// 💰 شراء واتساب
+function buy(){
+
+  let phone = "966509079576"; // 🔥 حط رقمك
+  let msg = "السلام عليكم، أبغى اشتراك في الكتاب";
+
+  let url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+
+  window.open(url, "_blank");
+}
 
 </script>
 

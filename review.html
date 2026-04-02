@@ -4,158 +4,188 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>📚 الوحدات</title>
+<title>عرض الدرس</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <style>
-
-body{
-  margin:0;
-  font-family:"Cairo", sans-serif;
-  background:linear-gradient(135deg,#0f172a,#1e293b);
+body {
+  background: linear-gradient(135deg,#0f172a,#1e293b);
   color:white;
+  font-family:Arial;
+  margin:0;
+  text-align:center;
 }
 
-/* الهيدر */
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:15px;
+}
+
+.card{
+  background:#1e293b;
+  padding:15px;
+  margin:15px 0;
+  border-radius:15px;
+}
+
+/* العنوان */
+.title{
+  font-size:22px;
+  font-weight:bold;
+}
+
+/* القاعدة */
+.grammar{
+  text-align:right;
+  line-height:1.8;
+}
+
+/* الكلمات */
+.word{
+  border-bottom:1px solid #334155;
+  padding:10px;
+  text-align:left;
+}
+
 .top{
   display:flex;
   justify-content:space-between;
-  padding:15px;
+  align-items:center;
 }
 
-.user{color:#38bdf8;}
-.points{color:#facc15;}
+.en{color:#38bdf8;font-weight:bold;}
+.ar{color:#f87171;}
 
-.title{
-  text-align:center;
-  font-size:24px;
-  margin-top:10px;
+.example{
+  margin-top:5px;
+  color:#e2e8f0;
 }
 
-/* الوحدات */
-.container{
-  padding:15px;
+.example-ar{
+  color:#facc15;
+  font-size:16px;
 }
 
-.unit{
-  background:#1e293b;
-  border-radius:20px;
-  padding:15px;
-  margin-bottom:15px;
-}
-
-.unit-title{
-  font-size:18px;
-  margin-bottom:10px;
-  color:#38bdf8;
-}
-
-/* الدروس */
-.lesson{
-  background:#334155;
-  padding:12px;
-  border-radius:12px;
-  margin:6px 0;
+.icon{
   cursor:pointer;
-  transition:0.2s;
+  margin-left:8px;
 }
-
-.lesson:hover{
-  background:#475569;
-}
-
-/* حالة الدرس */
-.done{
-  border-right:4px solid #22c55e;
-}
-
-.locked{
-  opacity:0.4;
-}
-
 </style>
 
 </head>
 
 <body>
 
-<div class="top">
-  <div class="user">👤 أحمد علي</div>
-  <div class="points">⭐ نقاطك: 120</div>
+<div class="container">
+
+<div id="lesson"></div>
+<div id="grammar"></div>
+<div id="words"></div>
+
 </div>
-
-<div class="title">📚 الوحدات التعليمية</div>
-
-<div class="container" id="unitsContainer"></div>
 
 <script>
 
-/* بيانات تجريبية */
-const data = [
-  {
-    unit: "Unit 1 - Basics",
-    lessons: [
-      {title:"Lesson 1 - Greetings", done:true},
-      {title:"Lesson 2 - Introductions", done:false},
-      {title:"Lesson 3 - Daily Words", done:false}
-    ]
-  },
-  {
-    unit: "Unit 2 - Verbs",
-    lessons: [
-      {title:"Lesson 4 - Basic Verbs", done:false},
-      {title:"Lesson 5 - Phrasal Verbs", locked:true}
-    ]
-  }
-];
+// 🔥 بياناتك
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-/* عرض */
-function render(){
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let html="";
+// ⚠️ حط هنا lesson_id
+const LESSON_ID = 2;
 
-  data.forEach((u,index)=>{
+// 🔊 صوت
+function speak(text){
+  let u = new SpeechSynthesisUtterance(text);
+  u.lang="en-US";
+  speechSynthesis.speak(u);
+}
 
-    html+=`
-      <div class="unit">
-        <div class="unit-title">${u.unit}</div>
-    `;
-
-    u.lessons.forEach((l,i)=>{
-
-      let cls="lesson";
-
-      if(l.done) cls+=" done";
-      if(l.locked) cls+=" locked";
-
-      html+=`
-        <div class="${cls}" onclick="openLesson(${index},${i})">
-          ${l.title}
-        </div>
-      `;
-    });
-
-    html+="</div>";
-
+// ⭐ حفظ
+async function saveWord(el, word, translation){
+  await client.from("book_user_words").insert({
+    word,
+    translation
   });
 
-  document.getElementById("unitsContainer").innerHTML=html;
+  el.innerText="✅";
 }
 
-/* فتح الدرس */
-function openLesson(unitIndex, lessonIndex){
+// 🚀 تحميل البيانات
+async function loadLesson(){
 
-  const lesson = data[unitIndex].lessons[lessonIndex];
+  // 1️⃣ الدرس
+  const { data: lesson } = await client
+    .from("book_lessons")
+    .select("*")
+    .eq("id", LESSON_ID)
+    .single();
 
-  if(lesson.locked){
-    alert("🔒 هذا الدرس مقفل");
-    return;
-  }
+  document.getElementById("lesson").innerHTML = `
+    <div class="card">
+      <div class="title">📘 ${lesson.title}</div>
+    </div>
+  `;
 
-  // 👉 هنا تربطه بصفحة الدرس
-  window.location.href = "lesson.html?unit="+unitIndex+"&lesson="+lessonIndex;
+  // 2️⃣ القاعدة
+  const { data: grammar } = await client
+    .from("book_grammar")
+    .select("*")
+    .eq("lesson_id", LESSON_ID);
+
+  let gHTML = "";
+
+  grammar.forEach(g => {
+    gHTML += `
+      <div class="card grammar">
+        <h3>📖 ${g.title}</h3>
+        <p>${g.explanation}</p>
+        <pre>${g.examples}</pre>
+      </div>
+    `;
+  });
+
+  document.getElementById("grammar").innerHTML = gHTML;
+
+  // 3️⃣ الكلمات
+  const { data: words } = await client
+    .from("book_words")
+    .select("*")
+    .eq("lesson_id", LESSON_ID);
+
+  let wHTML = "";
+
+  words.forEach(w => {
+    wHTML += `
+      <div class="card word">
+
+        <div class="top">
+          <div>
+            <span class="en">${w.word}</span>
+            <span class="ar">${w.translation}</span>
+          </div>
+
+          <div>
+            <span class="icon" onclick="speak('${w.word}')">🔊</span>
+            <span class="icon" onclick="saveWord(this,'${w.word}','${w.translation}')">⭐</span>
+          </div>
+        </div>
+
+        <div class="example">${w.example || ""}</div>
+        <div class="example-ar">${w.example_ar || ""}</div>
+
+      </div>
+    `;
+  });
+
+  document.getElementById("words").innerHTML = wHTML;
+
 }
 
-render();
+loadLesson();
 
 </script>
 

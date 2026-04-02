@@ -28,75 +28,53 @@ body {
   font-weight:bold;
 }
 
-.grammar{
-  text-align:right;
-}
-
 .word{
   border-bottom:1px solid #334155;
   padding:12px;
   text-align:left;
-  cursor:pointer;
-}
-
-.top{
-  display:flex;
-  justify-content:space-between;
 }
 
 .en{
   color:#38bdf8;
   font-weight:bold;
-  font-size:18px;
 }
 
 .ar{
   color:#f87171;
-  margin-left:10px;
 }
 
 .example{
-  margin-top:8px;
+  margin-top:5px;
   color:#e2e8f0;
-  cursor:pointer;
 }
 
 .example-ar{
   color:#facc15;
-  font-size:18px;
-  font-weight:bold;
 }
 
-.icon{
-  cursor:pointer;
-  margin-left:10px;
-}
-
-button {
-  background:#22c55e;
-  border:none;
-  padding:10px 18px;
-  border-radius:10px;
-  color:white;
-  cursor:pointer;
-}
-
-/* 💬 محادثة */
 .chat{
   text-align:left;
 }
 
 .msg{
+  background:#334155;
   margin:10px 0;
   padding:10px;
   border-radius:10px;
-  background:#334155;
 }
 
 .speaker{
   color:#22c55e;
   font-weight:bold;
-  margin-bottom:5px;
+}
+
+button{
+  background:#22c55e;
+  border:none;
+  padding:10px;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
 }
 </style></head><body><div class="container">
   <div id="index"></div>
@@ -107,13 +85,14 @@ button {
   <div id="conversation"></div>
 </div><script>
 
+// 🔗 بيانات Supabase
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let cachedUnits = null;
 let LESSON_ID = null;
+let cachedUnits = null;
 
 // 🔊 صوت
 function speak(text){
@@ -123,205 +102,162 @@ function speak(text){
   speechSynthesis.speak(u);
 }
 
-// ⭐ حفظ
-async function saveWord(el, word, translation){
-  await client.from("book_user_words").insert({ word, translation });
-  el.innerText="✅";
-}
-
 // فتح درس
 function goLesson(id){
   LESSON_ID = id;
-  document.getElementById("index").innerHTML = "";
-  document.getElementById("lesson").innerHTML = "⏳ جاري التحميل...";
+  document.getElementById("index").innerHTML="";
   loadLesson();
 }
 
 // رجوع
 function backToIndex(){
-  LESSON_ID = null;
-  document.getElementById("lesson").innerHTML = "";
-  document.getElementById("nav").innerHTML = "";
-  document.getElementById("grammar").innerHTML = "";
-  document.getElementById("words").innerHTML = "";
-  document.getElementById("conversation").innerHTML = "";
+  LESSON_ID=null;
+  document.getElementById("lesson").innerHTML="";
+  document.getElementById("nav").innerHTML="";
+  document.getElementById("grammar").innerHTML="";
+  document.getElementById("words").innerHTML="";
+  document.getElementById("conversation").innerHTML="";
   loadIndex();
 }
 
-// الفهرس
+// 📚 الفهرس
 async function loadIndex(){
 
-  if(!cachedUnits){
-    const { data } = await client
-      .from("book_units")
-      .select(`
-        unit_number,
-        book_lessons (
-          id,
-          title,
-          lesson_number
-        )
-      `)
-      .order("unit_number");
+  const { data } = await client
+    .from("book_units")
+    .select(`
+      unit_number,
+      book_lessons(id,title,lesson_number)
+    `)
+    .order("unit_number");
 
-    cachedUnits = data;
-  }
+  let html=`<div class="card"><h2>📚 الفهرس</h2></div>`;
 
-  let html = `<div class="card"><h2>📚 فهرس الكتاب</h2></div>`;
-
-  cachedUnits.forEach(u => {
-
-    html += `<div class="card">`;
-    html += `<h3 style="color:#38bdf8;">📘 Unit ${u.unit_number}</h3>`;
+  data.forEach(u=>{
+    html+=`<div class="card"><h3>Unit ${u.unit_number}</h3>`;
 
     u.book_lessons
-      .sort((a,b)=>a.lesson_number - b.lesson_number)
-      .forEach(l => {
+    .sort((a,b)=>a.lesson_number-b.lesson_number)
+    .forEach(l=>{
+      html+=`<div class="word" onclick="goLesson(${l.id})">
+        Lesson ${l.lesson_number} - ${l.title}
+      </div>`;
+    });
 
-        html += `
-          <div class="word" onclick="goLesson(${l.id})">
-            Lesson ${l.lesson_number} - ${l.title}
-          </div>
-        `;
-
-      });
-
-    html += `</div>`;
+    html+=`</div>`;
   });
 
-  document.getElementById("index").innerHTML = html;
+  document.getElementById("index").innerHTML=html;
 }
 
-// تحميل الدرس
+// 📖 تحميل درس
 async function loadLesson(){
-
-  document.getElementById("lesson").innerHTML = "";
-  document.getElementById("nav").innerHTML = "";
-  document.getElementById("grammar").innerHTML = "";
-  document.getElementById("words").innerHTML = "";
-  document.getElementById("conversation").innerHTML = "";
 
   const { data: lesson } = await client
     .from("book_lessons")
-    .select(`
-      id,
-      title,
-      lesson_number,
-      unit_id,
-      book_units (
-        unit_number
-      )
-    `)
-    .eq("id", LESSON_ID)
+    .select(`*,book_units(unit_number)`)
+    .eq("id",LESSON_ID)
     .single();
 
-  if(!lesson) return;
-
-  document.getElementById("lesson").innerHTML = `
+  document.getElementById("lesson").innerHTML=`
     <div class="card">
       <div class="title">
-        Unit ${lesson.book_units?.unit_number}
+        Unit ${lesson.book_units.unit_number}
         - Lesson ${lesson.lesson_number}
-        <br>
-        📘 ${lesson.title}
+        <br>${lesson.title}
       </div>
     </div>
   `;
 
-  // التنقل
+  // 🔁 تنقل
   let { data: prev } = await client
     .from("book_lessons")
     .select("id")
-    .eq("unit_id", lesson.unit_id)
-    .lt("lesson_number", lesson.lesson_number)
-    .order("lesson_number", { ascending: false })
+    .eq("unit_id",lesson.unit_id)
+    .lt("lesson_number",lesson.lesson_number)
+    .order("lesson_number",{ascending:false})
     .limit(1);
 
   let { data: next } = await client
     .from("book_lessons")
     .select("id")
-    .eq("unit_id", lesson.unit_id)
-    .gt("lesson_number", lesson.lesson_number)
-    .order("lesson_number", { ascending: true })
+    .eq("unit_id",lesson.unit_id)
+    .gt("lesson_number",lesson.lesson_number)
+    .order("lesson_number",{ascending:true})
     .limit(1);
 
-  document.getElementById("nav").innerHTML = `
-    <div class="card" style="display:flex;justify-content:space-between;">
-      <button onclick="backToIndex()">📚 الفهرس</button>
-      ${prev?.length ? `<button onclick="goLesson(${prev[0].id})">⬅️ السابق</button>` : `<div></div>`}
-      ${next?.length ? `<button onclick="goLesson(${next[0].id})">التالي ➡️</button>` : `<div></div>`}
-    </div>
+  document.getElementById("nav").innerHTML=`
+  <div class="card">
+    <button onclick="backToIndex()">📚 فهرس</button>
+    ${prev?.length?`<button onclick="goLesson(${prev[0].id})">⬅️ السابق</button>`:""}
+    ${next?.length?`<button onclick="goLesson(${next[0].id})">التالي ➡️</button>`:""}
+  </div>
   `;
 
-  // القواعد
+  // 📖 القواعد
   const { data: grammar } = await client
     .from("book_grammar")
     .select("*")
-    .eq("lesson_id", LESSON_ID);
+    .eq("lesson_id",LESSON_ID);
 
-  let gHTML = "";
-  grammar?.forEach(g => {
-    gHTML += `
-      <div class="card grammar">
-        <h3>📖 ${g.title}</h3>
-        <p>${(g.explanation || "").replace(/\\n|\n/g,"<br>")}</p>
-        <div>${(g.examples || "").replace(/\\n|\n/g,"<br>")}</div>
-      </div>
-    `;
+  let gHTML="";
+  grammar?.forEach(g=>{
+    gHTML+=`
+    <div class="card">
+      <h3>${g.title}</h3>
+      <p>${(g.explanation||"").replace(/\n/g,"<br>")}</p>
+      <p>${(g.examples||"").replace(/\n/g,"<br>")}</p>
+    </div>`;
   });
 
-  document.getElementById("grammar").innerHTML = gHTML;
+  document.getElementById("grammar").innerHTML=gHTML;
 
-  // الكلمات
+  // 📚 الكلمات
   const { data: words } = await client
     .from("book_words")
     .select("*")
-    .eq("lesson_id", LESSON_ID);
+    .eq("lesson_id",LESSON_ID);
 
-  let wHTML = "";
-  words?.forEach(w => {
-    wHTML += `
-      <div class="card word">
-        <div class="top">
-          <div>
-            <span class="en">${w.word}</span>
-            <span class="ar">${w.translation}</span>
-          </div>
-          <div>
-            <span class="icon" onclick="speak('${w.word}')">🔊</span>
-          </div>
-        </div>
-        <div class="example" onclick="speak('${w.example || ""}')">
-          ${w.example || ""}
-        </div>
-        <div class="example-ar">
-          ${w.example_ar || ""}
-        </div>
-      </div>
-    `;
+  let wHTML="";
+  words?.forEach(w=>{
+    wHTML+=`
+    <div class="card word">
+      <div class="en">${w.word}</div>
+      <div class="ar">${w.translation}</div>
+      <div class="example">${w.example||""}</div>
+      <div class="example-ar">${w.example_ar||""}</div>
+      <button onclick="speak('${w.word}')">🔊</button>
+    </div>`;
   });
 
-  document.getElementById("words").innerHTML = wHTML;
+  document.getElementById("words").innerHTML=wHTML;
 
-  // 💬 المحادثة
+  // 💬 المحادثة (مع الترجمة 🔥)
   const { data: conv } = await client
     .from("book_conversations")
     .select("*")
-    .eq("lesson_id", LESSON_ID);
+    .eq("lesson_id",LESSON_ID);
 
-  let cHTML = `<div class="card chat"><h3>💬 Conversation</h3></div>`;
+  let cHTML=`<div class="card chat"><h3>💬 Conversation</h3></div>`;
 
-  conv?.forEach(c => {
-    cHTML += `
-      <div class="msg">
-        <div class="speaker">${c.speaker}</div>
-        <div>${c.sentence}</div>
-        <span class="icon" onclick="speak('${c.sentence}')">🔊</span>
+  conv?.forEach(c=>{
+    cHTML+=`
+    <div class="msg">
+      <div class="speaker">${c.speaker}</div>
+
+      <div style="color:#38bdf8;">
+        ${c.sentence}
       </div>
-    `;
+
+      <div style="color:#facc15;">
+        ${c.translation || ""}
+      </div>
+
+      <button onclick="speak('${c.sentence}')">🔊</button>
+    </div>`;
   });
 
-  document.getElementById("conversation").innerHTML = cHTML;
+  document.getElementById("conversation").innerHTML=cHTML;
 }
 
 // تشغيل

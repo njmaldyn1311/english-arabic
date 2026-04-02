@@ -1,8 +1,7 @@
 <!DOCTYPE html><html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title><script src="https://unpkg.com/@supabase/supabase-js@2"></script><style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Admin Dashboard</title><script src="https://unpkg.com/@supabase/supabase-js@2"></script><style>
 body {
   background:#0f172a;
   color:white;
@@ -11,97 +10,186 @@ body {
 }
 
 .container{
-  max-width:1000px;
+  max-width:1100px;
   margin:auto;
   padding:20px;
 }
 
-.card{
-  background:#1e293b;
-  padding:20px;
-  margin:10px;
-  border-radius:15px;
+h2{
   text-align:center;
 }
 
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:15px;
+.search{
+  width:100%;
+  padding:10px;
+  margin-bottom:20px;
+  border-radius:10px;
+  border:none;
 }
 
-.big{
-  font-size:28px;
-  font-weight:bold;
-  color:#38bdf8;
+.card{
+  background:#1e293b;
+  padding:15px;
+  margin:10px 0;
+  border-radius:12px;
 }
-</style></head><body><div class="container"><h2>📊 Dashboard</h2><div class="grid"><div class="card">
-  👥 عدد المستخدمين
-  <div id="totalUsers" class="big">0</div>
-</div><div class="card">
-  💰 المشتركون (Paid)
-  <div id="paidUsers" class="big">0</div>
-</div><div class="card">
-  🆓 المستخدمين المجانيين
-  <div id="freeUsers" class="big">0</div>
-</div><div class="card">
-  ⏱️ متوسط وقت الاستخدام
-  <div id="avgTime" class="big">0</div>
-</div><div class="card">
-  📈 النشطين اليوم
-  <div id="activeToday" class="big">0</div>
-</div><div class="card">
-  🎯 المستخدمين المستهدفين
-  <div id="targetUsers" class="big">0</div>
-</div></div></div><script>
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+
+.badge{
+  padding:5px 10px;
+  border-radius:8px;
+}
+
+.free{ background:#334155; }
+.paid{ background:#22c55e; }
+.banned{ background:#ef4444; }
+
+button{
+  margin:5px;
+  padding:6px 10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.ban{ background:#ef4444; color:white; }
+.unban{ background:#22c55e; color:white; }
+.plan{ background:#38bdf8; color:white; }
+
+.small{
+  font-size:13px;
+  color:#94a3b8;
+}
+</style></head><body><div class="container"><h2>📊 لوحة التحكم</h2><input id="search" class="search" placeholder="🔍 ابحث عن مستخدم..."><div id="users"></div></div><script>
 
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-async function loadDashboard(){
+let allUsers = [];
 
-  // 👥 كل المستخدمين
-  const { data: users } = await client.from("users").select("*");
+// 📥 تحميل المستخدمين
+async function loadUsers(){
 
-  document.getElementById("totalUsers").innerText = users.length;
+  const { data } = await client
+    .from("users")
+    .select("*")
+    .order("created_at", { ascending:false });
 
-  // 💰 المدفوع
-  const paid = users.filter(u => u.plan === "paid");
-  document.getElementById("paidUsers").innerText = paid.length;
-
-  // 🆓 المجاني
-  const free = users.filter(u => u.plan === "free");
-  document.getElementById("freeUsers").innerText = free.length;
-
-  // 📈 النشطين اليوم
-  const today = new Date().toISOString().slice(0,10);
-
-  const active = users.filter(u =>
-    u.last_active?.startsWith(today)
-  );
-
-  document.getElementById("activeToday").innerText = active.length;
-
-  // ⏱️ متوسط الوقت
-  const { data: sessions } = await client
-    .from("sessions")
-    .select("duration");
-
-  let avg = 0;
-  if(sessions.length){
-    avg = sessions.reduce((a,b)=>a+b.duration,0)/sessions.length;
-  }
-
-  document.getElementById("avgTime").innerText = Math.round(avg) + "s";
-
-  // 🎯 المستهدفين (مثال: مستخدمين مجانيين)
-  document.getElementById("targetUsers").innerText = free.length;
-
+  allUsers = data;
+  renderUsers(data);
 }
 
-loadDashboard();
+// 🎨 عرض المستخدمين
+function renderUsers(list){
+
+  let html = "";
+
+  list.forEach(u => {
+
+    html += `
+      <div class="card">
+
+        <div class="row">
+          <div>
+            <strong>${u.name || "بدون اسم"}</strong>
+            <div class="small">${u.email}</div>
+          </div>
+
+          <div>
+            <span class="badge ${u.plan === 'paid' ? 'paid':'free'}">
+              ${u.plan || "free"}
+            </span>
+
+            ${
+              u.status === 'banned'
+              ? '<span class="badge banned">محظور</span>'
+              : ''
+            }
+          </div>
+        </div>
+
+        <div class="small">
+          ⏱️ وقت الاستخدام: ${u.total_time || 0} ثانية
+        </div>
+
+        <div class="small">
+          📅 آخر نشاط: ${u.last_active || "-"}
+        </div>
+
+        <div>
+          ${
+            u.status === 'banned'
+            ? `<button class="unban" onclick="unban('${u.id}')">فك الحظر</button>`
+            : `<button class="ban" onclick="ban('${u.id}')">حظر</button>`
+          }
+
+          <button class="plan" onclick="togglePlan('${u.id}','${u.plan}')">
+            تغيير الاشتراك
+          </button>
+        </div>
+
+      </div>
+    `;
+  });
+
+  document.getElementById("users").innerHTML = html;
+}
+
+// 🔍 البحث
+document.getElementById("search").addEventListener("input", e => {
+
+  const val = e.target.value.toLowerCase();
+
+  const filtered = allUsers.filter(u =>
+    (u.name || "").toLowerCase().includes(val) ||
+    (u.email || "").toLowerCase().includes(val)
+  );
+
+  renderUsers(filtered);
+});
+
+// 🚫 حظر
+async function ban(id){
+  await client
+    .from("users")
+    .update({ status:"banned" })
+    .eq("id", id);
+
+  loadUsers();
+}
+
+// ✅ فك الحظر
+async function unban(id){
+  await client
+    .from("users")
+    .update({ status:"active" })
+    .eq("id", id);
+
+  loadUsers();
+}
+
+// 💰 تغيير الاشتراك
+async function togglePlan(id, current){
+
+  const newPlan = current === "paid" ? "free" : "paid";
+
+  await client
+    .from("users")
+    .update({ plan:newPlan })
+    .eq("id", id);
+
+  loadUsers();
+}
+
+// 🚀 تشغيل
+loadUsers();
 
 </script></body>
 </html>

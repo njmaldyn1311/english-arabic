@@ -46,16 +46,25 @@ body{
 
 button{
   border:none;
-  padding:14px;
-  border-radius:12px;
-  color:white;
+  padding:12px;
+  border-radius:10px;
   cursor:pointer;
-  width:100%;
-  margin-top:10px;
-  font-size:16px;
+  color:white;
+  flex:1;
 }
 
-.download{background:#3b82f6;}
+.mainBtn{
+  background:#3b82f6;
+  width:100%;
+  margin-top:10px;
+}
+
+.controls{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
 
 #pdfContainer canvas{
   width:100%;
@@ -63,34 +72,33 @@ button{
   border-radius:10px;
 }
 
-/* alert */
-.overlay{
+.alert{
   position:fixed;
   top:0;
   left:0;
   width:100%;
   height:100%;
-  background:rgba(0,0,0,0.6);
   display:none;
   justify-content:center;
   align-items:center;
+  background:rgba(0,0,0,0.6);
 }
 
-.alert{
+.alertBox{
   background:#1e293b;
   padding:15px;
   border-radius:15px;
-  width:85%;
-  max-width:260px;
+  width:80%;
+  max-width:250px;
 }
 
-.buy{background:#f59e0b;}
-.close{background:#64748b;}
+.buy{background:#f59e0b;width:100%;}
+.close{background:#64748b;width:100%;margin-top:8px;}
 </style>
 
 </head>
 
-<body>
+<body oncontextmenu="return false" oncopy="return false">
 
 <div class="container">
 
@@ -103,20 +111,28 @@ button{
 
 <div class="card">
 
-  <h2>💰 سعر الكتاب: 250 ريال</h2>
+<h2>💰 سعر الكتاب: 250 ريال</h2>
 
-  <button class="download" onclick="openInside()">📥 تحميل وفتح</button>
+<button class="mainBtn" onclick="openBook()">📥 تحميل وفتح</button>
 
-  <div id="pdfContainer"></div>
+<div id="pdfContainer"></div>
 
+<div class="controls">
+  <button onclick="prev()">⬅️</button>
+  <button onclick="next()">➡️</button>
+  <button onclick="savePage()">⭐</button>
+  <button onclick="speakPage()">🔊</button>
 </div>
 
+<div id="pageNum"></div>
+
+</div>
 </div>
 
 <!-- alert -->
-<div class="overlay" id="alertBox">
-  <div class="alert">
-    <h4>🔒 الكتاب للمشتركين فقط</h4>
+<div class="alert" id="alert">
+  <div class="alertBox">
+    <h4>🔒 للمشتركين فقط</h4>
     <button class="buy" onclick="buy()">📲 شراء</button>
     <button class="close" onclick="closeAlert()">إغلاق</button>
   </div>
@@ -129,16 +145,15 @@ const client = supabase.createClient(
   "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
 );
 
-const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
-
 let userId = localStorage.getItem("user_id");
-let isPaid = false;
+let isPaid=false;
+
+let pdfDoc=null;
+let currentPage=1;
+let totalPages=0;
 
 /* 👤 الاسم */
 async function loadUser(){
-
-  if(!userId) return;
-
   const { data } = await client
     .from("users")
     .select("name")
@@ -146,78 +161,122 @@ async function loadUser(){
     .single();
 
   if(data?.name){
-    let parts = data.name.split(" ");
-    document.getElementById("username").innerText = parts.slice(0,2).join(" ");
+    let parts=data.name.split(" ");
+    document.getElementById("username").innerText=parts.slice(0,2).join(" ");
   }
 }
 
 /* 🔐 تحقق */
 async function checkUser(){
-
-  if(!userId) return;
-
   const { data } = await client
     .from("users")
     .select("plan")
     .eq("id",userId)
     .single();
 
-  isPaid = data?.plan === "paid";
+  isPaid = data?.plan==="paid";
 }
 
-/* 🔥 عرض PDF بدون Chrome */
-async function openInside(){
+/* 📥 فتح */
+async function openBook(){
 
   await checkUser();
 
   if(!isPaid){
-    showAlert();
+    document.getElementById("alert").style.display="flex";
     return;
   }
 
-  const container = document.getElementById("pdfContainer");
-  container.innerHTML = "⏳ جاري تحميل الكتاب...";
+  const { data } = await client.storage
+    .from("books")
+    .createSignedUrl("newHEADWAYbeginnerstudentbook.pdf",60);
 
-  const loadingTask = pdfjsLib.getDocument(PDF_URL);
-  const pdf = await loadingTask.promise;
+  const url = data.signedUrl;
 
-  container.innerHTML = "";
+  const loadingTask = pdfjsLib.getDocument(url);
+  pdfDoc = await loadingTask.promise;
 
-  for(let i=1;i<=pdf.numPages;i++){
+  totalPages = pdfDoc.numPages;
+  currentPage = 1;
 
-    const page = await pdf.getPage(i);
+  renderPage();
+}
 
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
+/* 📖 عرض */
+async function renderPage(){
 
-    const viewport = page.getViewport({ scale: 1.2 });
+  const container=document.getElementById("pdfContainer");
+  container.innerHTML="";
 
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
+  const page = await pdfDoc.getPage(currentPage);
 
-    await page.render({
-      canvasContext: context,
-      viewport: viewport
-    }).promise;
+  const canvas=document.createElement("canvas");
+  const ctx=canvas.getContext("2d");
 
-    container.appendChild(canvas);
+  const viewport=page.getViewport({scale:1.3});
+
+  canvas.height=viewport.height;
+  canvas.width=viewport.width;
+
+  await page.render({
+    canvasContext:ctx,
+    viewport:viewport
+  }).promise;
+
+  container.appendChild(canvas);
+
+  document.getElementById("pageNum").innerText=
+    currentPage+" / "+totalPages;
+
+  track();
+}
+
+/* أزرار */
+function next(){
+  if(currentPage<totalPages){
+    currentPage++;
+    renderPage();
   }
 }
 
-/* شراء */
-function buy(){
-  let phone = "966509079576";
-  let msg = "أبغى شراء الكتاب";
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`);
+function prev(){
+  if(currentPage>1){
+    currentPage--;
+    renderPage();
+  }
+}
+
+/* حفظ */
+async function savePage(){
+  await client.from("book_progress").upsert({
+    user_id:userId,
+    page:currentPage
+  });
+  alert("تم الحفظ ⭐");
+}
+
+/* صوت */
+function speakPage(){
+  let u=new SpeechSynthesisUtterance("Page "+currentPage);
+  speechSynthesis.speak(u);
+}
+
+/* تتبع */
+async function track(){
+  await client.from("book_tracking").insert({
+    user_id:userId,
+    page:currentPage
+  });
 }
 
 /* alert */
-function showAlert(){
-  document.getElementById("alertBox").style.display="flex";
+function closeAlert(){
+  document.getElementById("alert").style.display="none";
 }
 
-function closeAlert(){
-  document.getElementById("alertBox").style.display="none";
+function buy(){
+  let phone="966509079576";
+  window.open(`https://wa.me/${phone}`);
 }
 
 loadUser();

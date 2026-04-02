@@ -23,6 +23,20 @@ body{
   padding:10px;
 }
 
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.home{
+  background:#38bdf8;
+  padding:8px 12px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
 .card{
   background:#e5e7eb;
   color:black;
@@ -41,7 +55,6 @@ button{
 }
 
 .open{background:#22c55e;}
-.buy{background:#f59e0b;}
 .download{background:#3b82f6;}
 
 .viewer{
@@ -67,30 +80,37 @@ button{
 
 .alert{
   background:#1e293b;
-  padding:20px;
+  padding:15px;
   border-radius:15px;
-  width:90%;
-  max-width:320px;
+  width:85%;
+  max-width:260px;
+}
+
+.buy{background:#f59e0b;}
+.close{
+  background:#64748b;
 }
 </style>
 
 </head>
 
-<body oncontextmenu="return false">
+<body>
 
 <div class="container">
+
+<!-- 🔝 الهيدر -->
+<div class="topbar">
+  <div id="username">...</div>
+  <div class="home" onclick="goHome()">🏠 الرئيسية</div>
+</div>
 
 <h2>📘 كتابي</h2>
 
 <div class="card">
 
-  <!-- 💰 السعر -->
   <h2>💰 سعر الكتاب: 250 ريال</h2>
 
-  <!-- زر فتح -->
   <button class="open" onclick="openBook()">📖 فتح الكتاب</button>
-
-  <!-- زر تحميل -->
   <button class="download" onclick="downloadBook()">📥 تحميل</button>
 
   <!-- PDF -->
@@ -104,10 +124,10 @@ button{
 <div class="overlay" id="alertBox">
   <div class="alert">
 
-    <h3>🔒 الكتاب للمشتركين فقط</h3>
+    <h4>🔒 للمشتركين فقط</h4>
 
-    <button class="buy" onclick="buy()">📲 شراء عبر واتساب</button>
-    <button onclick="closeAlert()">إغلاق</button>
+    <button class="buy" onclick="buy()">📲 شراء</button>
+    <button class="close" onclick="closeAlert()">إغلاق</button>
 
   </div>
 </div>
@@ -123,42 +143,24 @@ const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/publ
 
 let userId = localStorage.getItem("user_id");
 let isPaid = false;
-let page = 1;
 
-// 🔥 فتح
-async function openBook(){
+// 👤 تحميل اسم المستخدم
+async function loadUser(){
 
-  await checkUser();
+  if(!userId) return;
 
-  if(!isPaid){
-    showAlert();
-    return;
+  const { data } = await client
+    .from("users")
+    .select("name")
+    .eq("id",userId)
+    .single();
+
+  if(data?.name){
+    document.getElementById("username").innerText = data.name;
   }
-
-  document.getElementById("pdf").style.display="block";
-  document.getElementById("pdf").src = PDF_URL + "#toolbar=0";
-
-  trackRead();
 }
 
-// 📥 تحميل
-async function downloadBook(){
-
-  await checkUser();
-
-  if(!isPaid){
-    showAlert();
-    return;
-  }
-
-  // تحميل محلي
-  let a = document.createElement("a");
-  a.href = PDF_URL;
-  a.download = "book.pdf";
-  a.click();
-}
-
-// 🔒 تحقق
+// 🔐 تحقق
 async function checkUser(){
 
   if(!userId) return;
@@ -172,26 +174,46 @@ async function checkUser(){
   isPaid = data?.plan === "paid";
 }
 
-// 📊 تتبع القراءة
-async function trackRead(){
+// 📖 فتح داخل الصفحة
+async function openBook(){
 
-  if(!userId) return;
+  await checkUser();
 
-  await client.from("users").update({
-    last_page: "book",
-    last_active: new Date(),
-    book_opened: true
-  }).eq("id", userId);
+  if(!isPaid){
+    showAlert();
+    return;
+  }
+
+  let viewer = document.getElementById("pdf");
+
+  viewer.style.display="block";
+  viewer.src = PDF_URL + "#toolbar=0";
+
 }
 
-// 🎯 تتبع الشراء
-async function buy(){
+// 📥 تحميل بدون فتح صفحة ثانية
+async function downloadBook(){
 
-  if(userId){
-    await client.from("users").update({
-      clicked_buy: true
-    }).eq("id", userId);
+  await checkUser();
+
+  if(!isPaid){
+    showAlert();
+    return;
   }
+
+  fetch(PDF_URL)
+    .then(res=>res.blob())
+    .then(blob=>{
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = "book.pdf";
+      a.click();
+    });
+}
+
+// 🎯 شراء
+function buy(){
 
   let phone = "966XXXXXXXXX";
   let msg = "أبغى شراء الكتاب";
@@ -207,6 +229,14 @@ function showAlert(){
 function closeAlert(){
   document.getElementById("alertBox").style.display="none";
 }
+
+// 🏠 الرئيسية
+function goHome(){
+  window.location.href = "/";
+}
+
+// تشغيل
+loadUser();
 
 </script>
 

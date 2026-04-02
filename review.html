@@ -1,8 +1,7 @@
 <!DOCTYPE html><html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title><script src="https://unpkg.com/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dashboard</title><script src="https://unpkg.com/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
 body{
   background:#0f172a;
   color:white;
@@ -50,6 +49,7 @@ body{
   padding:12px;
   margin-bottom:10px;
   border-radius:10px;
+  cursor:pointer;
 }
 
 .row{
@@ -61,6 +61,14 @@ body{
 .small{
   font-size:12px;
   color:#94a3b8;
+}
+
+.details{
+  margin-top:10px;
+  background:#0f172a;
+  padding:10px;
+  border-radius:8px;
+  display:none;
 }
 
 button{
@@ -76,15 +84,10 @@ button{
 .unban{background:#22c55e;color:white;}
 .plan{color:white;}
 </style></head><body><div class="container"><h3>📊 Dashboard</h3><div class="stats">
-  <div class="stat">👥 المستخدمين <div id="total" class="num">0</div></div>
-  <div class="stat">💰 المدفوع <div id="paid" class="num">0</div></div>
-  <div class="stat">🆓 مجاني <div id="free" class="num">0</div></div>
-  <div class="stat">🚫 محظور <div id="banned" class="num">0</div></div>
-  <div class="stat">📈 نشط اليوم <div id="active" class="num">0</div></div>
-  <div class="stat">💰 أرباح <div id="revenue" class="num">0</div></div>
-</div><canvas id="chart"></canvas>
-
-<input id="search" class="search" placeholder="🔍 بحث"><div id="users"></div></div><script>
+  <div class="stat">👥 <div id="total" class="num">0</div></div>
+  <div class="stat">💰 <div id="paid" class="num">0</div></div>
+  <div class="stat">🆓 <div id="free" class="num">0</div></div>
+</div><input id="search" class="search" placeholder="🔍 بحث"><div id="users"></div></div><script>
 
 const client = supabase.createClient(
   "https://ofyugbhplaynjeafdrgx.supabase.co",
@@ -102,53 +105,16 @@ async function load(){
 
   users=data;
 
-  stats(data);
+  document.getElementById("total").innerText=data.length;
+  document.getElementById("paid").innerText=data.filter(u=>u.plan==="paid").length;
+  document.getElementById("free").innerText=data.filter(u=>u.plan==="free").length;
+
   render(data);
-  drawChart(data);
 }
 
-function stats(data){
-
-  const today = new Date().toISOString().slice(0,10);
-
-  document.getElementById("total").innerText = data.length;
-
-  document.getElementById("paid").innerText =
-    data.filter(u=>u.plan==="paid").length;
-
-  document.getElementById("free").innerText =
-    data.filter(u=>u.plan==="free").length;
-
-  document.getElementById("banned").innerText =
-    data.filter(u=>u.status==="banned").length;
-
-  document.getElementById("active").innerText =
-    data.filter(u=>u.last_active?.startsWith(today)).length;
-
-  let revenue = data.reduce((sum,u)=> sum+(u.price||0),0);
-  document.getElementById("revenue").innerText = revenue+"$";
-}
-
-function drawChart(data){
-
-  let map={};
-
-  data.forEach(u=>{
-    let d=u.created_at?.slice(0,10);
-    if(!d) return;
-    map[d]=(map[d]||0)+1;
-  });
-
-  new Chart(document.getElementById("chart"),{
-    type:'line',
-    data:{
-      labels:Object.keys(map),
-      datasets:[{
-        label:'Users',
-        data:Object.values(map)
-      }]
-    }
-  });
+function toggleDetails(id){
+  let el=document.getElementById("d-"+id);
+  el.style.display = el.style.display==="block" ? "none" : "block";
 }
 
 function render(list){
@@ -157,16 +123,21 @@ function render(list){
 
   list.forEach(u=>{
 
-    let remaining="";
+    // 🔥 تحليل الاستخدام
+    let usage = {
+      video: u.video_count || 0,
+      social: u.social_count || 0,
+      pdf: u.pdf_count || 0,
+      words: u.words_count || 0,
+      grammar: u.grammar_count || 0
+    };
 
-    if(u.subscription_end){
-      let diff = new Date(u.subscription_end)-new Date();
-      let days = Math.floor(diff/(1000*60*60*24));
-      remaining = days>0 ? `⏳ ${days} يوم` : "❌ انتهى";
-    }
+    let topFeature = Object.keys(usage).reduce((a,b)=>
+      usage[a]>usage[b]?a:b
+    );
 
     html+=`
-    <div class="card">
+    <div class="card" onclick="toggleDetails('${u.id}')">
 
       <div class="row">
         <div>
@@ -178,25 +149,46 @@ function render(list){
       </div>
 
       <div class="small">
-        ⏱️ ${u.total_time||0}s | 📅 ${u.last_active||"-"}
+        📅 ${u.created_at?.slice(0,10)} | ⏱️ ${u.total_time||0}s
       </div>
 
-      <div class="small">${remaining}</div>
+      <!-- 🔽 التفاصيل -->
+      <div id="d-${u.id}" class="details" onclick="event.stopPropagation()">
 
-      <div>
-        ${
-          u.status==="banned"
-          ? `<button class="unban" onclick="unban('${u.id}')">فك</button>`
-          : `<button class="ban" onclick="ban('${u.id}')">حظر</button>`
-        }
+        <div>📌 المصدر: ${u.source || "غير معروف"}</div>
+        <div>🔥 أكثر استخدام: ${topFeature}</div>
 
-        <button class="plan" style="
-          background:${u.plan==='paid'?'#22c55e':'#38bdf8'}
-        " onclick="toggle('${u.id}','${u.plan}')">
+        <hr>
 
-          ${u.plan==='paid'?'مدفوع':'تفعيل'}
+        <div>🎥 فيديو: ${usage.video}</div>
+        <div>📱 سوشيال: ${usage.social}</div>
+        <div>📄 PDF: ${usage.pdf}</div>
+        <div>📚 كلمات: ${usage.words}</div>
+        <div>📖 قواعد: ${usage.grammar}</div>
 
-        </button>
+        <hr>
+
+        <div>🕒 آخر نشاط: ${u.last_active || "-"}</div>
+        <div>⏳ مدة الجلسة: ${u.total_time || 0}s</div>
+
+        <hr>
+
+        <div>
+          ${
+            u.status==="banned"
+            ? `<button class="unban" onclick="unban('${u.id}')">فك الحظر</button>`
+            : `<button class="ban" onclick="ban('${u.id}')">حظر</button>`
+          }
+
+          <button class="plan" style="
+            background:${u.plan==='paid'?'#22c55e':'#38bdf8'}
+          " onclick="toggle('${u.id}','${u.plan}')">
+
+            ${u.plan==='paid'?'مدفوع':'تفعيل'}
+
+          </button>
+        </div>
+
       </div>
 
     </div>`;
@@ -227,11 +219,7 @@ async function toggle(id,plan){
   let newPlan=plan==="paid"?"free":"paid";
 
   await client.from("users").update({
-    plan:newPlan,
-    purchased:newPlan==="paid",
-    subscription_end:newPlan==="paid"
-      ? new Date(Date.now()+30*24*60*60*1000)
-      : null
+    plan:newPlan
   }).eq("id",id);
 
   load();

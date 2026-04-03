@@ -1,1 +1,187 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام التدريب</title>
 
+<style>
+body{
+  margin:0;
+  font-family:"Cairo",sans-serif;
+  background:#0f172a;
+  color:white;
+  text-align:center;
+}
+
+.container{
+  margin:20px;
+  padding:20px;
+  background:#1e293b;
+  border-radius:20px;
+}
+
+.levels button{
+  margin:5px;
+  background:#22c55e;
+}
+
+.word{
+  font-size:28px;
+  color:#22c55e;
+}
+
+.forms{
+  margin:10px 0;
+}
+
+button{
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  margin:5px;
+  cursor:pointer;
+}
+
+.listen{background:#3b82f6;}
+.record{background:#f59e0b;}
+.next{background:#22c55e;}
+
+.correct{color:#22c55e;}
+.wrong{color:#ef4444;}
+</style>
+</head>
+
+<body>
+
+<h2>🎯 تدريب الأفعال</h2>
+
+<div class="container">
+
+  <!-- مستويات -->
+  <div class="levels">
+    <button onclick="setLevel('easy')">🟢 سهل</button>
+    <button onclick="setLevel('medium')">🟡 متوسط</button>
+    <button onclick="setLevel('hard')">🔴 متقدم</button>
+  </div>
+
+  <hr>
+
+  <div id="verb" class="word">go</div>
+
+  <div class="forms">
+    <div>Past: <span id="past">went</span></div>
+    <div>Past Participle: <span id="pp">gone</span></div>
+    <div>ING: <span id="ing">going</span></div>
+    <div>🇸🇦: <span id="ar">يذهب</span></div>
+  </div>
+
+  <button class="listen" onclick="speak('base')">🔊 Base</button>
+  <button class="listen" onclick="speak('past')">🔊 Past</button>
+  <button class="listen" onclick="speak('pp')">🔊 PP</button>
+  <button class="listen" onclick="speak('ing')">🔊 ING</button>
+
+  <br>
+
+  <button class="record" onclick="record('past')">🎤 تدرب Past</button>
+  <button class="record" onclick="record('ing')">🎤 تدرب ING</button>
+
+  <div id="result"></div>
+
+  <button class="next" onclick="next()">➡️ التالي</button>
+
+</div>
+
+<script>
+
+// 🔥 مستويات
+const levels = {
+  easy:[
+    {base:"go",past:"went",pp:"gone",ing:"going",ar:"يذهب"},
+    {base:"eat",past:"ate",pp:"eaten",ing:"eating",ar:"يأكل"},
+    {base:"play",past:"played",pp:"played",ing:"playing",ar:"يلعب"}
+  ],
+  medium:[
+    {base:"study",past:"studied",pp:"studied",ing:"studying",ar:"يدرس"},
+    {base:"stop",past:"stopped",pp:"stopped",ing:"stopping",ar:"يتوقف"},
+    {base:"run",past:"ran",pp:"run",ing:"running",ar:"يجري"}
+  ],
+  hard:[
+    {base:"write",past:"wrote",pp:"written",ing:"writing",ar:"يكتب"},
+    {base:"begin",past:"began",pp:"begun",ing:"beginning",ar:"يبدأ"},
+    {base:"choose",past:"chose",pp:"chosen",ing:"choosing",ar:"يختار"}
+  ]
+};
+
+let currentLevel = "easy";
+let index = 0;
+
+// تحميل
+function load(){
+  const v = levels[currentLevel][index];
+  verb.innerText = v.base;
+  past.innerText = v.past;
+  pp.innerText = v.pp;
+  ing.innerText = v.ing;
+  ar.innerText = v.ar;
+}
+load();
+
+// تغيير المستوى
+function setLevel(lvl){
+  currentLevel = lvl;
+  index = 0;
+  load();
+  result.innerHTML="";
+}
+
+// 🔊 نطق
+function speak(type){
+  let text;
+
+  if(type==="base") text = verb.innerText;
+  if(type==="past") text = past.innerText;
+  if(type==="pp") text = pp.innerText;
+  if(type==="ing") text = ing.innerText;
+
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "en-US";
+  speechSynthesis.speak(msg);
+}
+
+// 🎤 تسجيل
+function record(type){
+
+  const correctWord =
+    type==="past" ? past.innerText :
+    ing.innerText;
+
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = "en-US";
+
+  recognition.start();
+
+  recognition.onresult = function(e){
+
+    const spoken = e.results[0][0].transcript.toLowerCase();
+
+    if(spoken.includes(correctWord.toLowerCase())){
+      result.innerHTML = `<div class="correct">✅ ممتاز!</div>`;
+    }else{
+      result.innerHTML = `<div class="wrong">❌ قلت: ${spoken}</div>`;
+    }
+
+  };
+}
+
+// التالي
+function next(){
+  index = (index + 1) % levels[currentLevel].length;
+  load();
+  result.innerHTML="";
+}
+
+</script>
+
+</body>
+</html>

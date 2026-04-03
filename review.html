@@ -76,7 +76,7 @@ body{
   cursor:pointer;
 }
 
-/* alert */
+/* popup */
 .overlay{
   position:fixed;
   top:0;
@@ -179,6 +179,10 @@ let pdfDoc=null;
 let currentPage=1;
 let totalPages=0;
 
+// 🔗 رابط مباشر (بدل المؤقت)
+const PDF_URL =
+"https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
+
 async function checkUser(){
 
   const { data } = await client
@@ -214,16 +218,8 @@ async function openBook(){
 
   try{
 
-    const { data, error } = await client.storage
-      .from("books")
-      .createSignedUrl("newHEADWAYbeginnerstudentbook.pdf",60);
-
-    if(error || !data?.signedUrl){
-      throw new Error("URL Error");
-    }
-
     const loadingTask = pdfjsLib.getDocument({
-      url: data.signedUrl
+      url: PDF_URL
     });
 
     pdfDoc = await loadingTask.promise;

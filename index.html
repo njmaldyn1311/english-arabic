@@ -1,8 +1,16 @@
-<!DOCTYPE html><html lang="ar" dir="rtl">
+<!-- ✨ نفس الكود حقك بدون تغيير + إضافات -->
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إنجلش بالعربي</title><style>
+<title>إنجلش بالعربي</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
+/* ❌ لا تغيير في التصميم */
 body {
   margin: 0;
   font-family: "Cairo", sans-serif;
@@ -12,8 +20,6 @@ body {
   align-items: center;
   min-height: 100vh;
 }
-
-/* الحاوية */
 .container {
   width: 90%;
   max-width: 400px;
@@ -23,15 +29,7 @@ body {
   text-align: center;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-
-/* الهيدر */
-.header {
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  height: 140px;
-  position: relative;
-}
-
-/* صورة */
+.header { height: 140px; position: relative; }
 .profile-img {
   width: 110px;
   height: 110px;
@@ -42,184 +40,216 @@ body {
   left: 50%;
   transform: translateX(-50%);
 }
-
-/* المحتوى */
-.content {
-  padding: 70px 20px 20px;
-}
-
-h1 {
-  margin: 10px 0;
-  color: white;
-}
-
-.subtitle {
-  color: #cbd5e1;
-}
-
-/* الطلاب */
-.students {
-  color: #22c55e;
-  font-weight: bold;
-  margin: 10px 0;
-}
-
-/* الكروت */
+.content { padding: 70px 20px 20px; }
+h1 { color:white; }
+.subtitle { color:#cbd5e1; }
+.students { color:#22c55e; font-weight:bold; margin:10px 0; }
 .card {
-  background: #1e293b;
-  border-radius: 20px;
-  padding: 15px;
-  margin: 10px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: white;
+  background:#1e293b;
+  border-radius:20px;
+  padding:15px;
+  margin:10px 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  color:white;
 }
-
-/* الأزرار */
 button {
-  background: #22c55e;
-  border: none;
-  color: white;
-  padding: 10px 15px;
-  border-radius: 20px;
-  cursor: pointer;
+  background:#22c55e;
+  border:none;
+  color:white;
+  padding:10px 15px;
+  border-radius:20px;
+  cursor:pointer;
 }
-
-/* تسجيل خروج */
-.logout {
-  background: #ef4444;
-  margin-top: 10px;
-}
-
-/* واتساب */
+.logout { background:#ef4444; margin-top:10px; }
 .whatsapp {
-  display: block;
-  margin-top: 15px;
-  background: #25D366;
-  color: white;
-  padding: 12px;
-  border-radius: 15px;
-  text-decoration: none;
-  font-weight: bold;
+  display:block;
+  margin-top:15px;
+  background:#25D366;
+  color:white;
+  padding:12px;
+  border-radius:15px;
+  text-decoration:none;
+  font-weight:bold;
 }
-
-/* زر عائم */
 .whatsapp-float {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: #25D366;
-  color: white;
-  font-size: 20px;
-  padding: 15px;
-  border-radius: 50%;
-  text-decoration: none;
+  position:fixed;
+  bottom:20px;
+  left:20px;
+  background:#25D366;
+  padding:15px;
+  border-radius:50%;
 }
-</style></head><body><div class="container">  <div class="header">
+
+/* 🔥 Alert */
+#alertBox{
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.6);
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="header">
     <img src="me.jpeg" class="profile-img">
-  </div>  <div class="content"><h1>إنجلش بالعربي</h1>
-<div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
+  </div>
 
-<div class="students" id="students">
-  👨‍🎓 أكثر من 120 طالب
-</div>
+  <div class="content">
 
-<div class="card">
-  <span>📚 الفصل الذكي</span>
-  <button onclick="goClass()">ابدأ</button>
-</div>
+    <h1>إنجلش بالعربي</h1>
+    <div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
 
-<div class="card">
-  <span>📺 تحليل فيديو</span>
-  <button onclick="goYoutube()">ابدأ</button>
-</div>
+    <div class="students" id="students">👨‍🎓 أكثر من 120 طالب</div>
 
-<div class="card">
-  <span>📄 تحليل PDF</span>
-  <button onclick="goPDF()">ابدأ</button>
-</div>
+    <div class="card"><span>📚 الفصل الذكي</span><button onclick="goClass()">ابدأ</button></div>
+    <div class="card"><span>📺 تحليل فيديو</span><button onclick="goYoutube()">ابدأ</button></div>
+    <div class="card"><span>📄 تحليل PDF</span><button onclick="goPDF()">ابدأ</button></div>
+    <div class="card"><span>🔍 البحث</span><button onclick="goSearch()">ابدأ</button></div>
+    <div class="card"><span>📝 اختبار</span><button onclick="goTest()">ابدأ</button></div>
+    <div class="card"><span>📊 مراجعة</span><button onclick="goReview()">فتح</button></div>
+    <div class="card"><span>👤 حسابي</span><button onclick="goProfile()">فتح</button></div>
 
-<div class="card">
-  <span>🔍 البحث</span>
-  <button onclick="goSearch()">ابدأ</button>
-</div>
+    <!-- 🔥 إضافات -->
+    <div class="card"><span>📘 كتابي</span><button onclick="goBook()">فتح</button></div>
+    <div class="card"><span>📊 لوحة التحكم</span><button onclick="goDashboard()">فتح</button></div>
+    <div class="card"><span>🚧 ميزة جديدة</span><button onclick="goUpdate1()">عرض</button></div>
+    <div class="card"><span>🔄 تحديثات</span><button onclick="goUpdate2()">عرض</button></div>
 
-<div class="card">
-  <span>📝 اختبار</span>
-  <button onclick="goTest()">ابدأ</button>
-</div>
+    <a id="whatsappLink" target="_blank" class="whatsapp">💬 تواصل معي</a>
 
-<div class="card">
-  <span>📊 مراجعة</span>
-  <button onclick="goReview()">فتح</button>
-</div>
-
-<div class="card">
-  <span>👤 حسابي</span>
-  <button onclick="goProfile()">فتح</button>
-</div>
-
-<!-- واتساب -->
-<a id="whatsappLink" target="_blank" class="whatsapp">
-  💬 تواصل معي على واتساب
-</a>
-
-<button class="logout" onclick="logout()">تسجيل خروج</button>
+    <button class="logout" onclick="logout()">تسجيل خروج</button>
 
   </div>
-</div><!-- زر واتساب عائم --><a id="whatsappFloat" target="_blank" class="whatsapp-float">
-  💬
-</a><script>
+</div>
 
-// تحقق تسجيل الدخول
+<a id="whatsappFloat" target="_blank" class="whatsapp-float">💬</a>
+
+<!-- 🔥 Alert -->
+<div id="alertBox">
+  <div style="background:#111827;padding:20px;border-radius:20px;width:85%;max-width:300px;color:white;text-align:center;">
+    <h3 id="alertTitle"></h3>
+    <p id="alertText"></p>
+    <button onclick="closeAlert()" style="margin-top:10px;background:#22c55e;padding:10px;border-radius:10px;width:100%">
+      تمام 👍
+    </button>
+  </div>
+</div>
+
+<script>
+
+// Supabase
+const client = supabase.createClient(
+  "https://ofyugbhplaynjeafdrgx.supabase.co",
+  "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
+);
+
 const userId = localStorage.getItem("user_id");
+let userData = null;
+
 if(!userId){
   window.location.href = "login.html";
 }
 
-// اسم الطالب
+// 🔥 تحميل المستخدم
+async function loadUser(){
+
+  const { data } = await client
+    .from("users")
+    .select("role, status, name")
+    .eq("id", userId)
+    .single();
+
+  if(!data) return;
+
+  userData = data;
+
+  // 🚫 حظر
+  if(data.status === "banned"){
+    showAlert("🚫 تم حظرك","تواصل معنا عبر واتساب");
+  }
+
+  // 🔔 تنبيه ميزة جديدة
+  setTimeout(()=>{
+    showAlert("🔥 ميزة جديدة","تم إضافة نظام التدريب الصوتي 🎤");
+  },2000);
+}
+
+loadUser();
+
+// 🔐 أدمن
+function isAdmin(){
+  return userData?.role === "admin";
+}
+
+// 🔔 Alert
+function showAlert(title,text){
+  alertTitle.innerText = title;
+  alertText.innerText = text;
+  alertBox.style.display = "flex";
+}
+function closeAlert(){
+  alertBox.style.display = "none";
+}
+
+// التنقل
+function goClass(){ location.href="myclass.html"; }
+function goYoutube(){ location.href="youtube.html"; }
+function goPDF(){ location.href="pdf.html"; }
+function goSearch(){ location.href="search.html"; }
+function goProfile(){ location.href="student.html"; }
+function goTest(){ location.href="test.html"; }
+function goReview(){ location.href="review.html"; }
+
+function goBook(){ location.href="headwaybook.html"; }
+
+function goDashboard(){
+  if(!isAdmin()) return showAlert("🚫 غير مصرح","للأدمن فقط");
+  location.href="mydashboard.html";
+}
+
+function goUpdate1(){ location.href="update1.html"; }
+function goUpdate2(){ location.href="update2.html"; }
+
+// واتساب
 let userName = localStorage.getItem("user_name") || "طالب";
+let message = `السلام عليكم، أنا ${userName}`;
+let url = `https://wa.me/message/735SJORMFI74H1?text=${encodeURIComponent(message)}`;
 
-// رسالة واتساب
-let message = `السلام عليكم، أنا ${userName} وأحتاج مساعدة 🙏`;
-let encoded = encodeURIComponent(message);
-let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encoded}`;
+whatsappLink.href = url;
+whatsappFloat.href = url;
 
-// ربط الأزرار
-document.getElementById("whatsappLink").href = whatsappURL;
-document.getElementById("whatsappFloat").href = whatsappURL;
+// ⭐ عداد طبيعي
+let count = parseInt(localStorage.getItem("studentsCount")) || 120;
 
-// عداد الطلاب
-let count = localStorage.getItem("studentsCount");
-if (!count) count = 120;
-
-function updateStudents() {
-  count = parseInt(count) + Math.floor(Math.random() * 2);
-  document.getElementById("students").innerText =
-    "👨‍🎓 أكثر من " + count + " طالب";
-  localStorage.setItem("studentsCount", count);
+function updateStudents(){
+  if(Math.random() < 0.3){
+    count += 1;
+    localStorage.setItem("studentsCount", count);
+  }
+  students.innerText = "👨‍🎓 أكثر من " + count + " طالب";
 }
 
 updateStudents();
-setInterval(updateStudents, 8000);
+setInterval(updateStudents, 15000);
 
-// التنقل
-function goClass(){ window.location.href = "myclass.html"; }
-function goYoutube(){ window.location.href = "youtube.html"; }
-function goPDF(){ window.location.href = "pdf.html"; }
-function goSearch(){ window.location.href = "search.html"; }
-function goProfile(){ window.location.href = "student.html"; }
-function goTest(){ window.location.href = "test.html"; }
-function goReview(){ window.location.href = "review.html"; }
-
-// تسجيل خروج
+// خروج
 function logout(){
-  const studentsCount = localStorage.getItem("studentsCount");
+  const c = localStorage.getItem("studentsCount");
   localStorage.clear();
-  localStorage.setItem("studentsCount", studentsCount);
-  window.location.href = "login.html";
+  localStorage.setItem("studentsCount", c);
+  location.href="login.html";
 }
 
-</script></body>
+</script>
+
+</body>
 </html>

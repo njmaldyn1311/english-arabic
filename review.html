@@ -1,180 +1,139 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>كتابي</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
 <style>
+
 body{
   margin:0;
+  font-family:"Cairo",sans-serif;
   background:#0f172a;
-  font-family:Arial;
   color:white;
   text-align:center;
 }
 
-/* header */
 .header{
   display:flex;
   justify-content:space-between;
-  align-items:center;
-  padding:10px 15px;
+  padding:15px;
 }
 
-.home-btn{
+.home{
   background:#38bdf8;
   padding:8px 15px;
-  border:none;
   border-radius:10px;
-  color:white;
 }
 
-.username{
-  font-size:14px;
-}
-
-/* card */
-.card{
+.container{
   background:#e5e7eb;
   color:black;
   margin:15px;
-  padding:15px;
+  padding:20px;
   border-radius:20px;
 }
 
-/* buttons */
 .btn{
   width:100%;
-  padding:12px;
+  padding:15px;
   border:none;
-  border-radius:12px;
+  border-radius:15px;
+  font-size:18px;
   margin-top:10px;
-  color:white;
-  font-size:16px;
+  cursor:pointer;
 }
 
-.download{background:#3b82f6;}
-.green{background:#22c55e;}
-.orange{background:#f59e0b;}
+.blue{background:#3b82f6;color:white;}
+.orange{background:#f59e0b;color:white;}
+.green{background:#22c55e;color:white;}
+.red{background:#7f1d1d;color:white;}
 
-/* pdf */
 canvas{
   width:100%;
   border-radius:15px;
   margin-top:10px;
 }
 
-/* bottom */
-.bottom-buttons{
-  display:flex;
-  gap:5px;
+textarea{
+  width:95%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
   margin-top:10px;
 }
 
-.bottom-buttons button{
+.bottom{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+
+.bottom button{
   flex:1;
-  padding:10px;
+  background:#22c55e;
   border:none;
+  padding:10px;
   border-radius:10px;
   color:white;
-  font-size:13px;
-  background:#22c55e;
 }
 
-/* notes */
-textarea{
-  width:100%;
-  height:60px;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  box-sizing:border-box;
-}
-
-/* analysis */
 .analysis-card{
   background:#1e293b;
+  padding:10px;
+  border-radius:10px;
   margin-top:10px;
-  padding:12px;
-  border-radius:12px;
-  color:white;
-  text-align:right;
 }
+
 </style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 
 </head>
 <body>
 
-<!-- header -->
 <div class="header">
-  <div class="username" id="userName">👤 ...</div>
-  <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
+  <div>👤 <span id="userName">محمد أحمد</span></div>
+  <div class="home">🏠 الرئيسية</div>
 </div>
 
 <h2>📘 كتابي</h2>
 
-<div class="card">
+<div class="container">
 
-  <!-- السعر -->
   <h2 id="priceBox">💰 سعر الكتاب: 250 ريال</h2>
 
-  <!-- زر -->
-  <button id="openBtn" class="btn download" onclick="openBook()">
-    📥 تحميل وفتح
-  </button>
+  <button class="btn blue" id="openBtn" onclick="openBook()">📥 تحميل وفتح</button>
 
-  <!-- pdf -->
   <canvas id="pdf"></canvas>
 
-  <!-- تحليل -->
-  <button class="btn orange" onclick="analyzePage()">
-    🧠 تحليل الصفحة
-  </button>
+  <button class="btn orange" onclick="analyzePage()">🧠 تحليل الصفحة</button>
 
-  <!-- النتائج -->
-  <div id="analysisBox"></div>
+  <div id="analysisResult"></div>
 
-  <!-- ملاحظات -->
-  <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
+  <textarea id="note" placeholder="✍️ ملاحظة..."></textarea>
 
   <button class="btn green" onclick="saveNote()">💾 حفظ</button>
 
-  <!-- أزرار -->
-  <div class="bottom-buttons">
+  <div class="bottom">
     <button onclick="prevPage()">⬅ السابق</button>
     <button onclick="nextPage()">التالي ➡</button>
-    <button onclick="savePage()">⭐ حفظ</button>
-    <button onclick="readPage()">🔊 قراءة</button>
+    <button onclick="speak()">🔊 قراءة</button>
   </div>
 
 </div>
 
 <script>
 
-const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
+const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf 
+"; // ضع رابطك هنا
+const WEBHOOK_URL = "https://n8n.srv1495053.hstgr.cloud/webhook/headway";
 
 let pdfDoc=null;
 let currentPage=1;
 
-
-// 👤 الاسم الأول والثاني
-let fullName = localStorage.getItem("name") || "محمد أحمد";
-let parts = fullName.split(" ");
-document.getElementById("userName").innerText =
-  "👤 " + parts[0] + " " + (parts[1] || "");
-
-
-// 🏠 الرئيسية
-function goHome(){
-  window.location.href="index.html";
-}
-
-
-// 📥 فتح
 async function openBook(){
 
   const btn=document.getElementById("openBtn");
@@ -182,20 +141,20 @@ async function openBook(){
 
   try{
     pdfDoc = await pdfjsLib.getDocument(PDF_URL).promise;
+
+    currentPage = parseInt(localStorage.getItem("lastPage")) || 1;
+
     await renderPage(currentPage);
 
     btn.innerText="📖 تم فتح الكتاب";
-
-    // 🔥 إخفاء السعر
     document.getElementById("priceBox").style.display="none";
 
-  }catch{
+  }catch(e){
     btn.innerText="❌ فشل التحميل";
+    console.log(e);
   }
 }
 
-
-// عرض
 async function renderPage(num){
 
   const page = await pdfDoc.getPage(num);
@@ -209,10 +168,10 @@ async function renderPage(num){
   canvas.width=viewport.width;
 
   await page.render({canvasContext:ctx,viewport}).promise;
+
+  localStorage.setItem("lastPage", num);
 }
 
-
-// تنقل
 function nextPage(){
   if(currentPage<pdfDoc.numPages){
     currentPage++;
@@ -227,94 +186,75 @@ function prevPage(){
   }
 }
 
-
-// حفظ صفحة
-function savePage(){
-  localStorage.setItem("savedPage",currentPage);
-  alert("تم الحفظ ⭐");
-}
-
-
-// قراءة
-async function readPage(){
-
-  const page = await pdfDoc.getPage(currentPage);
-  const content = await page.getTextContent();
-
-  let text = content.items.map(i=>i.str).join(" ");
-
-  let speech=new SpeechSynthesisUtterance(text);
-  speech.lang="en-US";
-
-  speechSynthesis.speak(speech);
-}
-
-
-// 🧠 تحليل
 async function analyzePage(){
 
-  const box=document.getElementById("analysisBox");
-
-  box.innerHTML=`
-    <div class="analysis-card">
-      ⏳ جاري التحليل...
-    </div>
-  `;
+  const box=document.getElementById("analysisResult");
+  box.innerHTML='<div class="analysis-card">⏳ جاري التحليل...</div>';
 
   try{
 
-    const page=await pdfDoc.getPage(currentPage);
-    const content=await page.getTextContent();
-
-    let text=content.items.map(i=>i.str).join(" ");
-
-    const res = await fetch("https://YOUR-N8N-WEBHOOK",{
+    const res = await fetch(WEBHOOK_URL,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({text,page:currentPage})
+      body:JSON.stringify({page:currentPage})
     });
 
-    const data=await res.json();
+    const data = await res.json();
 
     box.innerHTML="";
 
     data.words.forEach(w=>{
 
       box.innerHTML+=`
-        <div class="analysis-card">
-          <div style="color:#22c55e;font-weight:bold">
-            ${w.word} <span style="color:#facc15">${w.type}</span>
-          </div>
+      <div class="analysis-card">
+        <b style="color:#22c55e">${w.word}</b>
+        <span style="color:#facc15">(${w.type})</span>
+        <div>${w.example}</div>
+        <div style="color:#94a3b8">${w.translation}</div>
 
-          <div>${w.example}</div>
-
-          <div style="color:#94a3b8">
-            ${w.translation}
-          </div>
-        </div>
+        <button onclick="saveWord('${w.word}','${w.translation}')">
+          ⭐ حفظ
+        </button>
+      </div>
       `;
     });
 
-  }catch{
+  }catch(e){
+    console.log(e);
+
     box.innerHTML=`
-      <div class="analysis-card" style="background:#7f1d1d">
+      <div class="analysis-card red">
         ❌ فشل التحليل
       </div>
     `;
   }
 }
 
+function saveWord(word,translation){
 
-// ملاحظة
-function saveNote(){
-  let note=document.getElementById("noteInput").value;
-  if(!note)return;
-  alert("تم حفظ الملاحظة ✅");
+  let words = JSON.parse(localStorage.getItem("words")||"[]");
+
+  words.push({word,translation});
+
+  localStorage.setItem("words",JSON.stringify(words));
+
+  alert("تم حفظ الكلمة ⭐");
 }
 
+function saveNote(){
 
-// منع نسخ
-document.addEventListener("contextmenu",e=>e.preventDefault());
+  const note=document.getElementById("note").value;
+
+  localStorage.setItem("note_page_"+currentPage,note);
+
+  alert("تم حفظ الملاحظة");
+}
+
+function speak(){
+
+  const msg=new SpeechSynthesisUtterance("Reading page");
+  speechSynthesis.speak(msg);
+}
 
 </script>
 

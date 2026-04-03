@@ -17,7 +17,6 @@ body {
   align-items: center;
   min-height: 100vh;
 }
-
 .container {
   width: 90%;
   max-width: 400px;
@@ -27,13 +26,11 @@ body {
   text-align: center;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-
 .header {
   background: linear-gradient(135deg, #0f172a, #1e293b);
   height: 140px;
   position: relative;
 }
-
 .profile-img {
   width: 110px;
   height: 110px;
@@ -44,20 +41,10 @@ body {
   left: 50%;
   transform: translateX(-50%);
 }
-
-.content {
-  padding: 70px 20px 20px;
-}
-
+.content { padding: 70px 20px 20px; }
 h1 { color: white; }
 .subtitle { color: #cbd5e1; }
-
-.students {
-  color: #22c55e;
-  font-weight: bold;
-  margin: 10px 0;
-}
-
+.students { color: #22c55e; font-weight: bold; margin: 10px 0; }
 .card {
   background: #1e293b;
   border-radius: 20px;
@@ -68,7 +55,6 @@ h1 { color: white; }
   align-items: center;
   color: white;
 }
-
 button {
   background: #22c55e;
   border: none;
@@ -76,9 +62,7 @@ button {
   padding: 10px 15px;
   border-radius: 20px;
 }
-
 .logout { background: #ef4444; }
-
 .whatsapp {
   display: block;
   margin-top: 15px;
@@ -88,7 +72,6 @@ button {
   border-radius: 15px;
   text-decoration: none;
 }
-
 .whatsapp-float {
   position: fixed;
   bottom: 20px;
@@ -98,7 +81,7 @@ button {
   border-radius: 50%;
 }
 
-/* 🔥 Alert */
+/* Alert */
 #notifyBox{
   display:none;
   position:fixed;
@@ -138,6 +121,12 @@ button {
     <div class="card"><span>📊 مراجعة</span><button onclick="goReview()">فتح</button></div>
     <div class="card"><span>👤 حسابي</span><button onclick="goProfile()">فتح</button></div>
 
+    <!-- 🔥 إضافاتك -->
+    <div class="card"><span>📘 كتابي</span><button onclick="goBook()">فتح</button></div>
+    <div class="card"><span>📊 لوحة التحكم</span><button onclick="goDashboard()">فتح</button></div>
+    <div class="card"><span>🚧 ميزة جديدة</span><button onclick="goUpdate1()">قريباً</button></div>
+    <div class="card"><span>🔄 تحديثات</span><button onclick="goUpdate2()">عرض</button></div>
+
     <a id="whatsappLink" target="_blank" class="whatsapp">
       💬 تواصل معي على واتساب
     </a>
@@ -149,33 +138,17 @@ button {
 
 <a id="whatsappFloat" target="_blank" class="whatsapp-float">💬</a>
 
-<!-- 🔥 Alert -->
+<!-- Alert -->
 <div id="notifyBox">
-  <div style="
-    background:#111827;
-    padding:20px;
-    border-radius:20px;
-    width:85%;
-    max-width:300px;
-    color:white;
-    text-align:center;
-  ">
+  <div style="background:#111827;padding:20px;border-radius:20px;width:85%;max-width:300px;color:white;text-align:center;">
     <h3 id="notifyTitle"></h3>
     <p id="notifyText"></p>
 
-    <button onclick="closeNotify()" style="margin-top:10px;background:#22c55e;border:none;padding:10px;border-radius:10px;color:white;width:100%">
+    <button onclick="closeNotify()" style="margin-top:10px;background:#22c55e;padding:10px;border-radius:10px;color:white;width:100%">
       تمام 👍
     </button>
 
-    <a id="whatsappBtn" target="_blank" style="
-      display:block;
-      margin-top:10px;
-      background:#25D366;
-      padding:10px;
-      border-radius:10px;
-      color:white;
-      text-decoration:none;
-    ">
+    <a id="whatsappBtn" target="_blank" style="display:block;margin-top:10px;background:#25D366;padding:10px;border-radius:10px;color:white;text-decoration:none;">
       💬 تواصل واتساب
     </a>
   </div>
@@ -183,86 +156,69 @@ button {
 
 <script>
 
-// 🔥 Supabase
 const client = supabase.createClient(
   "https://ofyugbhplaynjeafdrgx.supabase.co",
   "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
 );
 
-// تحقق تسجيل الدخول
-const userId = localStorage.getItem("user_id");
-if(!userId){
-  window.location.href = "login.html";
-}
+let userData = null;
 
-// واتساب
-let userName = localStorage.getItem("user_name") || "طالب";
-let message = `السلام عليكم، أنا ${userName}`;
-let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encodeURIComponent(message)}`;
+// 🔥 تحميل المستخدم
+async function initUser(){
 
-document.getElementById("whatsappLink").href = whatsappURL;
-document.getElementById("whatsappFloat").href = whatsappURL;
-document.getElementById("whatsappBtn").href = whatsappURL;
+  const { data: { user } } = await client.auth.getUser();
 
-// ⭐ عداد ثابت (تم إصلاحه)
-let count = localStorage.getItem("studentsCount");
-if (!count) count = 120;
-
-let counted = localStorage.getItem("countedUser");
-
-if (!counted) {
-  count = parseInt(count) + 1;
-  localStorage.setItem("studentsCount", count);
-  localStorage.setItem("countedUser", "yes");
-}
-
-document.getElementById("students").innerText =
-  "👨‍🎓 أكثر من " + count + " طالب";
-
-// 🔔 عرض التنبيه
-function showNotify(title, msg){
-  document.getElementById("notifyTitle").innerText = title;
-  document.getElementById("notifyText").innerText = msg;
-  document.getElementById("notifyBox").style.display = "flex";
-}
-function closeNotify(){
-  document.getElementById("notifyBox").style.display = "none";
-}
-
-// 🔥 جلب التنبيه العام
-async function loadNotification(){
-  const { data } = await client
-    .from("notifications")
-    .select("*")
-    .eq("active", true)
-    .order("created_at",{ascending:false})
-    .limit(1);
-
-  if(data && data.length){
-    let seen = localStorage.getItem("seen_notify");
-    if(seen !== data[0].id){
-      showNotify(data[0].title, data[0].message);
-      localStorage.setItem("seen_notify", data[0].id);
-    }
+  if(!user){
+    window.location.href = "login.html";
+    return;
   }
-}
-loadNotification();
 
-// 🚫 تحقق الحظر
-async function checkBan(){
   const { data } = await client
     .from("users")
-    .select("status")
-    .eq("id", userId)
+    .select("role, status, name")
+    .eq("id", user.id)
     .single();
 
-  if(data?.status === "banned"){
-    showNotify("🚫 تم إيقاف حسابك", "للاشتراك أو فك الحظر تواصل واتساب");
-  }
-}
-checkBan();
+  userData = data;
 
-// التنقل
+  if(userData?.status === "banned"){
+    showNotify("🚫 تم حظرك", "تواصل معنا واتساب");
+  }
+
+  // واتساب
+  let msg = `السلام عليكم، أنا ${userData?.name || "طالب"}`;
+  let url = `https://wa.me/message/735SJORMFI74H1?text=${encodeURIComponent(msg)}`;
+
+  whatsappLink.href = url;
+  whatsappFloat.href = url;
+  whatsappBtn.href = url;
+}
+
+initUser();
+
+// 🔐 أدمن
+function isAdmin(){
+  return userData?.role === "admin";
+}
+
+// 🔥 التنقل
+function goBook(){ location.href="headwaybook.html"; }
+
+function goDashboard(){
+  if(!isAdmin()) return showNotify("🚫 غير مصرح","للأدمن فقط");
+  location.href="mydashboard.html";
+}
+
+function goUpdate1(){
+  if(!isAdmin()) return showNotify("🚧","تحت الإنشاء");
+  location.href="update1.html";
+}
+
+function goUpdate2(){
+  if(!isAdmin()) return showNotify("🔄","للأدمن فقط");
+  location.href="update2.html";
+}
+
 function goClass(){ location.href="myclass.html"; }
 function goYoutube(){ location.href="youtube.html"; }
 function goPDF(){ location.href="pdf.html"; }
@@ -271,13 +227,30 @@ function goProfile(){ location.href="student.html"; }
 function goTest(){ location.href="test.html"; }
 function goReview(){ location.href="review.html"; }
 
-// خروج
-function logout(){
-  const studentsCount = localStorage.getItem("studentsCount");
-  localStorage.clear();
-  localStorage.setItem("studentsCount", studentsCount);
+// 🔔 Alert
+function showNotify(title,msg){
+  notifyTitle.innerText = title;
+  notifyText.innerText = msg;
+  notifyBox.style.display = "flex";
+}
+function closeNotify(){
+  notifyBox.style.display = "none";
+}
+
+// 🚪 خروج
+async function logout(){
+  await client.auth.signOut();
   location.href="login.html";
 }
+
+// ⭐ عداد ثابت
+let count = localStorage.getItem("studentsCount") || 120;
+if(!localStorage.getItem("counted")){
+  count++;
+  localStorage.setItem("studentsCount", count);
+  localStorage.setItem("counted","yes");
+}
+students.innerText = "👨‍🎓 أكثر من " + count + " طالب";
 
 </script>
 

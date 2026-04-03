@@ -38,7 +38,6 @@ body {
 .content { padding: 70px 20px 20px; }
 h1 { color: white; }
 .subtitle { color: #cbd5e1; }
-.students { color: #22c55e; margin: 10px 0; }
 
 .card {
   background: #1e293b;
@@ -70,16 +69,6 @@ button {
   text-decoration: none;
 }
 
-.whatsapp-float {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: #25D366;
-  padding: 15px;
-  border-radius: 50%;
-}
-
-/* Alert */
 #notifyBox{
   display:none;
   position:fixed;
@@ -104,40 +93,31 @@ button {
     <h1>إنجلش بالعربي</h1>
     <div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
 
-    <div class="students" id="students">👨‍🎓 أكثر من 120 طالب</div>
-
     <div class="card"><span>📚 الفصل الذكي</span><button onclick="goClass()">ابدأ</button></div>
     <div class="card"><span>📺 تحليل فيديو</span><button onclick="goYoutube()">ابدأ</button></div>
     <div class="card"><span>📄 تحليل PDF</span><button onclick="goPDF()">ابدأ</button></div>
-    <div class="card"><span>🔍 البحث</span><button onclick="goSearch()">ابدأ</button></div>
-    <div class="card"><span>📝 اختبار</span><button onclick="goTest()">ابدأ</button></div>
-    <div class="card"><span>📊 مراجعة</span><button onclick="goReview()">فتح</button></div>
-    <div class="card"><span>👤 حسابي</span><button onclick="goProfile()">فتح</button></div>
 
     <div class="card"><span>📘 كتابي</span><button onclick="goBook()">فتح</button></div>
-    <div class="card"><span>📊 لوحة التحكم</span><button onclick="goDashboard()">فتح</button></div>
-    <div class="card"><span>🚧 ميزة جديدة</span><button onclick="goUpdate1()">قريباً</button></div>
-    <div class="card"><span>🔄 تحديثات</span><button onclick="goUpdate2()">عرض</button></div>
 
-    <a id="whatsappLink" target="_blank" class="whatsapp">💬 تواصل معي</a>
+    <a id="whatsappLink" class="whatsapp">💬 تواصل معي</a>
     <button class="logout" onclick="logout()">تسجيل خروج</button>
 
   </div>
 </div>
-
-<a id="whatsappFloat" target="_blank" class="whatsapp-float">💬</a>
 
 <!-- Alert -->
 <div id="notifyBox">
   <div style="background:#111827;padding:20px;border-radius:20px;width:85%;max-width:300px;color:white;text-align:center;">
     <h3 id="notifyTitle"></h3>
     <p id="notifyText"></p>
+
+    <a id="whatsappBtn" target="_blank" style="display:none;margin-top:10px;background:#25D366;padding:10px;border-radius:10px;color:white;text-decoration:none;">
+      💬 تواصل
+    </a>
+
     <button onclick="closeNotify()" style="margin-top:10px;background:#22c55e;padding:10px;border-radius:10px;width:100%">
       تمام 👍
     </button>
-    <a id="whatsappBtn" target="_blank" style="display:none;margin-top:10px;background:#25D366;padding:10px;border-radius:10px;color:white;text-decoration:none;">
-      💬 تواصل واتساب
-    </a>
   </div>
 </div>
 
@@ -151,7 +131,7 @@ const client = supabase.createClient(
 
 let userData = null;
 
-// 🔐 تحقق المستخدم
+// 🔐 تحميل المستخدم
 async function initUser(){
 
   const userId = localStorage.getItem("user_id");
@@ -161,111 +141,86 @@ async function initUser(){
     return;
   }
 
-  const { data, error } = await client
+  const { data } = await client
     .from("users")
-    .select("role, status, name, subscription_status, subscription_end")
+    .select("name, subscription_status, subscription_end, book_purchased")
     .eq("id", userId)
     .single();
 
-  if(error || !data){
-    console.log("خطأ مؤقت");
-    return;
-  }
+  if(!data) return;
 
   userData = data;
 
-  // ⭐ الاشتراك
+  // 🔐 الاشتراك
   const now = new Date();
   const end = new Date(userData.subscription_end);
 
   userData.isSubscribed =
     userData.subscription_status === "active" && end > now;
 
-  // 🚫 حظر
-  if(userData.status === "banned"){
-    showNotify("🚫 تم إيقاف حسابك","تواصل معنا واتساب");
-  }
+  // 📘 الكتاب
+  userData.hasBook = userData.book_purchased === true;
 
   // واتساب
   let msg = `السلام عليكم، أنا ${userData.name}`;
   let url = `https://wa.me/message/735SJORMFI74H1?text=${encodeURIComponent(msg)}`;
   whatsappLink.href = url;
-  whatsappFloat.href = url;
   whatsappBtn.href = url;
 }
 
 initUser();
 
-// 🔐 صلاحيات
-function isAdmin(){
-  return userData?.role === "admin";
-}
-
-// 🔐 اشتراك
+// 🔒 حماية الاشتراك
 function checkSub(){
   if(userData?.isSubscribed) return true;
 
-  showNotify("🚫 الاشتراك مطلوب","يجب الاشتراك للوصول");
+  showNotify("🚫 الاشتراك مطلوب","هذه الميزة للمشتركين فقط","subscribe");
   return false;
 }
 
-// 🔥 التنقل
+// 🔒 حماية الكتاب
+function checkBook(){
+  if(userData?.hasBook) return true;
+
+  showNotify("📘 شراء الكتاب مطلوب","يجب شراء الكتاب أولاً","book");
+  return false;
+}
+
+// التنقل
 function goClass(){ if(!checkSub()) return; location.href="myclass.html"; }
 function goYoutube(){ if(!checkSub()) return; location.href="youtube.html"; }
 function goPDF(){ if(!checkSub()) return; location.href="pdf.html"; }
-function goBook(){ if(!checkSub()) return; location.href="headwaybook.html"; }
 
-function goDashboard(){
-  if(!isAdmin()) return showNotify("🚫 غير مصرح","للأدمن فقط");
-  location.href="mydashboard.html";
-}
+function goBook(){ if(!checkBook()) return; location.href="headwaybook.html"; }
 
-function goUpdate1(){
-  if(!isAdmin()) return showNotify("🚧","تحت الإنشاء");
-  location.href="update1.html";
-}
+// 🔔 Alert ذكي
+function showNotify(title,msg,type){
 
-function goUpdate2(){
-  if(!isAdmin()) return showNotify("🔄","للأدمن فقط");
-  location.href="update2.html";
-}
-
-function goSearch(){ location.href="search.html"; }
-function goProfile(){ location.href="student.html"; }
-function goTest(){ location.href="test.html"; }
-function goReview(){ location.href="review.html"; }
-
-// 🔔 Alert
-function showNotify(title,msg){
   notifyTitle.innerText = title;
   notifyText.innerText = msg;
 
-  if(title.includes("اشتراك") || title.includes("إيقاف")){
-    whatsappBtn.style.display = "block";
+  whatsappBtn.style.display = "block";
+
+  if(type === "subscribe"){
+    whatsappBtn.innerText = "💬 اشترك الآن";
+  }else if(type === "book"){
+    whatsappBtn.innerText = "📘 شراء الكتاب";
   }else{
-    whatsappBtn.style.display = "none";
+    whatsappBtn.innerText = "💬 تواصل";
   }
 
   notifyBox.style.display = "flex";
 }
+
 function closeNotify(){
   notifyBox.style.display = "none";
 }
 
-// 🚪 خروج
+// خروج
 function logout(){
   localStorage.clear();
   location.href="login.html";
 }
-
-// ⭐ عداد ثابت
-let count = localStorage.getItem("studentsCount") || 120;
-if(!localStorage.getItem("counted")){
-  count++;
-  localStorage.setItem("studentsCount", count);
-  localStorage.setItem("counted","yes");
-}
-students.innerText = "👨‍🎓 أكثر من " + count + " طالب";
 
 </script>
 

@@ -154,7 +154,7 @@ async function loadUser(){
 async function loadSavedCount(){
 
   const { count } = await client
-    .from("saved_verbs")
+    .from("user_words")
     .select("*", { count: "exact", head: true })
     .eq("user_id", userId);
 

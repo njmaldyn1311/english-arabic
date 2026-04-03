@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نظام التدريب</title>
+<title>تدريب الأفعال</title>
 
 <style>
 body{
@@ -21,31 +21,31 @@ body{
   border-radius:20px;
 }
 
-.levels button{
-  margin:5px;
-  background:#22c55e;
-}
-
 .word{
-  font-size:28px;
-  color:#22c55e;
-}
-
-.forms{
+  font-size:26px;
   margin:10px 0;
 }
 
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#111827;
+  padding:12px;
+  border-radius:12px;
+  margin:8px 0;
+}
+
 button{
-  padding:10px;
   border:none;
+  padding:8px 12px;
   border-radius:10px;
-  margin:5px;
   cursor:pointer;
 }
 
-.listen{background:#3b82f6;}
-.record{background:#f59e0b;}
-.next{background:#22c55e;}
+.listen{background:#3b82f6;color:white;}
+.record{background:#f59e0b;color:white;}
+.next{background:#22c55e;color:white;margin-top:10px;}
 
 .correct{color:#22c55e;}
 .wrong{color:#ef4444;}
@@ -54,37 +54,42 @@ button{
 
 <body>
 
-<h2>🎯 تدريب الأفعال</h2>
+<h2>🎤 تدريب الأفعال</h2>
 
 <div class="container">
 
-  <!-- مستويات -->
-  <div class="levels">
-    <button onclick="setLevel('easy')">🟢 سهل</button>
-    <button onclick="setLevel('medium')">🟡 متوسط</button>
-    <button onclick="setLevel('hard')">🔴 متقدم</button>
+  <!-- base -->
+  <div class="row">
+    <span id="base">go</span>
+    <button class="listen" onclick="speak(base.innerText)">🔊</button>
+  </div>
+
+  <!-- past -->
+  <div class="row">
+    <span id="past">went</span>
+    <button class="listen" onclick="speak(past.innerText)">🔊</button>
+    <button class="record" onclick="record(past.innerText)">🎤</button>
+  </div>
+
+  <!-- pp -->
+  <div class="row">
+    <span id="pp">gone</span>
+    <button class="listen" onclick="speak(pp.innerText)">🔊</button>
+  </div>
+
+  <!-- translation -->
+  <div class="row">
+    <span id="ar">يذهب</span>
   </div>
 
   <hr>
 
-  <div id="verb" class="word">go</div>
-
-  <div class="forms">
-    <div>Past: <span id="past">went</span></div>
-    <div>Past Participle: <span id="pp">gone</span></div>
-    <div>ING: <span id="ing">going</span></div>
-    <div>🇸🇦: <span id="ar">يذهب</span></div>
+  <!-- ing training -->
+  <div class="row">
+    <span id="ing">going</span>
+    <button class="listen" onclick="speak(ing.innerText)">🔊</button>
+    <button class="record" onclick="record(ing.innerText)">🎤 تدريب ING</button>
   </div>
-
-  <button class="listen" onclick="speak('base')">🔊 Base</button>
-  <button class="listen" onclick="speak('past')">🔊 Past</button>
-  <button class="listen" onclick="speak('pp')">🔊 PP</button>
-  <button class="listen" onclick="speak('ing')">🔊 ING</button>
-
-  <br>
-
-  <button class="record" onclick="record('past')">🎤 تدرب Past</button>
-  <button class="record" onclick="record('ing')">🎤 تدرب ING</button>
 
   <div id="result"></div>
 
@@ -94,32 +99,20 @@ button{
 
 <script>
 
-// 🔥 مستويات
-const levels = {
-  easy:[
-    {base:"go",past:"went",pp:"gone",ing:"going",ar:"يذهب"},
-    {base:"eat",past:"ate",pp:"eaten",ing:"eating",ar:"يأكل"},
-    {base:"play",past:"played",pp:"played",ing:"playing",ar:"يلعب"}
-  ],
-  medium:[
-    {base:"study",past:"studied",pp:"studied",ing:"studying",ar:"يدرس"},
-    {base:"stop",past:"stopped",pp:"stopped",ing:"stopping",ar:"يتوقف"},
-    {base:"run",past:"ran",pp:"run",ing:"running",ar:"يجري"}
-  ],
-  hard:[
-    {base:"write",past:"wrote",pp:"written",ing:"writing",ar:"يكتب"},
-    {base:"begin",past:"began",pp:"begun",ing:"beginning",ar:"يبدأ"},
-    {base:"choose",past:"chose",pp:"chosen",ing:"choosing",ar:"يختار"}
-  ]
-};
+// الأفعال
+const verbs = [
+  {base:"go",past:"went",pp:"gone",ing:"going",ar:"يذهب"},
+  {base:"play",past:"played",pp:"played",ing:"playing",ar:"يلعب"},
+  {base:"walk",past:"walked",pp:"walked",ing:"walking",ar:"يمشي"},
+  {base:"study",past:"studied",pp:"studied",ing:"studying",ar:"يدرس"},
+  {base:"stop",past:"stopped",pp:"stopped",ing:"stopping",ar:"يتوقف"}
+];
 
-let currentLevel = "easy";
 let index = 0;
 
-// تحميل
 function load(){
-  const v = levels[currentLevel][index];
-  verb.innerText = v.base;
+  const v = verbs[index];
+  base.innerText = v.base;
   past.innerText = v.past;
   pp.innerText = v.pp;
   ing.innerText = v.ing;
@@ -127,34 +120,15 @@ function load(){
 }
 load();
 
-// تغيير المستوى
-function setLevel(lvl){
-  currentLevel = lvl;
-  index = 0;
-  load();
-  result.innerHTML="";
-}
-
-// 🔊 نطق
-function speak(type){
-  let text;
-
-  if(type==="base") text = verb.innerText;
-  if(type==="past") text = past.innerText;
-  if(type==="pp") text = pp.innerText;
-  if(type==="ing") text = ing.innerText;
-
+// 🔊 صوت
+function speak(text){
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "en-US";
   speechSynthesis.speak(msg);
 }
 
 // 🎤 تسجيل
-function record(type){
-
-  const correctWord =
-    type==="past" ? past.innerText :
-    ing.innerText;
+function record(correct){
 
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
   recognition.lang = "en-US";
@@ -165,8 +139,8 @@ function record(type){
 
     const spoken = e.results[0][0].transcript.toLowerCase();
 
-    if(spoken.includes(correctWord.toLowerCase())){
-      result.innerHTML = `<div class="correct">✅ ممتاز!</div>`;
+    if(spoken.includes(correct.toLowerCase())){
+      result.innerHTML = `<div class="correct">✅ ممتاز</div>`;
     }else{
       result.innerHTML = `<div class="wrong">❌ قلت: ${spoken}</div>`;
     }
@@ -176,7 +150,7 @@ function record(type){
 
 // التالي
 function next(){
-  index = (index + 1) % levels[currentLevel].length;
+  index = (index + 1) % verbs.length;
   load();
   result.innerHTML="";
 }

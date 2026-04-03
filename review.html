@@ -6,7 +6,6 @@
 
 <title>كتابي</title>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <style>
@@ -16,6 +15,26 @@ body{
   font-family:Arial;
   color:white;
   text-align:center;
+}
+
+/* 🔥 الهيدر */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 15px;
+}
+
+.home-btn{
+  background:#38bdf8;
+  padding:8px 15px;
+  border-radius:10px;
+  border:none;
+  color:white;
+}
+
+.username{
+  font-size:14px;
 }
 
 /* الكارد */
@@ -41,7 +60,6 @@ body{
 .download{background:#3b82f6;}
 .green{background:#22c55e;}
 .orange{background:#f59e0b;}
-.gray{background:#64748b;}
 
 /* PDF */
 canvas{
@@ -53,9 +71,8 @@ canvas{
 /* أزرار تحت */
 .bottom-buttons{
   display:flex;
-  justify-content:space-between;
-  margin-top:10px;
   gap:5px;
+  margin-top:10px;
 }
 
 .bottom-buttons button{
@@ -65,29 +82,42 @@ canvas{
   border-radius:10px;
   color:white;
   font-size:13px;
+  background:#22c55e;
 }
 
-/* ملاحظات */
+/* 🔥 ملاحظات (تم إصلاح المشكلة) */
+.note-box{
+  width:100%;
+  margin-top:10px;
+}
+
 textarea{
   width:100%;
-  height:60px; /* 🔥 صغرناه */
-  margin-top:10px;
+  height:60px;
   padding:10px;
   border-radius:10px;
   border:none;
+  box-sizing:border-box; /* 🔥 هذا حل المشكلة */
 }
 </style>
 
 </head>
 <body>
 
+<!-- 🔥 الهيدر -->
+<div class="header">
+  <div class="username" id="userName">👤 أحمد</div>
+  <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
+</div>
+
 <h2>📘 كتابي</h2>
 
 <div class="card">
 
-  <h2>💰 سعر الكتاب: 250 ريال</h2>
+  <!-- السعر -->
+  <h2 id="priceBox">💰 سعر الكتاب: 250 ريال</h2>
 
-  <!-- زر التحميل -->
+  <!-- زر -->
   <button id="openBtn" class="btn download" onclick="openBook()">
     📥 تحميل وفتح
   </button>
@@ -100,18 +130,20 @@ textarea{
   </button>
 
   <!-- ملاحظات -->
-  <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
+  <div class="note-box">
+    <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
+  </div>
 
   <button class="btn green" onclick="saveNote()">
     💾 حفظ
   </button>
 
-  <!-- 🔥 أزرار التنقل -->
+  <!-- الأزرار -->
   <div class="bottom-buttons">
-    <button class="green" onclick="prevPage()">⬅ السابق</button>
-    <button class="green" onclick="nextPage()">التالي ➡</button>
-    <button class="green" onclick="savePage()">⭐ حفظ</button>
-    <button class="green" onclick="readPage()">🔊 قراءة</button>
+    <button onclick="prevPage()">⬅ السابق</button>
+    <button onclick="nextPage()">التالي ➡</button>
+    <button onclick="savePage()">⭐ حفظ</button>
+    <button onclick="readPage()">🔊 قراءة</button>
   </div>
 
 </div>
@@ -122,6 +154,12 @@ const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/publ
 
 let pdfDoc = null;
 let currentPage = 1;
+
+
+// 🏠 الرئيسية
+function goHome(){
+  window.location.href = "index.html";
+}
 
 
 // 📥 فتح الكتاب
@@ -137,8 +175,10 @@ async function openBook(){
 
     await renderPage(currentPage);
 
-    // 🔥 هنا التعديل المهم
     btn.innerText = "📖 تم فتح الكتاب";
+
+    // 🔥 إخفاء السعر بعد الفتح
+    document.getElementById("priceBox").style.display = "none";
 
   }catch(e){
     btn.innerText="❌ فشل التحميل";
@@ -146,7 +186,7 @@ async function openBook(){
 }
 
 
-// 📖 عرض الصفحة
+// عرض الصفحة
 async function renderPage(num){
 
   const page = await pdfDoc.getPage(num);
@@ -183,14 +223,14 @@ function prevPage(){
 }
 
 
-// ⭐ حفظ الصفحة
+// حفظ الصفحة
 function savePage(){
   localStorage.setItem("savedPage", currentPage);
   alert("تم حفظ الصفحة ⭐");
 }
 
 
-// 🔊 قراءة
+// قراءة
 async function readPage(){
 
   const page = await pdfDoc.getPage(currentPage);
@@ -205,14 +245,13 @@ async function readPage(){
 }
 
 
-// 🧠 تحليل
-async function analyzePage(){
-
-  alert("تم تحليل الصفحة 🔥 (اربطها مع OpenAI لاحقًا)");
+// تحليل
+function analyzePage(){
+  alert("تحليل الصفحة 🔥 (اربطه مع OpenAI)");
 }
 
 
-// ✍️ حفظ ملاحظة
+// حفظ ملاحظة
 function saveNote(){
 
   let note = document.getElementById("noteInput").value;
@@ -223,8 +262,9 @@ function saveNote(){
 }
 
 
-// 🔒 منع نسخ
-document.addEventListener("contextmenu",e=>e.preventDefault());
+// 🔥 اسم المستخدم (تقدر تربطه بسوبابيز)
+document.getElementById("userName").innerText =
+  "👤 " + (localStorage.getItem("name") || "محمد");
 
 </script>
 

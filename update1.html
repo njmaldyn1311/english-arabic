@@ -69,57 +69,47 @@ button{
 
 <body>
 
-<!-- 🔥 الهيدر -->
 <div class="topbar">
-
   <button class="home" onclick="goHome()">🏠 الرئيسية</button>
 
   <div class="info">
     <div id="userName">...</div>
     <div id="savedCount">⭐ 0 كلمات</div>
   </div>
-
 </div>
 
 <h2>🎤 تدريب الأفعال</h2>
 
 <div class="container">
 
-  <!-- 🔍 بحث -->
   <input id="search" placeholder="ابحث عن فعل..." oninput="searchVerb()">
 
-  <!-- base -->
   <div class="row">
     <span id="base">-</span>
     <button class="listen" onclick="speak(base.innerText)">🔊</button>
   </div>
 
-  <!-- past -->
   <div class="row">
     <span id="past">-</span>
     <button class="listen" onclick="speak(past.innerText)">🔊</button>
     <button class="record" onclick="record(past.innerText)">🎤</button>
   </div>
 
-  <!-- pp -->
   <div class="row">
     <span id="pp">-</span>
     <button class="listen" onclick="speak(pp.innerText)">🔊</button>
   </div>
 
-  <!-- ing -->
   <div class="row">
     <span id="ing">-</span>
     <button class="listen" onclick="speak(ing.innerText)">🔊</button>
     <button class="record" onclick="record(ing.innerText)">🎤</button>
   </div>
 
-  <!-- ترجمة -->
   <div class="row">
     <span id="ar">-</span>
   </div>
 
-  <!-- ⭐ حفظ -->
   <button class="star" onclick="saveVerb()">⭐ حفظ الكلمة</button>
 
   <div id="result"></div>
@@ -136,16 +126,18 @@ const client = supabase.createClient(
 let currentVerb = null;
 const userId = localStorage.getItem("user_id");
 
-// 🏠 الرئيسية
+// حماية تسجيل الدخول
+if(!userId){
+  window.location.href = "login.html";
+}
+
+// الرئيسية
 function goHome(){
   window.location.href = "index.html";
 }
 
-// 👤 اسم الطالب
+// اسم المستخدم
 async function loadUser(){
-
-  if(!userId) return;
-
   const { data } = await client
     .from("users")
     .select("name")
@@ -158,28 +150,28 @@ async function loadUser(){
   }
 }
 
-// ⭐ عدد الكلمات
+// عدد الكلمات
 async function loadSavedCount(){
 
-  if(!userId) return;
-
   const { count } = await client
-    .from("user_words")
+    .from("saved_verbs")
     .select("*", { count: "exact", head: true })
     .eq("user_id", userId);
 
-  savedCount.innerText = "⭐ " + count + " كلمات";
+  savedCount.innerText = "⭐ " + (count || 0) + " كلمات";
 }
 
 loadUser();
 loadSavedCount();
 
-// 🔍 البحث
+// البحث
 async function searchVerb(){
 
-  const text = search.value;
+  const text = search.value.trim();
 
-  if(text.length < 2) return;
+  if(text.length < 2){
+    return;
+  }
 
   const { data } = await client
     .from("verbs")
@@ -192,22 +184,27 @@ async function searchVerb(){
     const v = data[0];
     currentVerb = v;
 
-    base.innerText = v.base;
-    past.innerText = v.past;
-    pp.innerText = v.pp;
-    ing.innerText = v.ing;
-    ar.innerText = v.ar;
+    base.innerText = v.base || "-";
+    past.innerText = v.past || "-";
+    pp.innerText = v.pp || "-";
+    ing.innerText = v.ing || "-";
+    ar.innerText = v.ar || "-";
+
+  } else {
+    result.innerHTML = "❌ لا توجد نتيجة";
   }
 }
 
-// 🔊 صوت
+// صوت
 function speak(text){
+  if(text === "-" || !text) return;
+
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "en-US";
   speechSynthesis.speak(msg);
 }
 
-// 🎤 تدريب
+// تدريب
 function record(correct){
 
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -224,11 +221,10 @@ function record(correct){
     }else{
       result.innerHTML = `<div style="color:#ef4444">❌ قلت: ${spoken}</div>`;
     }
-
   };
 }
 
-// ⭐ حفظ
+// حفظ
 async function saveVerb(){
 
   if(!currentVerb){
@@ -236,14 +232,26 @@ async function saveVerb(){
     return;
   }
 
-  await client.from("saved_verbs").insert({
+  // منع التكرار
+  const { data: exists } = await client
+    .from("user_words")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("verb_id", currentVerb.id)
+    .maybeSingle();
+
+  if(exists){
+    result.innerHTML = "⭐ محفوظة مسبقاً";
+    return;
+  }
+
+  await client.from("user_words").insert({
     user_id: userId,
     verb_id: currentVerb.id
   });
 
   result.innerHTML = "⭐ تم الحفظ";
-
-  loadSavedCount(); // تحديث العدد
+  loadSavedCount();
 }
 
 </script>

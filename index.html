@@ -125,7 +125,7 @@ button {
     <div class="card"><span>📄 تحليل PDF</span><button onclick="goPDF()">ابدأ</button></div>
     <div class="card"><span>🔍 البحث</span><button onclick="goSearch()">ابدأ</button></div>
     <div class="card"><span>📝 اختبار</span><button onclick="goTest()">ابدأ</button></div>
-    <div class="card"><span>📊 مراجعة</span><button onclick="goReview()">ابدا</button></div>
+    <div class="card"><span>📊 مراجعة</span><button onclick="goReview()">فتح</button></div>
     <div class="card"><span>👤 حسابي</span><button onclick="goProfile()">فتح</button></div>
 
     <div class="card"><span>📘 كتابي</span><button onclick="goBook()">فتح</button></div>
@@ -168,29 +168,14 @@ const client = supabase.createClient(
   "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
 );
 
-let isAdmin = false;
+// 🔥 واتساب
+let userName = localStorage.getItem("user_name") || "طالب";
+let message = `السلام عليكم، أنا ${userName} وأحتاج مساعدة 🙏`;
+let encoded = encodeURIComponent(message);
+let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encoded}`;
 
-// 🔥 الحل النهائي (role)
-async function checkAdmin(){
-  try{
-    const { data } = await client.auth.getUser();
-    if(!data.user) return;
-
-    const { data: userData } = await client
-      .from("users")
-      .select("role")
-      .eq("id", data.user.id)
-      .single();
-
-    if(userData?.role === "admin"){
-      isAdmin = true;
-    }
-
-  }catch(e){
-    console.log(e);
-  }
-}
-checkAdmin();
+document.getElementById("whatsappLink").href = whatsappURL;
+document.getElementById("whatsappFloat").href = whatsappURL;
 
 // Alert
 function showAlert(msg){
@@ -211,30 +196,39 @@ function goTest(){ window.location.href="test.html"; }
 function goReview(){ window.location.href="review.html"; }
 function goBook(){ window.location.href="headwaybook.html"; }
 
-// 🔐 حماية
-function goDashboard(){
-  if(!isAdmin){
-    showAlert("🚫 هذه الصفحة للمسؤول فقط");
-    return;
+// 🔐 حماية الداشبورد (بدون تأخير)
+async function goDashboard(){
+
+  try{
+    const { data } = await client.auth.getUser();
+
+    if(!data.user){
+      showAlert("⚠️ سجل دخول أولاً");
+      return;
+    }
+
+    const { data: userData } = await client
+      .from("users")
+      .select("role")
+      .eq("id", data.user.id)
+      .single();
+
+    if(userData?.role !== "admin"){
+      showAlert("🚫 هذه الصفحة للمسؤول فقط");
+      return;
+    }
+
+    window.location.href="mydashboard.html";
+
+  }catch(e){
+    console.log(e);
+    showAlert("❌ خطأ في التحقق");
   }
-  window.location.href="mydashboard.html";
 }
 
-function goUpdate1(){
-  if(!isAdmin){
-    showAlert("🚧 الصفحة تحت الإنشاء");
-    return;
-  }
-  window.location.href="update1.html";
-}
-
-function goUpdate2(){
-  if(!isAdmin){
-    showAlert("🔄 الصفحة تحت التحديث");
-    return;
-  }
-  window.location.href="update2.html";
-}
+// حماية الصفحات
+function goUpdate1(){ showAlert("🚧 الصفحة تحت الإنشاء"); }
+function goUpdate2(){ showAlert("🔄 الصفحة تحت التحديث"); }
 
 // خروج
 function logout(){

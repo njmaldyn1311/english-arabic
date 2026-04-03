@@ -6,8 +6,10 @@
 
 <title>كتابي</title>
 
-<style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
+<style>
 body{
   margin:0;
   font-family:"Cairo",sans-serif;
@@ -15,19 +17,16 @@ body{
   color:white;
   text-align:center;
 }
-
 .header{
   display:flex;
   justify-content:space-between;
   padding:15px;
 }
-
 .home{
   background:#38bdf8;
   padding:8px 15px;
   border-radius:10px;
 }
-
 .container{
   background:#e5e7eb;
   color:black;
@@ -35,7 +34,6 @@ body{
   padding:20px;
   border-radius:20px;
 }
-
 .btn{
   width:100%;
   padding:15px;
@@ -45,32 +43,23 @@ body{
   margin-top:10px;
   cursor:pointer;
 }
-
 .blue{background:#3b82f6;color:white;}
 .orange{background:#f59e0b;color:white;}
 .green{background:#22c55e;color:white;}
-.red{background:#7f1d1d;color:white;}
-
 canvas{
   width:100%;
   border-radius:15px;
-  margin-top:10px;
 }
-
 textarea{
-  width:95%;
+  width:90%;
   padding:10px;
   border-radius:10px;
-  border:none;
-  margin-top:10px;
 }
-
 .bottom{
   display:flex;
   gap:10px;
-  margin-top:15px;
+  margin-top:10px;
 }
-
 .bottom button{
   flex:1;
   background:#22c55e;
@@ -79,23 +68,20 @@ textarea{
   border-radius:10px;
   color:white;
 }
-
 .analysis-card{
   background:#1e293b;
   padding:10px;
   border-radius:10px;
   margin-top:10px;
+  color:white;
 }
-
 </style>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-
 </head>
+
 <body>
 
 <div class="header">
-  <div>👤 <span id="userName">محمد أحمد</span></div>
+  <div>👤 <span id="userName">...</span></div>
   <div class="home">🏠 الرئيسية</div>
 </div>
 
@@ -105,7 +91,7 @@ textarea{
 
   <h2 id="priceBox">💰 سعر الكتاب: 250 ريال</h2>
 
-  <button class="btn blue" id="openBtn" onclick="openBook()">📥 تحميل وفتح</button>
+  <button class="btn blue" onclick="openBook()">📥 تحميل وفتح</button>
 
   <canvas id="pdf"></canvas>
 
@@ -118,47 +104,69 @@ textarea{
   <button class="btn green" onclick="saveNote()">💾 حفظ</button>
 
   <div class="bottom">
-    <button onclick="prevPage()">⬅ السابق</button>
-    <button onclick="nextPage()">التالي ➡</button>
-    <button onclick="speak()">🔊 قراءة</button>
+    <button onclick="prevPage()">⬅</button>
+    <button onclick="nextPage()">➡</button>
+    <button onclick="speak()">🔊</button>
   </div>
 
 </div>
 
 <script>
 
-const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf 
-"; // ضع رابطك هنا
+// 🔥 بياناتك
+const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 const WEBHOOK_URL = "https://n8n.srv1495053.hstgr.cloud/webhook/headway";
+
+// 🔥 Supabase
+const supabase = supabase.createClient(
+  "https://ofyugbhplaynjeafdrgx.supabase.co",
+  "YOUR_ANON_KEY"
+);
 
 let pdfDoc=null;
 let currentPage=1;
+let user=null;
 
-async function openBook(){
+// 🧠 جلب المستخدم
+async function loadUser(){
+  const { data } = await supabase.auth.getUser();
+  user = data.user;
 
-  const btn=document.getElementById("openBtn");
-  btn.innerText="⏳ جاري التحميل...";
+  const { data:profile } = await supabase
+    .from("users")
+    .select("first_name,last_name")
+    .eq("id", user.id)
+    .single();
 
-  try{
-    pdfDoc = await pdfjsLib.getDocument(PDF_URL).promise;
-
-    currentPage = parseInt(localStorage.getItem("lastPage")) || 1;
-
-    await renderPage(currentPage);
-
-    btn.innerText="📖 تم فتح الكتاب";
-    document.getElementById("priceBox").style.display="none";
-
-  }catch(e){
-    btn.innerText="❌ فشل التحميل";
-    console.log(e);
-  }
+  document.getElementById("userName").innerText =
+    profile.first_name + " " + profile.last_name;
 }
 
+// 📥 فتح الكتاب
+async function openBook(){
+
+  document.querySelector(".blue").innerText="⏳ جاري التحميل...";
+
+  pdfDoc = await pdfjsLib.getDocument(PDF_URL).promise;
+
+  // 🔥 جلب آخر صفحة
+  const { data } = await supabase
+    .from("book_user_progress")
+    .select("page")
+    .eq("user_id", user.id)
+    .single();
+
+  if(data) currentPage = data.page;
+
+  renderPage(currentPage);
+
+  document.getElementById("priceBox").style.display="none";
+}
+
+// عرض الصفحة
 async function renderPage(num){
 
   const page = await pdfDoc.getPage(num);
-
   const canvas=document.getElementById("pdf");
   const ctx=canvas.getContext("2d");
 
@@ -169,9 +177,14 @@ async function renderPage(num){
 
   await page.render({canvasContext:ctx,viewport}).promise;
 
-  localStorage.setItem("lastPage", num);
+  // 🔥 حفظ الصفحة
+  await supabase.from("book_user_progress").upsert({
+    user_id:user.id,
+    page:num
+  });
 }
 
+// التالي
 function nextPage(){
   if(currentPage<pdfDoc.numPages){
     currentPage++;
@@ -179,6 +192,7 @@ function nextPage(){
   }
 }
 
+// السابق
 function prevPage(){
   if(currentPage>1){
     currentPage--;
@@ -186,75 +200,70 @@ function prevPage(){
   }
 }
 
+// 🧠 تحليل
 async function analyzePage(){
 
   const box=document.getElementById("analysisResult");
   box.innerHTML='<div class="analysis-card">⏳ جاري التحليل...</div>';
 
-  try{
+  const res = await fetch(WEBHOOK_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({page:currentPage})
+  });
 
-    const res = await fetch(WEBHOOK_URL,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({page:currentPage})
-    });
+  const data = await res.json();
 
-    const data = await res.json();
+  box.innerHTML="";
 
-    box.innerHTML="";
+  data.words.forEach(w=>{
 
-    data.words.forEach(w=>{
+    box.innerHTML+=`
+    <div class="analysis-card">
+      <b>${w.word}</b> (${w.type})
+      <div>${w.translation}</div>
 
-      box.innerHTML+=`
-      <div class="analysis-card">
-        <b style="color:#22c55e">${w.word}</b>
-        <span style="color:#facc15">(${w.type})</span>
-        <div>${w.example}</div>
-        <div style="color:#94a3b8">${w.translation}</div>
-
-        <button onclick="saveWord('${w.word}','${w.translation}')">
-          ⭐ حفظ
-        </button>
-      </div>
-      `;
-    });
-
-  }catch(e){
-    console.log(e);
-
-    box.innerHTML=`
-      <div class="analysis-card red">
-        ❌ فشل التحليل
-      </div>
+      <button onclick="saveWord('${w.word}','${w.translation}')">
+        ⭐ حفظ
+      </button>
+    </div>
     `;
-  }
+  });
 }
 
-function saveWord(word,translation){
+// ⭐ حفظ كلمة
+async function saveWord(word,translation){
 
-  let words = JSON.parse(localStorage.getItem("words")||"[]");
-
-  words.push({word,translation});
-
-  localStorage.setItem("words",JSON.stringify(words));
+  await supabase.from("book_user_words").insert({
+    user_id:user.id,
+    word,
+    translation
+  });
 
   alert("تم حفظ الكلمة ⭐");
 }
 
-function saveNote(){
+// 📝 حفظ ملاحظة
+async function saveNote(){
 
   const note=document.getElementById("note").value;
 
-  localStorage.setItem("note_page_"+currentPage,note);
+  await supabase.from("reviews").insert({
+    user_id:user.id,
+    page:currentPage,
+    note
+  });
 
   alert("تم حفظ الملاحظة");
 }
 
+// 🔊 قراءة
 function speak(){
-
-  const msg=new SpeechSynthesisUtterance("Reading page");
+  const msg=new SpeechSynthesisUtterance("Reading");
   speechSynthesis.speak(msg);
 }
+
+loadUser();
 
 </script>
 

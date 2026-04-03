@@ -1,162 +1,225 @@
-<!-- نفس كودك + تعديل بسيط -->
-
-<script>
-
-const client = supabase.createClient(
-  "https://ofyugbhplaynjeafdrgx.supabase.co",
-  "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
-);
-
-let userData = null;
-
-// 🔐 المستخدم
-async function initUser(){
-
-  const userId = localStorage.getItem("user_id");
-
-  if(!userId || userId === "undefined"){
-    window.location.href = "login.html";
-    return;
-  }
-
-  const { data } = await client
-    .from("users")
-    .select("role, status, name, subscription_status, subscription_end, book_purchased")
-    .eq("id", userId)
-    .single();
-
-  if(!data) return;
-
-  userData = data;
-
-  // 🚫 حظر
-  if(userData.status === "banned"){
-    showNotify("🚫 تم إيقاف حسابك","تواصل معنا عبر واتساب");
-  }
-
-  // الاشتراك
-  const now = new Date();
-  const end = new Date(userData.subscription_end);
-
-  userData.isSubscribed =
-    userData.subscription_status === "active" && end > now;
-
-  // الكتاب
-  userData.hasBook = userData.book_purchased === true;
-
-  // واتساب
-  let msg = `السلام عليكم، أنا ${userData.name}`;
-  let url = `https://wa.me/message/735SJORMFI74H1?text=${encodeURIComponent(msg)}`;
-  whatsappLink.href = url;
-  whatsappFloat.href = url;
-  whatsappBtn.href = url;
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إنجلش بالعربي</title><style>
+body {
+  margin: 0;
+  font-family: "Cairo", sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
-initUser();
-
-
-// 🔐 حماية الأدمن (🔥 الحل هنا)
-function goDashboard(){
-
-  if(!userData){
-    showNotify("⏳ انتظر","جاري تحميل البيانات");
-    return;
-  }
-
-  if(userData.role !== "admin"){
-    showNotify("🚫 غير مصرح","هذه الصفحة للأدمن فقط");
-    return;
-  }
-
-  location.href="mydashboard.html";
+/* الحاوية */
+.container {
+  width: 90%;
+  max-width: 400px;
+  background: #111827;
+  border-radius: 30px;
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-
-// الاشتراك
-function checkSub(){
-
-  if(!userData){
-    showNotify("⏳ انتظر","جاري تحميل بياناتك");
-    return false;
-  }
-
-  if(userData.isSubscribed) return true;
-
-  showNotify("🚫 الاشتراك مطلوب","يجب الاشتراك للوصول للكلاسات");
-  return false;
+/* الهيدر */
+.header {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  height: 140px;
+  position: relative;
 }
 
-// الكتاب
-function goBook(){
-
-  if(!userData){
-    showNotify("⏳ انتظر","جاري تحميل بياناتك");
-    return;
-  }
-
-  if(!userData.hasBook){
-    showNotify("📘 شراء الكتاب مطلوب","تواصل واتساب لشراء الكتاب");
-    return;
-  }
-
-  location.href="headwaybook.html";
+/* صورة */
+.profile-img {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 5px solid #1e293b;
+  position: absolute;
+  bottom: -55px;
+  left: 50%;
+  transform: translateX(-50%);
 }
+
+/* المحتوى */
+.content {
+  padding: 70px 20px 20px;
+}
+
+h1 {
+  margin: 10px 0;
+  color: white;
+}
+
+.subtitle {
+  color: #cbd5e1;
+}
+
+/* الطلاب */
+.students {
+  color: #22c55e;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* الكروت */
+.card {
+  background: #1e293b;
+  border-radius: 20px;
+  padding: 15px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+/* الأزرار */
+button {
+  background: #22c55e;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+/* تسجيل خروج */
+.logout {
+  background: #ef4444;
+  margin-top: 10px;
+}
+
+/* واتساب */
+.whatsapp {
+  display: block;
+  margin-top: 15px;
+  background: #25D366;
+  color: white;
+  padding: 12px;
+  border-radius: 15px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* زر عائم */
+.whatsapp-float {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: #25D366;
+  color: white;
+  font-size: 20px;
+  padding: 15px;
+  border-radius: 50%;
+  text-decoration: none;
+}
+</style></head><body><div class="container">  <div class="header">
+    <img src="me.jpeg" class="profile-img">
+  </div>  <div class="content"><h1>إنجلش بالعربي</h1>
+<div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
+
+<div class="students" id="students">
+  👨‍🎓 أكثر من 120 طالب
+</div>
+
+<div class="card">
+  <span>📚 الفصل الذكي</span>
+  <button onclick="goClass()">ابدأ</button>
+</div>
+
+<div class="card">
+  <span>📺 تحليل فيديو</span>
+  <button onclick="goYoutube()">ابدأ</button>
+</div>
+
+<div class="card">
+  <span>📄 تحليل PDF</span>
+  <button onclick="goPDF()">ابدأ</button>
+</div>
+
+<div class="card">
+  <span>🔍 البحث</span>
+  <button onclick="goSearch()">ابدأ</button>
+</div>
+
+<div class="card">
+  <span>📝 اختبار</span>
+  <button onclick="goTest()">ابدأ</button>
+</div>
+
+<div class="card">
+  <span>📊 مراجعة</span>
+  <button onclick="goReview()">فتح</button>
+</div>
+
+<div class="card">
+  <span>👤 حسابي</span>
+  <button onclick="goProfile()">فتح</button>
+</div>
+
+<!-- واتساب -->
+<a id="whatsappLink" target="_blank" class="whatsapp">
+  💬 تواصل معي على واتساب
+</a>
+
+<button class="logout" onclick="logout()">تسجيل خروج</button>
+
+  </div>
+</div><!-- زر واتساب عائم --><a id="whatsappFloat" target="_blank" class="whatsapp-float">
+  💬
+</a><script>
+
+// تحقق تسجيل الدخول
+const userId = localStorage.getItem("user_id");
+if(!userId){
+  window.location.href = "login.html";
+}
+
+// اسم الطالب
+let userName = localStorage.getItem("user_name") || "طالب";
+
+// رسالة واتساب
+let message = `السلام عليكم، أنا ${userName} وأحتاج مساعدة 🙏`;
+let encoded = encodeURIComponent(message);
+let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encoded}`;
+
+// ربط الأزرار
+document.getElementById("whatsappLink").href = whatsappURL;
+document.getElementById("whatsappFloat").href = whatsappURL;
+
+// عداد الطلاب
+let count = localStorage.getItem("studentsCount");
+if (!count) count = 120;
+
+function updateStudents() {
+  count = parseInt(count) + Math.floor(Math.random() * 2);
+  document.getElementById("students").innerText =
+    "👨‍🎓 أكثر من " + count + " طالب";
+  localStorage.setItem("studentsCount", count);
+}
+
+updateStudents();
+setInterval(updateStudents, 8000);
 
 // التنقل
-function goClass(){ if(!checkSub()) return; location.href="myclass.html"; }
-function goYoutube(){ if(!checkSub()) return; location.href="youtube.html"; }
-function goPDF(){ if(!checkSub()) return; location.href="pdf.html"; }
+function goClass(){ window.location.href = "myclass.html"; }
+function goYoutube(){ window.location.href = "youtube.html"; }
+function goPDF(){ window.location.href = "pdf.html"; }
+function goSearch(){ window.location.href = "search.html"; }
+function goProfile(){ window.location.href = "student.html"; }
+function goTest(){ window.location.href = "test.html"; }
+function goReview(){ window.location.href = "review.html"; }
 
-function goUpdate1(){ location.href="update1.html"; }
-function goUpdate2(){ location.href="update2.html"; }
-
-function goSearch(){ location.href="search.html"; }
-function goProfile(){ location.href="student.html"; }
-function goTest(){ location.href="test.html"; }
-function goReview(){ location.href="review.html"; }
-
-// Alert
-function showNotify(title,msg){
-  notifyTitle.innerText = title;
-  notifyText.innerText = msg;
-
-  if(title.includes("اشتراك") || title.includes("شراء") || title.includes("إيقاف")){
-    whatsappBtn.style.display = "block";
-  }else{
-    whatsappBtn.style.display = "none";
-  }
-
-  notifyBox.style.display = "flex";
-}
-
-function closeNotify(){
-  notifyBox.style.display = "none";
-}
-
-// خروج
+// تسجيل خروج
 function logout(){
+  const studentsCount = localStorage.getItem("studentsCount");
   localStorage.clear();
-  location.href="login.html";
+  localStorage.setItem("studentsCount", studentsCount);
+  window.location.href = "login.html";
 }
 
-// ⭐ عداد
-let base = localStorage.getItem("studentsBase") || 120;
-let startTime = localStorage.getItem("startTime");
-
-if(!startTime){
-  startTime = new Date().getTime();
-  localStorage.setItem("startTime", startTime);
-}
-
-function updateCounter(){
-  let now = new Date().getTime();
-  let diff = Math.floor((now - startTime) / 30000);
-  let total = parseInt(base) + diff;
-
-  students.innerText = "👨‍🎓 أكثر من " + total + " طالب";
-}
-
-setInterval(updateCounter, 30000);
-updateCounter();
-
-</script>
+</script></body>
+</html>

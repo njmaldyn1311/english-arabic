@@ -1,121 +1,26 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>الأفعال</title>
-
-<!-- ✅ مكتبة Supabase مرة واحدة فقط -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-<style>
-
-body{
-  margin:0;
-  font-family:"Cairo", Arial;
-  background:#0f172a;
-  color:white;
-}
-
-/* 🔥 الهيدر */
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px;
-}
-
-.home-btn{
-  background:#38bdf8;
-  border:none;
-  padding:8px 15px;
-  border-radius:10px;
-  color:white;
-}
-
-.username{
-  font-size:14px;
-}
-
-/* 🔥 العنوان */
-.title{
-  text-align:center;
-  font-size:28px;
-  margin:10px 0 20px;
-}
-
-/* 🔥 الكارد */
-.card{
-  background:#1e293b;
-  margin:10px;
-  padding:15px;
-  border-radius:15px;
-}
-
-.row{
-  display:flex;
-  justify-content:space-between;
-  margin:8px 0;
-}
-
-.sound{
-  background:#22c55e;
-  border:none;
-  border-radius:8px;
-  padding:5px 10px;
-  color:white;
-}
-
-.translation{
-  text-align:center;
-  margin-top:10px;
-  color:#38bdf8;
-  font-weight:bold;
-}
-
-</style>
-
-</head>
-<body>
-
-<!-- 🔥 الهيدر -->
-<div class="header">
-  <div class="username" id="userName">👤 ...</div>
-  <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
-</div>
-
-<!-- 🔥 العنوان -->
-<h2 class="title">📚 الأفعال</h2>
-
-<!-- القائمة -->
-<div id="list"></div>
-
 <script>
 
 /////////////////////////////
-// 🔥 تعريف Supabase (مرة واحدة فقط)
+// 🔥 إعداد Supabase
 /////////////////////////////
 
-const supabase = window.supabase.createClient(
-  "https://ofyugbhplaynjeafdrgx.supabase.co",
-  "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
-);
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+
+// ❗ مهم: اسم واحد فقط (لا تكرر supabase أو client مرة ثانية)
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /////////////////////////////
-// 🏠 الرجوع
+// 👤 بيانات المستخدم
 /////////////////////////////
 
-function goHome(){
-  window.location.href = "index.html";
-}
+let user_id = localStorage.getItem("user_id");
 
-/////////////////////////////
-// 👤 اسم المستخدم
-/////////////////////////////
+let fullName = localStorage.getItem("user") || "طالب جديد";
+let parts = fullName.split(" ");
 
 document.getElementById("userName").innerText =
-  "👤 " + (localStorage.getItem("name") || "محمد");
+  "👤 " + parts[0] + (parts[1] ? " " + parts[1] : "");
 
 /////////////////////////////
 // 🔊 الصوت
@@ -129,7 +34,7 @@ function speak(text){
 }
 
 /////////////////////////////
-// 🔥 تحميل الأفعال
+// 📥 تحميل الأفعال
 /////////////////////////////
 
 async function loadWords(){
@@ -137,16 +42,16 @@ async function loadWords(){
   const container = document.getElementById("list");
   container.innerHTML = "⏳ جاري التحميل...";
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("book_words")
     .select("*");
 
   if(error){
-    container.innerHTML = "❌ خطأ: " + error.message;
+    container.innerHTML = "❌ " + error.message;
     return;
   }
 
-  if(!data || data.length === 0){
+  if(!data.length){
     container.innerHTML = "⚠️ لا توجد بيانات";
     return;
   }
@@ -159,18 +64,18 @@ async function loadWords(){
       <div class="card">
 
         <div class="row">
-          <span>Present: ${word.base || '-'}</span>
-          <button class="sound" onclick="speak('${word.base || ''}')">🔊</button>
+          <span>${word.base}</span>
+          <button onclick="speak('${word.base}')">🔊</button>
         </div>
 
         <div class="row">
-          <span>Past: ${word.past || '-'}</span>
-          <button class="sound" onclick="speak('${word.past || ''}')">🔊</button>
+          <span>${word.past}</span>
+          <button onclick="speak('${word.past}')">🔊</button>
         </div>
 
         <div class="row">
-          <span>P.P: ${word.past_participle || '-'}</span>
-          <button class="sound" onclick="speak('${word.past_participle || ''}')">🔊</button>
+          <span>${word.past_participle}</span>
+          <button onclick="speak('${word.past_participle}')">🔊</button>
         </div>
 
         <div class="translation">
@@ -190,6 +95,3 @@ loadWords();
 /////////////////////////////
 
 </script>
-
-</body>
-</html>

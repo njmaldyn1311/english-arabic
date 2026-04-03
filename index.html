@@ -118,10 +118,38 @@ button {
   border-radius: 50%;
   text-decoration: none;
 }
+
+/* 🔔 الإشعارات */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 50%;
+  transform: translateX(50%);
+  background: #1e293b;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  display: none;
+  z-index: 999;
+  animation: fadeIn 0.5s;
+}
+
+.notification.success { border-left: 5px solid #22c55e; }
+.notification.error { border-left: 5px solid #ef4444; }
+.notification.info { border-left: 5px solid #3b82f6; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(50%) translateY(0); }
+}
 </style>
 </head>
 
 <body>
+
+<!-- 🔔 الإشعار -->
+<div id="notification" class="notification"></div>
 
 <div class="container">
 
@@ -168,7 +196,6 @@ button {
       <button onclick="goReview()">فتح</button>
     </div>
 
-    <!-- الصفحات الجديدة -->
     <div class="card">
       <span>📘 كتاب Headway</span>
       <button onclick="goHeadway()">فتح</button>
@@ -189,7 +216,6 @@ button {
       <button onclick="goProfile()">فتح</button>
     </div>
 
-    <!-- واتساب -->
     <a id="whatsappLink" target="_blank" class="whatsapp">
       💬 تواصل معي على واتساب
     </a>
@@ -199,10 +225,7 @@ button {
   </div>
 </div>
 
-<!-- زر واتساب عائم -->
-<a id="whatsappFloat" target="_blank" class="whatsapp-float">
-  💬
-</a>
+<a id="whatsappFloat" target="_blank" class="whatsapp-float">💬</a>
 
 <script>
 
@@ -215,30 +238,46 @@ if(!userId){
 // اسم الطالب
 let userName = localStorage.getItem("user_name") || "طالب";
 
-// رسالة واتساب
+// واتساب
 let message = `السلام عليكم، أنا ${userName} وأحتاج مساعدة 🙏`;
 let encoded = encodeURIComponent(message);
 let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encoded}`;
 
-// ربط الأزرار
 document.getElementById("whatsappLink").href = whatsappURL;
 document.getElementById("whatsappFloat").href = whatsappURL;
 
-// عداد الطلاب
-let count = localStorage.getItem("studentsCount");
-if (!count) count = 120;
+// 🔔 إشعارات
+function showNotification(text, type="info") {
+  const notif = document.getElementById("notification");
+  notif.className = "notification " + type;
+  notif.innerText = text;
+  notif.style.display = "block";
+
+  setTimeout(() => {
+    notif.style.display = "none";
+  }, 4000);
+}
+
+// 👨‍🎓 عداد طبيعي
+let count = parseInt(localStorage.getItem("studentsCount")) || 120;
 
 function updateStudents() {
-  count = parseInt(count) + Math.floor(Math.random() * 2);
+  if (Math.random() > 0.5) return;
+  count += 1;
   document.getElementById("students").innerText =
     "👨‍🎓 أكثر من " + count + " طالب";
   localStorage.setItem("studentsCount", count);
 }
 
-updateStudents();
-setInterval(updateStudents, 8000);
+function randomInterval() {
+  updateStudents();
+  const next = Math.floor(Math.random() * 30000) + 30000;
+  setTimeout(randomInterval, next);
+}
 
-// التنقل
+randomInterval();
+
+// 🔁 تنقل
 function goClass(){ window.location.href = "myclass.html"; }
 function goYoutube(){ window.location.href = "youtube.html"; }
 function goPDF(){ window.location.href = "pdf.html"; }
@@ -246,8 +285,6 @@ function goSearch(){ window.location.href = "search.html"; }
 function goProfile(){ window.location.href = "student.html"; }
 function goTest(){ window.location.href = "test.html"; }
 function goReview(){ window.location.href = "review.html"; }
-
-// الصفحات الجديدة
 function goHeadway(){ window.location.href = "headwaybook.html"; }
 function goUpdate1(){ window.location.href = "update1.html"; }
 function goUpdate2(){ window.location.href = "update2.html"; }
@@ -259,6 +296,15 @@ function logout(){
   localStorage.setItem("studentsCount", studentsCount);
   window.location.href = "login.html";
 }
+
+// 🔥 أمثلة إشعارات (تشيلها لاحقاً)
+setTimeout(()=>{
+  showNotification("✨ تم إضافة ميزة جديدة!", "success");
+},2000);
+
+setTimeout(()=>{
+  showNotification("🆕 تم تحديث النظام", "info");
+},6000);
 
 </script>
 

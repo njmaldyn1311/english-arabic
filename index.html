@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>إنجلش بالعربي</title>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
 <style>
 body {
   margin: 0;
@@ -17,6 +15,7 @@ body {
   align-items: center;
   min-height: 100vh;
 }
+
 .container {
   width: 90%;
   max-width: 400px;
@@ -26,11 +25,13 @@ body {
   text-align: center;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
+
 .header {
   background: linear-gradient(135deg, #0f172a, #1e293b);
   height: 140px;
   position: relative;
 }
+
 .profile-img {
   width: 110px;
   height: 110px;
@@ -41,14 +42,26 @@ body {
   left: 50%;
   transform: translateX(-50%);
 }
-.content { padding: 70px 20px 20px; }
-h1 { margin: 10px 0; color: white; }
-.subtitle { color: #cbd5e1; }
+
+.content {
+  padding: 70px 20px 20px;
+}
+
+h1 {
+  margin: 10px 0;
+  color: white;
+}
+
+.subtitle {
+  color: #cbd5e1;
+}
+
 .students {
   color: #22c55e;
   font-weight: bold;
   margin: 10px 0;
 }
+
 .card {
   background: #1e293b;
   border-radius: 20px;
@@ -59,6 +72,7 @@ h1 { margin: 10px 0; color: white; }
   align-items: center;
   color: white;
 }
+
 button {
   background: #22c55e;
   border: none;
@@ -67,7 +81,11 @@ button {
   border-radius: 20px;
   cursor: pointer;
 }
-.logout { background: #ef4444; margin-top: 10px; }
+
+.logout {
+  background: #ef4444;
+  margin-top: 10px;
+}
 
 .whatsapp {
   display: block;
@@ -79,6 +97,7 @@ button {
   text-decoration: none;
   font-weight: bold;
 }
+
 .whatsapp-float {
   position: fixed;
   bottom: 20px;
@@ -91,7 +110,7 @@ button {
   text-decoration: none;
 }
 
-/* Alert جميل */
+/* Alert */
 #alertBox{
   display:none;
   position:fixed;
@@ -99,29 +118,10 @@ button {
   left:0;
   width:100%;
   height:100%;
-  background:rgba(0,0,0,0.6);
+  background:rgba(0,0,0,0.5);
   justify-content:center;
   align-items:center;
   z-index:999;
-}
-#alertContent{
-  background:#111827;
-  padding:15px;
-  border-radius:15px;
-  width:85%;
-  max-width:260px;
-  color:white;
-  text-align:center;
-  animation:scaleIn .2s ease;
-}
-#alertContent button{
-  margin-top:10px;
-  padding:8px 15px;
-  border-radius:10px;
-}
-@keyframes scaleIn{
-  from{transform:scale(.8);opacity:0}
-  to{transform:scale(1);opacity:1}
 }
 </style>
 </head>
@@ -138,7 +138,9 @@ button {
     <h1>إنجلش بالعربي</h1>
     <div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
 
-    <div class="students">👨‍🎓 أكثر من 120 طالب</div>
+    <div class="students" id="students">
+      👨‍🎓 أكثر من 120 طالب
+    </div>
 
     <div class="card"><span>📚 الفصل الذكي</span><button onclick="goClass()">ابدأ</button></div>
     <div class="card"><span>📺 تحليل فيديو</span><button onclick="goYoutube()">ابدأ</button></div>
@@ -148,12 +150,15 @@ button {
     <div class="card"><span>📊 مراجعة</span><button onclick="goReview()">فتح</button></div>
     <div class="card"><span>👤 حسابي</span><button onclick="goProfile()">فتح</button></div>
 
+    <!-- ✅ الجديد -->
     <div class="card"><span>📘 كتابي</span><button onclick="goBook()">فتح</button></div>
     <div class="card"><span>📊 لوحة التحكم</span><button onclick="goDashboard()">فتح</button></div>
     <div class="card"><span>🚧 ميزة جديدة</span><button onclick="goUpdate1()">قريباً</button></div>
     <div class="card"><span>🔄 تحديثات</span><button onclick="goUpdate2()">عرض</button></div>
 
-    <a id="whatsappLink" target="_blank" class="whatsapp">💬 تواصل معي</a>
+    <a id="whatsappLink" target="_blank" class="whatsapp">
+      💬 تواصل معي على واتساب
+    </a>
 
     <button class="logout" onclick="logout()">تسجيل خروج</button>
 
@@ -164,47 +169,60 @@ button {
 
 <!-- Alert -->
 <div id="alertBox">
-  <div id="alertContent">
+  <div style="
+    background:#111827;
+    padding:15px;
+    border-radius:15px;
+    width:80%;
+    max-width:250px;
+    color:white;
+    text-align:center;
+  ">
     <div id="alertText"></div>
-    <button onclick="closeAlert()">حسناً</button>
+    <button onclick="closeAlert()" style="margin-top:10px;padding:8px 15px;border-radius:10px;background:#22c55e;color:white;border:none;">
+      حسناً
+    </button>
   </div>
 </div>
 
 <script>
 
-const client = supabase.createClient(
-  "https://ofyugbhplaynjeafdrgx.supabase.co",
-  "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
-);
+// تحقق تسجيل الدخول
+const userId = localStorage.getItem("user_id");
+if(!userId){
+  window.location.href = "login.html";
+}
 
-// ✅ تحقق الأدمن (حل نهائي)
-async function isAdminUser(){
+// اسم الطالب
+let userName = localStorage.getItem("user_name") || "طالب";
 
-  try{
-    const { data } = await client.auth.getUser();
+// واتساب
+let message = `السلام عليكم، أنا ${userName} وأحتاج مساعدة 🙏`;
+let encoded = encodeURIComponent(message);
+let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encoded}`;
+document.getElementById("whatsappLink").href = whatsappURL;
+document.getElementById("whatsappFloat").href = whatsappURL;
 
-    if(!data.user) return false;
+// عداد الطلاب
+let count = localStorage.getItem("studentsCount");
+if (!count) count = 120;
 
-    const { data: userData } = await client
-      .from("users")
-      .select("phone")
-      .eq("id", data.user.id)
-      .single();
+function updateStudents() {
+  count = parseInt(count) + Math.floor(Math.random() * 2);
+  document.getElementById("students").innerText =
+    "👨‍🎓 أكثر من " + count + " طالب";
+  localStorage.setItem("studentsCount", count);
+}
 
-    if(!userData) return false;
+updateStudents();
+setInterval(updateStudents, 8000);
 
-    let phone = userData.phone.replace(/\D/g,'');
-
-    if(phone.startsWith("0")){
-      phone = phone.substring(1);
-    }
-
-    return phone === "544507401";
-
-  }catch(e){
-    console.log(e);
-    return false;
-  }
+// 🔐 تحقق الأدمن
+function isAdmin(){
+  let phone = localStorage.getItem("user_phone") || "";
+  phone = phone.replace(/\D/g,'');
+  if(phone.startsWith("0")) phone = phone.substring(1);
+  return phone === "544507401";
 }
 
 // Alert
@@ -216,73 +234,48 @@ function closeAlert(){
   document.getElementById("alertBox").style.display = "none";
 }
 
-// روابط
-function goClass(){ location.href="myclass.html"; }
-function goYoutube(){ location.href="youtube.html"; }
-function goPDF(){ location.href="pdf.html"; }
-function goSearch(){ location.href="search.html"; }
-function goProfile(){ location.href="student.html"; }
-function goTest(){ location.href="test.html"; }
-function goReview(){ location.href="review.html"; }
-function goBook(){ location.href="headwaybook.html"; }
+// التنقل (بدون تغيير)
+function goClass(){ window.location.href = "myclass.html"; }
+function goYoutube(){ window.location.href = "youtube.html"; }
+function goPDF(){ window.location.href = "pdf.html"; }
+function goSearch(){ window.location.href = "search.html"; }
+function goProfile(){ window.location.href = "student.html"; }
+function goTest(){ window.location.href = "test.html"; }
+function goReview(){ window.location.href = "review.html"; }
 
-// 🔐 حماية الأدمن
-async function goDashboard(){
+// الجديد
+function goBook(){ window.location.href = "headwaybook.html"; }
 
-  const isAdmin = await isAdminUser();
-
-  if(!isAdmin){
+function goDashboard(){
+  if(!isAdmin()){
     showAlert("🚫 هذه الصفحة للمسؤول فقط");
     return;
   }
-
-  location.href="mydashboard.html";
+  window.location.href = "mydashboard.html";
 }
 
-async function goUpdate1(){
-
-  const isAdmin = await isAdminUser();
-
-  if(!isAdmin){
+function goUpdate1(){
+  if(!isAdmin()){
     showAlert("🚧 الصفحة تحت الإنشاء");
     return;
   }
-
-  location.href="update1.html";
+  window.location.href = "update1.html";
 }
 
-async function goUpdate2(){
-
-  const isAdmin = await isAdminUser();
-
-  if(!isAdmin){
+function goUpdate2(){
+  if(!isAdmin()){
     showAlert("🔄 الصفحة تحت التحديث");
     return;
   }
-
-  location.href="update2.html";
+  window.location.href = "update2.html";
 }
-
-// واتساب
-let name = localStorage.getItem("user_name") || "طالب";
-let msg = encodeURIComponent(`السلام عليكم أنا ${name}`);
-let link = `https://wa.me/966544507401?text=${msg}`;
-
-document.getElementById("whatsappLink").href = link;
-document.getElementById("whatsappFloat").href = link;
-
-// تسجيل دخول
-(async ()=>{
-  const { data } = await client.auth.getUser();
-  if(!data.user){
-    showAlert("⚠️ سجل دخول أولاً");
-  }
-})();
 
 // خروج
 function logout(){
+  const studentsCount = localStorage.getItem("studentsCount");
   localStorage.clear();
-  location.href="login.html";
+  localStorage.setItem("studentsCount", studentsCount);
+  window.location.href = "login.html";
 }
 
 </script>

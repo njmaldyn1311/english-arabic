@@ -6,265 +6,292 @@
 
 <title>كتابي</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+</script>
 
 <style>
 body{
   margin:0;
-  background:#0f172a;
   font-family:Arial;
+  background:#0f172a;
   color:white;
   text-align:center;
 }
 
-/* 🔥 الهيدر */
-.header{
+.topbar{
   display:flex;
   justify-content:space-between;
-  align-items:center;
-  padding:10px 15px;
+  padding:10px;
 }
 
-.home-btn{
+.home{
   background:#38bdf8;
-  padding:8px 15px;
+  padding:8px 12px;
   border-radius:10px;
-  border:none;
-  color:white;
+  cursor:pointer;
 }
 
-.username{
-  font-size:14px;
+.container{
+  padding:15px;
 }
 
-/* الكارد */
 .card{
   background:#e5e7eb;
   color:black;
-  margin:15px;
   padding:15px;
   border-radius:20px;
 }
 
-/* زر */
-.btn{
+.mainBtn{
   width:100%;
-  padding:12px;
+  padding:15px;
+  margin-top:10px;
   border:none;
   border-radius:12px;
-  margin-top:10px;
-  color:white;
   font-size:16px;
+  cursor:pointer;
+  background:#3b82f6;
+  color:white;
 }
 
-.download{background:#3b82f6;}
-.green{background:#22c55e;}
-.orange{background:#f59e0b;}
-
-/* PDF */
-canvas{
-  width:100%;
-  border-radius:15px;
-  margin-top:10px;
-}
-
-/* أزرار تحت */
-.bottom-buttons{
+.controls{
   display:flex;
-  gap:5px;
-  margin-top:10px;
+  gap:10px;
+  justify-content:center;
+  margin-top:15px;
+  flex-wrap:wrap;
 }
 
-.bottom-buttons button{
-  flex:1;
+.ctrlBtn{
+  background:#22c55e;
+  border:none;
+  padding:10px;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
+}
+
+/* popup */
+.overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.popup{
+  background:#1e293b;
+  padding:20px;
+  border-radius:15px;
+  width:85%;
+  max-width:280px;
+}
+
+.buy{
+  background:#f59e0b;
+  width:100%;
   padding:10px;
   border:none;
   border-radius:10px;
   color:white;
-  font-size:13px;
-  background:#22c55e;
-}
-
-/* 🔥 ملاحظات (تم إصلاح المشكلة) */
-.note-box{
-  width:100%;
   margin-top:10px;
 }
 
-textarea{
+.close{
+  background:#64748b;
   width:100%;
-  height:60px;
   padding:10px;
-  border-radius:10px;
   border:none;
-  box-sizing:border-box; /* 🔥 هذا حل المشكلة */
+  border-radius:10px;
+  color:white;
+  margin-top:10px;
+}
+
+canvas{
+  width:100% !important;
+  border-radius:10px;
 }
 </style>
-
 </head>
+
 <body>
 
-<!-- 🔥 الهيدر -->
-<div class="header">
-  <div class="username" id="userName">👤 أحمد</div>
-  <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
+<div class="topbar">
+  <div id="userName">...</div>
+  <div class="home" onclick="location.href='index.html'">🏠 الرئيسية</div>
 </div>
 
-<h2>📘 كتابي</h2>
+<div class="container">
 
-<div class="card">
+  <h2>📘 كتابي</h2>
 
-  <!-- السعر -->
-  <h2 id="priceBox">💰 سعر الكتاب: 250 ريال</h2>
+  <div class="card">
 
-  <!-- زر -->
-  <button id="openBtn" class="btn download" onclick="openBook()">
-    📥 تحميل وفتح
-  </button>
+    <h2>💰 سعر الكتاب: 250 ريال</h2>
 
-  <canvas id="pdf"></canvas>
+    <button id="openBtn" class="mainBtn" onclick="openBook()">
+      📥 تحميل وفتح
+    </button>
 
-  <!-- تحليل -->
-  <button class="btn orange" onclick="analyzePage()">
-    🧠 تحليل الصفحة
-  </button>
+    <canvas id="pdf"></canvas>
 
-  <!-- ملاحظات -->
-  <div class="note-box">
-    <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
   </div>
 
-  <button class="btn green" onclick="saveNote()">
-    💾 حفظ
-  </button>
-
-  <!-- الأزرار -->
-  <div class="bottom-buttons">
-    <button onclick="prevPage()">⬅ السابق</button>
-    <button onclick="nextPage()">التالي ➡</button>
-    <button onclick="savePage()">⭐ حفظ</button>
-    <button onclick="readPage()">🔊 قراءة</button>
+  <div class="controls">
+    <button class="ctrlBtn" onclick="prev()">⬅️ السابق</button>
+    <button class="ctrlBtn" onclick="next()">➡️ التالي</button>
+    <button class="ctrlBtn" onclick="savePage()">⭐ حفظ</button>
+    <button class="ctrlBtn" onclick="speak()">🔊 قراءة</button>
   </div>
 
+</div>
+
+<!-- 🔒 popup -->
+<div id="alert" class="overlay">
+  <div class="popup">
+    <h3 id="alertText">🔒 الكتاب للمشتركين فقط</h3>
+    <button class="buy" onclick="buy()">📱 شراء عبر واتساب</button>
+    <button class="close" onclick="closeAlert()">إغلاق</button>
+  </div>
 </div>
 
 <script>
 
-const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
+const client = supabase.createClient(
+"https://ofyugbhplaynjeafdrgx.supabase.co",
+"sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
+);
 
-let pdfDoc = null;
-let currentPage = 1;
+let userId = localStorage.getItem("user_id");
+let isPaid = false;
 
+let pdfDoc=null;
+let currentPage=1;
+let totalPages=0;
 
-// 🏠 الرئيسية
-function goHome(){
-  window.location.href = "index.html";
-}
+// 🔗 رابط مباشر (بدل المؤقت)
+const PDF_URL =
+"https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
+async function checkUser(){
 
-// 📥 فتح الكتاب
-async function openBook(){
+  const { data } = await client
+    .from("users")
+    .select("name,plan")
+    .eq("id", userId)
+    .single();
 
-  const btn = document.getElementById("openBtn");
-  btn.innerText = "⏳ جاري التحميل...";
+  if(data){
+    isPaid = data.plan === "paid";
 
-  try{
-
-    const loadingTask = pdfjsLib.getDocument(PDF_URL);
-    pdfDoc = await loadingTask.promise;
-
-    await renderPage(currentPage);
-
-    btn.innerText = "📖 تم فتح الكتاب";
-
-    // 🔥 إخفاء السعر بعد الفتح
-    document.getElementById("priceBox").style.display = "none";
-
-  }catch(e){
-    btn.innerText="❌ فشل التحميل";
+    let names = (data.name || "").split(" ");
+    document.getElementById("userName").innerText =
+      (names[0]||"") + " " + (names[1]||"");
   }
 }
 
+async function openBook(){
 
-// عرض الصفحة
-async function renderPage(num){
+  let btn = document.getElementById("openBtn");
 
-  const page = await pdfDoc.getPage(num);
+  btn.innerText="⏳ جاري التحميل...";
+  btn.disabled=true;
 
+  await checkUser();
+
+  if(!isPaid){
+    btn.innerText="📥 تحميل وفتح";
+    btn.disabled=false;
+    document.getElementById("alert").style.display="flex";
+    return;
+  }
+
+  try{
+
+    const loadingTask = pdfjsLib.getDocument({
+      url: PDF_URL
+    });
+
+    pdfDoc = await loadingTask.promise;
+
+    totalPages = pdfDoc.numPages;
+    currentPage = 1;
+
+    renderPage();
+
+  }catch(e){
+    console.error(e);
+
+    document.getElementById("alertText").innerText =
+      "❌ فشل تحميل الكتاب";
+
+    document.getElementById("alert").style.display="flex";
+  }
+
+  btn.innerText="📖 تم فتح الكتاب";
+  btn.disabled=false;
+}
+
+async function renderPage(){
+
+  const page = await pdfDoc.getPage(currentPage);
   const canvas = document.getElementById("pdf");
   const ctx = canvas.getContext("2d");
 
-  const viewport = page.getViewport({ scale:1.5 });
+  const viewport = page.getViewport({ scale:1.2 });
 
   canvas.height = viewport.height;
   canvas.width = viewport.width;
 
-  await page.render({
-    canvasContext:ctx,
-    viewport
-  }).promise;
+  await page.render({ canvasContext:ctx, viewport }).promise;
+
+  // 📊 تتبع
+  client.from("users")
+    .update({ last_page: currentPage })
+    .eq("id", userId);
 }
 
-
-// التالي
-function nextPage(){
-  if(currentPage < pdfDoc.numPages){
+function next(){
+  if(currentPage < totalPages){
     currentPage++;
-    renderPage(currentPage);
+    renderPage();
   }
 }
 
-// السابق
-function prevPage(){
+function prev(){
   if(currentPage > 1){
     currentPage--;
-    renderPage(currentPage);
+    renderPage();
   }
 }
 
-
-// حفظ الصفحة
 function savePage(){
-  localStorage.setItem("savedPage", currentPage);
-  alert("تم حفظ الصفحة ⭐");
+  localStorage.setItem("saved_page", currentPage);
+  alert("⭐ تم حفظ الصفحة");
 }
 
-
-// قراءة
-async function readPage(){
-
-  const page = await pdfDoc.getPage(currentPage);
-  const content = await page.getTextContent();
-
-  let text = content.items.map(i=>i.str).join(" ");
-
-  let speech = new SpeechSynthesisUtterance(text);
-  speech.lang = "en-US";
-
-  speechSynthesis.speak(speech);
+function speak(){
+  let u = new SpeechSynthesisUtterance("Reading page");
+  speechSynthesis.speak(u);
 }
 
-
-// تحليل
-function analyzePage(){
-  alert("تحليل الصفحة 🔥 (اربطه مع OpenAI)");
+function buy(){
+  window.open("https://wa.me/966000000000","_blank");
 }
 
-
-// حفظ ملاحظة
-function saveNote(){
-
-  let note = document.getElementById("noteInput").value;
-
-  if(!note) return;
-
-  alert("تم حفظ الملاحظة ✅");
+function closeAlert(){
+  document.getElementById("alert").style.display="none";
 }
-
-
-// 🔥 اسم المستخدم (تقدر تربطه بسوبابيز)
-document.getElementById("userName").innerText =
-  "👤 " + (localStorage.getItem("name") || "محمد");
 
 </script>
 

@@ -10,6 +10,8 @@
 
 <style>
 
+*{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
@@ -40,28 +42,30 @@ body{
 
 /* 📦 */
 .container{
-  padding:15px;
+  padding:10px;
   max-width:1000px;
   margin:auto;
+  overflow:hidden;
 }
 
 .title{
   text-align:center;
-  font-size:24px;
-  margin:15px 0;
+  font-size:22px;
+  margin:10px 0 15px;
 }
 
-/* 🔥 جدول */
+/* 🔥 الجدول */
 .card{
   display:grid;
-  grid-template-columns: 50px 1fr 1fr 1fr 120px 60px;
+  grid-template-columns: 40px 1fr 1fr 1fr 110px 50px;
   align-items:center;
-  gap:10px;
+  gap:8px;
 
   background:#1e293b;
-  border-radius:15px;
-  padding:12px;
+  border-radius:14px;
+  padding:10px;
   margin-bottom:8px;
+  width:100%;
 }
 
 /* رقم */
@@ -69,18 +73,18 @@ body{
   text-align:center;
   color:#38bdf8;
   font-weight:bold;
+  font-size:13px;
 }
 
 /* عنصر */
 .item{
   background:#334155;
-  padding:6px 8px;
+  padding:5px 6px;
   border-radius:8px;
   display:flex;
-  justify-content:center;
+  justify-content:space-between;
   align-items:center;
-  gap:5px;
-  font-size:13px;
+  font-size:12px;
 }
 
 /* ترجمة */
@@ -90,14 +94,16 @@ body{
   border-radius:8px;
   text-align:center;
   font-weight:bold;
+  font-size:12px;
 }
 
 /* أزرار */
 button{
   border:none;
   border-radius:6px;
-  padding:4px 6px;
+  padding:3px 6px;
   cursor:pointer;
+  font-size:11px;
 }
 
 /* صوت */
@@ -118,6 +124,54 @@ button{
   color:white;
 }
 
+/////////////////////////////
+/* 📱 موبايل */
+/////////////////////////////
+
+@media (max-width:768px){
+
+  .card{
+    grid-template-columns: 30px 1fr 1fr;
+    gap:5px;
+    padding:8px;
+  }
+
+  .item{
+    font-size:11px;
+    padding:4px;
+  }
+
+  .translation{
+    grid-column: span 2;
+    font-size:12px;
+  }
+
+  .save{
+    font-size:11px;
+    padding:4px;
+  }
+
+}
+
+/* 📱 أصغر */
+@media (max-width:500px){
+
+  .card{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .item{
+    justify-content:space-between;
+  }
+
+  .translation{
+    margin-top:5px;
+  }
+
+}
+
 </style>
 
 </head>
@@ -129,11 +183,8 @@ button{
 </div>
 
 <div class="container">
-
   <div class="title">📚 الأفعال</div>
-
   <div id="list"></div>
-
 </div>
 
 <script>
@@ -148,14 +199,10 @@ let user_id = localStorage.getItem("user_id");
 /* 👤 الاسم */
 let fullName = localStorage.getItem("user") || "طالب";
 let parts = fullName.split(" ");
-
 document.getElementById("username").innerText =
   "👤 " + parts[0] + (parts[1] ? " " + parts[1] : "");
 
-//////////////////////////
-// 🔊 صوت
-//////////////////////////
-
+/* 🔊 صوت */
 function speak(text){
   if(!text) return;
   speechSynthesis.cancel();
@@ -164,12 +211,8 @@ function speak(text){
   speechSynthesis.speak(u);
 }
 
-//////////////////////////
-// ⭐ حفظ
-//////////////////////////
-
+/* ⭐ حفظ */
 async function saveWord(word, btn){
-
   await client.from("saved_verbs").insert({
     user_id: user_id,
     word: word
@@ -179,10 +222,7 @@ async function saveWord(word, btn){
   btn.innerText = "✔";
 }
 
-//////////////////////////
-// 📥 تحميل
-//////////////////////////
-
+/* 📥 تحميل */
 async function load(){
 
   let { data, error } = await client
@@ -237,8 +277,7 @@ async function load(){
 
 }
 
-//////////////////////////
-
+/* رجوع */
 function goHome(){
   window.location.href="index.html";
 }

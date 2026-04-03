@@ -12,22 +12,16 @@
 <style>
 body{
   margin:0;
+  font-family:Arial;
   background:#0f172a;
   color:white;
-  font-family:Arial;
   text-align:center;
-}
-
-.container{
-  max-width:900px;
-  margin:auto;
-  padding:10px;
 }
 
 .topbar{
   display:flex;
   justify-content:space-between;
-  align-items:center;
+  padding:10px;
 }
 
 .home{
@@ -37,103 +31,132 @@ body{
   cursor:pointer;
 }
 
+.container{
+  padding:15px;
+}
+
 .card{
   background:#e5e7eb;
   color:black;
+  padding:15px;
   border-radius:20px;
-  padding:20px;
-}
-
-button{
-  border:none;
-  padding:12px;
-  border-radius:10px;
-  cursor:pointer;
-  color:white;
-  flex:1;
 }
 
 .mainBtn{
-  background:#3b82f6;
   width:100%;
+  padding:15px;
   margin-top:10px;
+  border:none;
+  border-radius:12px;
+  font-size:16px;
+  cursor:pointer;
+  background:#3b82f6;
+  color:white;
 }
 
 .controls{
   display:flex;
-  gap:8px;
-  margin-top:10px;
+  gap:10px;
+  justify-content:center;
+  margin-top:15px;
   flex-wrap:wrap;
 }
 
-#pdfContainer canvas{
-  width:100%;
-  margin-top:10px;
+.ctrlBtn{
+  background:#22c55e;
+  border:none;
+  padding:10px;
   border-radius:10px;
+  color:white;
+  cursor:pointer;
 }
 
-.alert{
+/* alert */
+.overlay{
   position:fixed;
   top:0;
   left:0;
   width:100%;
   height:100%;
+  background:rgba(0,0,0,0.7);
   display:none;
   justify-content:center;
   align-items:center;
-  background:rgba(0,0,0,0.6);
 }
 
-.alertBox{
+.popup{
   background:#1e293b;
-  padding:15px;
+  padding:20px;
   border-radius:15px;
-  width:80%;
-  max-width:250px;
+  width:90%;
+  max-width:300px;
 }
 
-.buy{background:#f59e0b;width:100%;}
-.close{background:#64748b;width:100%;margin-top:8px;}
-</style>
+.buy{
+  background:#f59e0b;
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  color:white;
+  margin-top:10px;
+}
 
+.close{
+  background:#64748b;
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  color:white;
+  margin-top:10px;
+}
+
+canvas{
+  width:100% !important;
+  border-radius:10px;
+}
+</style>
 </head>
 
-<body oncontextmenu="return false" oncopy="return false">
-
-<div class="container">
+<body>
 
 <div class="topbar">
-  <div id="username">...</div>
+  <div id="userName">...</div>
   <div class="home" onclick="location.href='index.html'">🏠 الرئيسية</div>
 </div>
 
-<h2>📘 كتابي</h2>
+<div class="container">
 
-<div class="card">
+  <h2>📘 كتابي</h2>
 
-<h2>💰 سعر الكتاب: 250 ريال</h2>
+  <div class="card">
 
-<button class="mainBtn" onclick="openBook()">📥 تحميل وفتح</button>
+    <h2>💰 سعر الكتاب: 250 ريال</h2>
 
-<div id="pdfContainer"></div>
+    <button id="openBtn" class="mainBtn" onclick="openBook()">
+      📥 تحميل وفتح
+    </button>
 
-<div class="controls">
-  <button onclick="prev()">⬅️</button>
-  <button onclick="next()">➡️</button>
-  <button onclick="savePage()">⭐</button>
-  <button onclick="speakPage()">🔊</button>
+    <canvas id="pdf"></canvas>
+
+  </div>
+
+  <div class="controls">
+    <button class="ctrlBtn" onclick="prev()">⬅️ السابق</button>
+    <button class="ctrlBtn" onclick="next()">➡️ التالي</button>
+    <button class="ctrlBtn" onclick="savePage()">⭐ حفظ</button>
+    <button class="ctrlBtn" onclick="speak()">🔊 قراءة</button>
+  </div>
+
 </div>
 
-<div id="pageNum"></div>
+<!-- 🔒 alert -->
+<div id="alert" class="overlay">
+  <div class="popup">
+    <h3>🔒 الكتاب للمشتركين فقط</h3>
 
-</div>
-</div>
-
-<!-- alert -->
-<div class="alert" id="alert">
-  <div class="alertBox">
-    <h4>🔒 للمشتركين فقط</h4>
-    <button class="buy" onclick="buy()">📲 شراء</button>
+    <button class="buy" onclick="buy()">📱 شراء عبر واتساب</button>
     <button class="close" onclick="closeAlert()">إغلاق</button>
   </div>
 </div>
@@ -146,140 +169,117 @@ const client = supabase.createClient(
 );
 
 let userId = localStorage.getItem("user_id");
-let isPaid=false;
+let isPaid = false;
 
 let pdfDoc=null;
 let currentPage=1;
 let totalPages=0;
 
-/* 👤 الاسم */
-async function loadUser(){
+async function checkUser(){
+
   const { data } = await client
     .from("users")
-    .select("name")
-    .eq("id",userId)
+    .select("name,plan")
+    .eq("id", userId)
     .single();
 
-  if(data?.name){
-    let parts=data.name.split(" ");
-    document.getElementById("username").innerText=parts.slice(0,2).join(" ");
+  if(data){
+    isPaid = data.plan === "paid";
+
+    let names = (data.name || "").split(" ");
+    document.getElementById("userName").innerText =
+      (names[0]||"") + " " + (names[1]||"");
   }
 }
 
-/* 🔐 تحقق */
-async function checkUser(){
-  const { data } = await client
-    .from("users")
-    .select("plan")
-    .eq("id",userId)
-    .single();
-
-  isPaid = data?.plan==="paid";
-}
-
-/* 📥 فتح */
 async function openBook(){
+
+  let btn = document.getElementById("openBtn");
+
+  btn.innerText="⏳ جاري التحميل...";
+  btn.disabled=true;
 
   await checkUser();
 
   if(!isPaid){
+    btn.innerText="📥 تحميل وفتح";
+    btn.disabled=false;
     document.getElementById("alert").style.display="flex";
     return;
   }
 
-  const { data } = await client.storage
-    .from("books")
-    .createSignedUrl("newHEADWAYbeginnerstudentbook.pdf",60);
+  try{
 
-  const url = data.signedUrl;
+    const { data } = await client.storage
+      .from("books")
+      .createSignedUrl("newHEADWAYbeginnerstudentbook.pdf",60);
 
-  const loadingTask = pdfjsLib.getDocument(url);
-  pdfDoc = await loadingTask.promise;
+    const loadingTask = pdfjsLib.getDocument(data.signedUrl);
 
-  totalPages = pdfDoc.numPages;
-  currentPage = 1;
+    pdfDoc = await loadingTask.promise;
 
-  renderPage();
+    totalPages = pdfDoc.numPages;
+
+    renderPage();
+
+  }catch(e){
+    alert("❌ فشل تحميل الكتاب");
+  }
+
+  btn.innerText="📖 تم فتح الكتاب";
+  btn.disabled=false;
 }
 
-/* 📖 عرض */
 async function renderPage(){
 
-  const container=document.getElementById("pdfContainer");
-  container.innerHTML="";
-
   const page = await pdfDoc.getPage(currentPage);
+  const canvas = document.getElementById("pdf");
+  const ctx = canvas.getContext("2d");
 
-  const canvas=document.createElement("canvas");
-  const ctx=canvas.getContext("2d");
+  const viewport = page.getViewport({ scale:1.2 });
 
-  const viewport=page.getViewport({scale:1.3});
+  canvas.height = viewport.height;
+  canvas.width = viewport.width;
 
-  canvas.height=viewport.height;
-  canvas.width=viewport.width;
+  await page.render({ canvasContext:ctx, viewport }).promise;
 
-  await page.render({
-    canvasContext:ctx,
-    viewport:viewport
-  }).promise;
-
-  container.appendChild(canvas);
-
-  document.getElementById("pageNum").innerText=
-    currentPage+" / "+totalPages;
-
-  track();
+  // 📊 تتبع
+  client.from("users")
+    .update({ last_page: currentPage })
+    .eq("id", userId);
 }
 
-/* أزرار */
 function next(){
-  if(currentPage<totalPages){
+  if(currentPage < totalPages){
     currentPage++;
     renderPage();
   }
 }
 
 function prev(){
-  if(currentPage>1){
+  if(currentPage > 1){
     currentPage--;
     renderPage();
   }
 }
 
-/* حفظ */
-async function savePage(){
-  await client.from("book_progress").upsert({
-    user_id:userId,
-    page:currentPage
-  });
-  alert("تم الحفظ ⭐");
+function savePage(){
+  localStorage.setItem("saved_page", currentPage);
+  alert("⭐ تم حفظ الصفحة");
 }
 
-/* صوت */
-function speakPage(){
-  let u=new SpeechSynthesisUtterance("Page "+currentPage);
+function speak(){
+  let u = new SpeechSynthesisUtterance("Reading page");
   speechSynthesis.speak(u);
 }
 
-/* تتبع */
-async function track(){
-  await client.from("book_tracking").insert({
-    user_id:userId,
-    page:currentPage
-  });
+function buy(){
+  window.open("https://wa.me/966000000000","_blank");
 }
 
-/* alert */
 function closeAlert(){
   document.getElementById("alert").style.display="none";
 }
-
-function buy(){
-  let phone="966509079576";
-  window.open(`https://wa.me/${phone}`);
-}
-
-loadUser();
 
 </script>
 

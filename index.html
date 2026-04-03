@@ -58,11 +58,14 @@ button {
   border-radius: 20px;
 }
 
-.logout { background: #ef4444; }
+.logout { 
+  background: #ef4444;
+  margin-top: 15px;
+}
 
 .whatsapp {
   display: block;
-  margin-top: 15px;
+  margin-top: 20px;
   background: #25D366;
   color: white;
   padding: 12px;
@@ -143,7 +146,6 @@ button {
 
 <script>
 
-// Supabase
 const client = supabase.createClient(
   "https://ofyugbhplaynjeafdrgx.supabase.co",
   "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
@@ -151,7 +153,7 @@ const client = supabase.createClient(
 
 let userData = null;
 
-// 🔐 تحقق المستخدم
+// 🔐 المستخدم
 async function initUser(){
 
   const userId = localStorage.getItem("user_id");
@@ -161,30 +163,25 @@ async function initUser(){
     return;
   }
 
-  const { data, error } = await client
+  const { data } = await client
     .from("users")
-    .select("role, status, name, subscription_status, subscription_end")
+    .select("role, status, name, subscription_status, subscription_end, book_purchased")
     .eq("id", userId)
     .single();
 
-  if(error || !data){
-    console.log("خطأ مؤقت");
-    return;
-  }
+  if(!data) return;
 
   userData = data;
 
-  // ⭐ الاشتراك
+  // الاشتراك
   const now = new Date();
   const end = new Date(userData.subscription_end);
 
   userData.isSubscribed =
     userData.subscription_status === "active" && end > now;
 
-  // 🚫 حظر
-  if(userData.status === "banned"){
-    showNotify("🚫 تم إيقاف حسابك","تواصل معنا واتساب");
-  }
+  // الكتاب
+  userData.hasBook = userData.book_purchased === true;
 
   // واتساب
   let msg = `السلام عليكم، أنا ${userData.name}`;
@@ -196,51 +193,56 @@ async function initUser(){
 
 initUser();
 
-// 🔐 صلاحيات
-function isAdmin(){
-  return userData?.role === "admin";
-}
-
-// 🔐 اشتراك
+// الاشتراك
 function checkSub(){
-  if(userData?.isSubscribed) return true;
 
-  showNotify("🚫 الاشتراك مطلوب","يجب الاشتراك للوصول");
+  if(!userData){
+    showNotify("⏳ انتظر","جاري تحميل بياناتك");
+    return false;
+  }
+
+  if(userData.isSubscribed) return true;
+
+  showNotify("🚫 الاشتراك مطلوب","يجب الاشتراك للوصول للكلاسات");
   return false;
 }
 
-// 🔥 التنقل
+// الكتاب
+function goBook(){
+
+  if(!userData){
+    showNotify("⏳ انتظر","جاري تحميل بياناتك");
+    return;
+  }
+
+  if(!userData.hasBook){
+    showNotify("📘 شراء الكتاب مطلوب","تواصل واتساب لشراء الكتاب");
+    return;
+  }
+
+  location.href="headwaybook.html";
+}
+
+// التنقل
 function goClass(){ if(!checkSub()) return; location.href="myclass.html"; }
 function goYoutube(){ if(!checkSub()) return; location.href="youtube.html"; }
 function goPDF(){ if(!checkSub()) return; location.href="pdf.html"; }
-function goBook(){ if(!checkSub()) return; location.href="headwaybook.html"; }
 
-function goDashboard(){
-  if(!isAdmin()) return showNotify("🚫 غير مصرح","للأدمن فقط");
-  location.href="mydashboard.html";
-}
-
-function goUpdate1(){
-  if(!isAdmin()) return showNotify("🚧","تحت الإنشاء");
-  location.href="update1.html";
-}
-
-function goUpdate2(){
-  if(!isAdmin()) return showNotify("🔄","للأدمن فقط");
-  location.href="update2.html";
-}
+function goDashboard(){ location.href="mydashboard.html"; }
+function goUpdate1(){ location.href="update1.html"; }
+function goUpdate2(){ location.href="update2.html"; }
 
 function goSearch(){ location.href="search.html"; }
 function goProfile(){ location.href="student.html"; }
 function goTest(){ location.href="test.html"; }
 function goReview(){ location.href="review.html"; }
 
-// 🔔 Alert
+// Alert
 function showNotify(title,msg){
   notifyTitle.innerText = title;
   notifyText.innerText = msg;
 
-  if(title.includes("اشتراك") || title.includes("إيقاف")){
+  if(title.includes("اشتراك") || title.includes("شراء")){
     whatsappBtn.style.display = "block";
   }else{
     whatsappBtn.style.display = "none";
@@ -248,24 +250,36 @@ function showNotify(title,msg){
 
   notifyBox.style.display = "flex";
 }
+
 function closeNotify(){
   notifyBox.style.display = "none";
 }
 
-// 🚪 خروج
+// خروج
 function logout(){
   localStorage.clear();
   location.href="login.html";
 }
 
-// ⭐ عداد ثابت
-let count = localStorage.getItem("studentsCount") || 120;
-if(!localStorage.getItem("counted")){
-  count++;
-  localStorage.setItem("studentsCount", count);
-  localStorage.setItem("counted","yes");
+// عداد تسويقي
+let base = localStorage.getItem("studentsBase") || 120;
+let startTime = localStorage.getItem("startTime");
+
+if(!startTime){
+  startTime = new Date().getTime();
+  localStorage.setItem("startTime", startTime);
 }
-students.innerText = "👨‍🎓 أكثر من " + count + " طالب";
+
+function updateCounter(){
+  let now = new Date().getTime();
+  let diff = Math.floor((now - startTime) / 30000);
+  let total = parseInt(base) + diff;
+
+  students.innerText = "👨‍🎓 أكثر من " + total + " طالب";
+}
+
+setInterval(updateCounter, 30000);
+updateCounter();
 
 </script>
 

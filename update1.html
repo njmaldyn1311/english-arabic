@@ -42,55 +42,63 @@ body{
 /* 📦 */
 .container{
   padding:15px;
-  max-width:600px;
+  max-width:900px;
   margin:auto;
 }
 
+/* العنوان */
 .title{
   text-align:center;
   font-size:24px;
   margin:15px 0;
 }
 
-/* 🧾 الكرت */
+/* 🔥 كرت أفقي */
 .card{
   background:#1e293b;
   border-radius:15px;
   padding:15px;
   margin-bottom:10px;
-}
 
-/* صف */
-.row{
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  margin:6px 0;
-  background:#334155;
-  padding:10px;
-  border-radius:10px;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
 }
 
+/* كل عنصر */
+.item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:#334155;
+  padding:8px 10px;
+  border-radius:10px;
+  font-size:14px;
+}
+
+/* زر الصوت */
 button{
   border:none;
-  background:#38bdf8;
+  background:#22c55e;
   color:white;
-  border-radius:8px;
-  padding:5px 10px;
+  border-radius:6px;
+  padding:4px 8px;
   cursor:pointer;
 }
 
-/* ترجمة */
+/* الترجمة */
 .translation{
-  text-align:center;
-  margin-top:10px;
-  color:#22c55e;
+  background:#0ea5e9;
+  padding:8px 12px;
+  border-radius:10px;
   font-weight:bold;
 }
 
 </style>
-</head>
 
+</head>
 <body>
 
 <div class="header">
@@ -109,7 +117,7 @@ button{
 <script>
 
 /////////////////////////////
-// 🔥 نفس ربطك بالضبط
+// 🔥 Supabase (نفس طريقتك)
 /////////////////////////////
 
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
@@ -132,9 +140,10 @@ document.getElementById("username").innerText =
 /////////////////////////////
 
 function speak(text){
+  if(!text) return;
   speechSynthesis.cancel();
-  let u=new SpeechSynthesisUtterance(text);
-  u.lang="en-US";
+  let u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
   speechSynthesis.speak(u);
 }
 
@@ -145,20 +154,21 @@ function speak(text){
 async function load(){
 
   let { data, error } = await client
-    .from("book_words")
+    .from("headway_verbs")
     .select("*");
 
+  const container = document.getElementById("list");
+
   if(error){
-    document.getElementById("list").innerText = "❌ " + error.message;
+    container.innerHTML = "❌ " + error.message;
     return;
   }
 
   if(!data.length){
-    document.getElementById("list").innerText = "⚠️ لا توجد أفعال";
+    container.innerHTML = "⚠️ لا توجد بيانات";
     return;
   }
 
-  let container = document.getElementById("list");
   container.innerHTML = "";
 
   data.forEach(w => {
@@ -166,23 +176,23 @@ async function load(){
     container.innerHTML += `
       <div class="card">
 
-        <div class="row">
-          <span>${w.base}</span>
-          <button onclick="speak('${w.base}')">🔊</button>
+        <div class="item">
+          ${w.base || w.word}
+          <button onclick="speak('${w.base || w.word}')">🔊</button>
         </div>
 
-        <div class="row">
-          <span>${w.past}</span>
+        <div class="item">
+          ${w.past || '-'}
           <button onclick="speak('${w.past}')">🔊</button>
         </div>
 
-        <div class="row">
-          <span>${w.past_participle}</span>
+        <div class="item">
+          ${w.past_participle || '-'}
           <button onclick="speak('${w.past_participle}')">🔊</button>
         </div>
 
         <div class="translation">
-          ${w.translation || ""}
+          ${w.translation || ''}
         </div>
 
       </div>

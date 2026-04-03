@@ -262,7 +262,7 @@ function showNotification(text, type="info") {
 let count = parseInt(localStorage.getItem("studentsCount")) || 120;
 
 function updateStudents() {
-  if (Math.random() > 0.5) return;
+  if (Math.random() > 0.3) return;
   count += 1;
   document.getElementById("students").innerText =
     "👨‍🎓 أكثر من " + count + " طالب";

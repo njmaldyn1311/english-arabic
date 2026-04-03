@@ -17,7 +17,7 @@ body{
   text-align:center;
 }
 
-/* 🔥 الهيدر */
+/* header */
 .header{
   display:flex;
   justify-content:space-between;
@@ -28,8 +28,8 @@ body{
 .home-btn{
   background:#38bdf8;
   padding:8px 15px;
-  border-radius:10px;
   border:none;
+  border-radius:10px;
   color:white;
 }
 
@@ -37,7 +37,7 @@ body{
   font-size:14px;
 }
 
-/* الكارد */
+/* card */
 .card{
   background:#e5e7eb;
   color:black;
@@ -46,7 +46,7 @@ body{
   border-radius:20px;
 }
 
-/* زر */
+/* buttons */
 .btn{
   width:100%;
   padding:12px;
@@ -61,14 +61,14 @@ body{
 .green{background:#22c55e;}
 .orange{background:#f59e0b;}
 
-/* PDF */
+/* pdf */
 canvas{
   width:100%;
   border-radius:15px;
   margin-top:10px;
 }
 
-/* أزرار تحت */
+/* bottom */
 .bottom-buttons{
   display:flex;
   gap:5px;
@@ -85,28 +85,33 @@ canvas{
   background:#22c55e;
 }
 
-/* 🔥 ملاحظات (تم إصلاح المشكلة) */
-.note-box{
-  width:100%;
-  margin-top:10px;
-}
-
+/* notes */
 textarea{
   width:100%;
   height:60px;
   padding:10px;
   border-radius:10px;
   border:none;
-  box-sizing:border-box; /* 🔥 هذا حل المشكلة */
+  box-sizing:border-box;
+}
+
+/* analysis */
+.analysis-card{
+  background:#1e293b;
+  margin-top:10px;
+  padding:12px;
+  border-radius:12px;
+  color:white;
+  text-align:right;
 }
 </style>
 
 </head>
 <body>
 
-<!-- 🔥 الهيدر -->
+<!-- header -->
 <div class="header">
-  <div class="username" id="userName">👤 أحمد</div>
+  <div class="username" id="userName">👤 ...</div>
   <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
 </div>
 
@@ -122,6 +127,7 @@ textarea{
     📥 تحميل وفتح
   </button>
 
+  <!-- pdf -->
   <canvas id="pdf"></canvas>
 
   <!-- تحليل -->
@@ -129,16 +135,15 @@ textarea{
     🧠 تحليل الصفحة
   </button>
 
+  <!-- النتائج -->
+  <div id="analysisBox"></div>
+
   <!-- ملاحظات -->
-  <div class="note-box">
-    <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
-  </div>
+  <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
 
-  <button class="btn green" onclick="saveNote()">
-    💾 حفظ
-  </button>
+  <button class="btn green" onclick="saveNote()">💾 حفظ</button>
 
-  <!-- الأزرار -->
+  <!-- أزرار -->
   <div class="bottom-buttons">
     <button onclick="prevPage()">⬅ السابق</button>
     <button onclick="nextPage()">التالي ➡</button>
@@ -152,81 +157,81 @@ textarea{
 
 const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
-let pdfDoc = null;
-let currentPage = 1;
+let pdfDoc=null;
+let currentPage=1;
+
+
+// 👤 الاسم الأول والثاني
+let fullName = localStorage.getItem("name") || "محمد أحمد";
+let parts = fullName.split(" ");
+document.getElementById("userName").innerText =
+  "👤 " + parts[0] + " " + (parts[1] || "");
 
 
 // 🏠 الرئيسية
 function goHome(){
-  window.location.href = "index.html";
+  window.location.href="index.html";
 }
 
 
-// 📥 فتح الكتاب
+// 📥 فتح
 async function openBook(){
 
-  const btn = document.getElementById("openBtn");
-  btn.innerText = "⏳ جاري التحميل...";
+  const btn=document.getElementById("openBtn");
+  btn.innerText="⏳ جاري التحميل...";
 
   try{
-
-    const loadingTask = pdfjsLib.getDocument(PDF_URL);
-    pdfDoc = await loadingTask.promise;
-
+    pdfDoc = await pdfjsLib.getDocument(PDF_URL).promise;
     await renderPage(currentPage);
 
-    btn.innerText = "📖 تم فتح الكتاب";
+    btn.innerText="📖 تم فتح الكتاب";
 
-    // 🔥 إخفاء السعر بعد الفتح
-    document.getElementById("priceBox").style.display = "none";
+    // 🔥 إخفاء السعر
+    document.getElementById("priceBox").style.display="none";
 
-  }catch(e){
+  }catch{
     btn.innerText="❌ فشل التحميل";
   }
 }
 
 
-// عرض الصفحة
+// عرض
 async function renderPage(num){
 
   const page = await pdfDoc.getPage(num);
 
-  const canvas = document.getElementById("pdf");
-  const ctx = canvas.getContext("2d");
+  const canvas=document.getElementById("pdf");
+  const ctx=canvas.getContext("2d");
 
-  const viewport = page.getViewport({ scale:1.5 });
+  const viewport=page.getViewport({scale:1.5});
 
-  canvas.height = viewport.height;
-  canvas.width = viewport.width;
+  canvas.height=viewport.height;
+  canvas.width=viewport.width;
 
-  await page.render({
-    canvasContext:ctx,
-    viewport
-  }).promise;
+  await page.render({canvasContext:ctx,viewport}).promise;
 }
 
 
-// التالي
+// تنقل
 function nextPage(){
-  if(currentPage < pdfDoc.numPages){
+  if(currentPage<pdfDoc.numPages){
     currentPage++;
     renderPage(currentPage);
   }
 }
 
-// السابق
 function prevPage(){
-  if(currentPage > 1){
+  if(currentPage>1){
     currentPage--;
     renderPage(currentPage);
   }
 }
 
 
-// حفظ الصفحة
+// حفظ صفحة
 function savePage(){
-  localStorage.setItem("savedPage", currentPage);
-  alert("تم حفظ الصفحة ⭐");
+  localStorage.setItem("savedPage",currentPage);
+  alert("تم الحفظ ⭐");
 }
 
 
@@ -238,33 +243,78 @@ async function readPage(){
 
   let text = content.items.map(i=>i.str).join(" ");
 
-  let speech = new SpeechSynthesisUtterance(text);
-  speech.lang = "en-US";
+  let speech=new SpeechSynthesisUtterance(text);
+  speech.lang="en-US";
 
   speechSynthesis.speak(speech);
 }
 
 
-// تحليل
-function analyzePage(){
-  alert("تحليل الصفحة 🔥 (اربطه مع OpenAI)");
+// 🧠 تحليل
+async function analyzePage(){
+
+  const box=document.getElementById("analysisBox");
+
+  box.innerHTML=`
+    <div class="analysis-card">
+      ⏳ جاري التحليل...
+    </div>
+  `;
+
+  try{
+
+    const page=await pdfDoc.getPage(currentPage);
+    const content=await page.getTextContent();
+
+    let text=content.items.map(i=>i.str).join(" ");
+
+    const res = await fetch("https://YOUR-N8N-WEBHOOK",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({text,page:currentPage})
+    });
+
+    const data=await res.json();
+
+    box.innerHTML="";
+
+    data.words.forEach(w=>{
+
+      box.innerHTML+=`
+        <div class="analysis-card">
+          <div style="color:#22c55e;font-weight:bold">
+            ${w.word} <span style="color:#facc15">${w.type}</span>
+          </div>
+
+          <div>${w.example}</div>
+
+          <div style="color:#94a3b8">
+            ${w.translation}
+          </div>
+        </div>
+      `;
+    });
+
+  }catch{
+    box.innerHTML=`
+      <div class="analysis-card" style="background:#7f1d1d">
+        ❌ فشل التحليل
+      </div>
+    `;
+  }
 }
 
 
-// حفظ ملاحظة
+// ملاحظة
 function saveNote(){
-
-  let note = document.getElementById("noteInput").value;
-
-  if(!note) return;
-
+  let note=document.getElementById("noteInput").value;
+  if(!note)return;
   alert("تم حفظ الملاحظة ✅");
 }
 
 
-// 🔥 اسم المستخدم (تقدر تربطه بسوبابيز)
-document.getElementById("userName").innerText =
-  "👤 " + (localStorage.getItem("name") || "محمد");
+// منع نسخ
+document.addEventListener("contextmenu",e=>e.preventDefault());
 
 </script>
 

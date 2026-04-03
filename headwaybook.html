@@ -7,7 +7,6 @@
 <title>كتابي</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
 body{
@@ -18,9 +17,11 @@ body{
   text-align:center;
 }
 
+/* 🔥 الهيدر */
 .header{
   display:flex;
   justify-content:space-between;
+  align-items:center;
   padding:10px 15px;
 }
 
@@ -32,8 +33,11 @@ body{
   color:white;
 }
 
-.username{ font-size:14px; }
+.username{
+  font-size:14px;
+}
 
+/* الكارد */
 .card{
   background:#e5e7eb;
   color:black;
@@ -42,6 +46,7 @@ body{
   border-radius:20px;
 }
 
+/* زر */
 .btn{
   width:100%;
   padding:12px;
@@ -56,12 +61,14 @@ body{
 .green{background:#22c55e;}
 .orange{background:#f59e0b;}
 
+/* PDF */
 canvas{
   width:100%;
   border-radius:15px;
   margin-top:10px;
 }
 
+/* أزرار تحت */
 .bottom-buttons{
   display:flex;
   gap:5px;
@@ -78,20 +85,28 @@ canvas{
   background:#22c55e;
 }
 
+/* 🔥 ملاحظات (تم إصلاح المشكلة) */
+.note-box{
+  width:100%;
+  margin-top:10px;
+}
+
 textarea{
   width:100%;
   height:60px;
   padding:10px;
   border-radius:10px;
   border:none;
+  box-sizing:border-box; /* 🔥 هذا حل المشكلة */
 }
 </style>
-</head>
 
+</head>
 <body>
 
+<!-- 🔥 الهيدر -->
 <div class="header">
-  <div class="username" id="userName">👤 ...</div>
+  <div class="username" id="userName">👤 أحمد</div>
   <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
 </div>
 
@@ -99,20 +114,31 @@ textarea{
 
 <div class="card">
 
+  <!-- السعر -->
   <h2 id="priceBox">💰 سعر الكتاب: 250 ريال</h2>
 
-  <button id="openBtn" class="btn download" disabled onclick="openBook()">
-    ⏳ جاري التحقق...
+  <!-- زر -->
+  <button id="openBtn" class="btn download" onclick="openBook()">
+    📥 تحميل وفتح
   </button>
 
   <canvas id="pdf"></canvas>
 
-  <button class="btn orange" onclick="analyzePage()">🧠 تحليل الصفحة</button>
+  <!-- تحليل -->
+  <button class="btn orange" onclick="analyzePage()">
+    🧠 تحليل الصفحة
+  </button>
 
-  <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
+  <!-- ملاحظات -->
+  <div class="note-box">
+    <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
+  </div>
 
-  <button class="btn green" onclick="saveNote()">💾 حفظ</button>
+  <button class="btn green" onclick="saveNote()">
+    💾 حفظ
+  </button>
 
+  <!-- الأزرار -->
   <div class="bottom-buttons">
     <button onclick="prevPage()">⬅ السابق</button>
     <button onclick="nextPage()">التالي ➡</button>
@@ -124,71 +150,34 @@ textarea{
 
 <script>
 
-// ✅ Supabase (مرة واحدة فقط)
-const supabase = window.supabase.createClient(
-  "https://ofyugbhplaynjeafdrgx.supabase.co",
-  "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
-);
+const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
-let isSubscribed = false;
 let pdfDoc = null;
 let currentPage = 1;
 
-const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
-// 🔍 تحقق المستخدم
-async function checkUser(){
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if(!user){
-    alert("⚠️ لازم تسجل دخول");
-    location.href="login.html";
-    return;
-  }
-
-  document.getElementById("userName").innerText =
-    "👤 " + (user.email || "طالب");
-
-  const { data } = await supabase
-    .from("students")
-    .select("is_subscribed")
-    .eq("id", user.id)
-    .single();
-
-  isSubscribed = data?.is_subscribed ?? false;
-
-  const btn = document.getElementById("openBtn");
-  btn.disabled = false;
-
-  if(isSubscribed){
-    btn.innerText = "📥 تحميل وفتح";
-  }else{
-    btn.innerText = "🔒 يتطلب اشتراك";
-    btn.classList.add("orange");
-  }
+// 🏠 الرئيسية
+function goHome(){
+  window.location.href = "index.html";
 }
 
-checkUser();
 
 // 📥 فتح الكتاب
 async function openBook(){
-
-  if(!isSubscribed){
-    alert("🚫 هذا الكتاب للمشتركين فقط");
-    return;
-  }
 
   const btn = document.getElementById("openBtn");
   btn.innerText = "⏳ جاري التحميل...";
 
   try{
+
     const loadingTask = pdfjsLib.getDocument(PDF_URL);
     pdfDoc = await loadingTask.promise;
 
     await renderPage(currentPage);
 
     btn.innerText = "📖 تم فتح الكتاب";
+
+    // 🔥 إخفاء السعر بعد الفتح
     document.getElementById("priceBox").style.display = "none";
 
   }catch(e){
@@ -196,9 +185,12 @@ async function openBook(){
   }
 }
 
-// عرض
+
+// عرض الصفحة
 async function renderPage(num){
+
   const page = await pdfDoc.getPage(num);
+
   const canvas = document.getElementById("pdf");
   const ctx = canvas.getContext("2d");
 
@@ -207,42 +199,72 @@ async function renderPage(num){
   canvas.height = viewport.height;
   canvas.width = viewport.width;
 
-  await page.render({canvasContext:ctx,viewport}).promise;
+  await page.render({
+    canvasContext:ctx,
+    viewport
+  }).promise;
 }
 
-// تنقل
-function nextPage(){ if(pdfDoc && currentPage < pdfDoc.numPages){ currentPage++; renderPage(currentPage);} }
-function prevPage(){ if(pdfDoc && currentPage > 1){ currentPage--; renderPage(currentPage);} }
 
-// حفظ
-function savePage(){ localStorage.setItem("savedPage", currentPage); alert("تم الحفظ ⭐"); }
+// التالي
+function nextPage(){
+  if(currentPage < pdfDoc.numPages){
+    currentPage++;
+    renderPage(currentPage);
+  }
+}
+
+// السابق
+function prevPage(){
+  if(currentPage > 1){
+    currentPage--;
+    renderPage(currentPage);
+  }
+}
+
+
+// حفظ الصفحة
+function savePage(){
+  localStorage.setItem("savedPage", currentPage);
+  alert("تم حفظ الصفحة ⭐");
+}
+
 
 // قراءة
 async function readPage(){
-  if(!pdfDoc) return;
+
   const page = await pdfDoc.getPage(currentPage);
   const content = await page.getTextContent();
+
   let text = content.items.map(i=>i.str).join(" ");
+
   let speech = new SpeechSynthesisUtterance(text);
   speech.lang = "en-US";
+
   speechSynthesis.speak(speech);
 }
 
-// تحليل (تم الإصلاح)
+
+// تحليل
 function analyzePage(){
-  alert("🧠 تحليل الصفحة قريباً");
+  alert("تحليل الصفحة 🔥 (اربطه مع OpenAI)");
 }
 
-// ملاحظات
+
+// حفظ ملاحظة
 function saveNote(){
+
   let note = document.getElementById("noteInput").value;
+
   if(!note) return;
-  localStorage.setItem("note_"+currentPage, note);
+
   alert("تم حفظ الملاحظة ✅");
 }
 
-// الرئيسية
-function goHome(){ location.href="index.html"; }
+
+// 🔥 اسم المستخدم (تقدر تربطه بسوبابيز)
+document.getElementById("userName").innerText =
+  "👤 " + (localStorage.getItem("name") || "محمد");
 
 </script>
 

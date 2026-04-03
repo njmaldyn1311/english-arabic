@@ -18,19 +18,6 @@ body{
   text-align:center;
 }
 
-/* الهيدر */
-.header{
-  display:flex;
-  justify-content:space-between;
-  padding:10px;
-}
-
-.home{
-  background:#38bdf8;
-  padding:8px 12px;
-  border-radius:10px;
-}
-
 /* الكارد */
 .card{
   background:#e5e7eb;
@@ -54,6 +41,7 @@ body{
 .download{background:#3b82f6;}
 .green{background:#22c55e;}
 .orange{background:#f59e0b;}
+.gray{background:#64748b;}
 
 /* PDF */
 canvas{
@@ -62,27 +50,27 @@ canvas{
   margin-top:10px;
 }
 
-/* تحليل */
-#analysisBox{
-  background:#0f172a;
-  color:white;
+/* أزرار تحت */
+.bottom-buttons{
+  display:flex;
+  justify-content:space-between;
   margin-top:10px;
+  gap:5px;
+}
+
+.bottom-buttons button{
+  flex:1;
   padding:10px;
+  border:none;
   border-radius:10px;
-  text-align:right;
+  color:white;
+  font-size:13px;
 }
 
-.word{
-  background:#1e293b;
-  padding:5px;
-  margin:3px;
-  border-radius:6px;
-  display:inline-block;
-}
-
-/* textarea */
+/* ملاحظات */
 textarea{
   width:100%;
+  height:60px; /* 🔥 صغرناه */
   margin-top:10px;
   padding:10px;
   border-radius:10px;
@@ -93,57 +81,47 @@ textarea{
 </head>
 <body>
 
-<div class="header">
-  <div id="username"></div>
-  <div class="home" onclick="location.href='index.html'">🏠 الرئيسية</div>
-</div>
-
 <h2>📘 كتابي</h2>
 
 <div class="card">
 
   <h2>💰 سعر الكتاب: 250 ريال</h2>
 
+  <!-- زر التحميل -->
   <button id="openBtn" class="btn download" onclick="openBook()">
     📥 تحميل وفتح
   </button>
 
   <canvas id="pdf"></canvas>
 
-  <!-- زر التحليل -->
+  <!-- تحليل -->
   <button class="btn orange" onclick="analyzePage()">
     🧠 تحليل الصفحة
   </button>
 
-  <!-- التحليل -->
-  <div id="analysisBox" style="display:none"></div>
-
   <!-- ملاحظات -->
-  <textarea id="noteInput" placeholder="✍️ اكتب ملاحظتك..."></textarea>
+  <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
 
   <button class="btn green" onclick="saveNote()">
-    💾 حفظ الملاحظة
+    💾 حفظ
   </button>
+
+  <!-- 🔥 أزرار التنقل -->
+  <div class="bottom-buttons">
+    <button class="green" onclick="prevPage()">⬅ السابق</button>
+    <button class="green" onclick="nextPage()">التالي ➡</button>
+    <button class="green" onclick="savePage()">⭐ حفظ</button>
+    <button class="green" onclick="readPage()">🔊 قراءة</button>
+  </div>
 
 </div>
 
 <script>
 
-const client = supabase.createClient(
-  "https://ofyugbhplaynjeafdrgx.supabase.co",
-  "YOUR_KEY"
-);
-
 const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
 let pdfDoc = null;
 let currentPage = 1;
-let userId = localStorage.getItem("user_id");
-
-// الاسم
-let name = localStorage.getItem("name") || "مستخدم";
-document.getElementById("username").innerText =
-  name.split(" ").slice(0,2).join(" ");
 
 
 // 📥 فتح الكتاب
@@ -159,10 +137,8 @@ async function openBook(){
 
     await renderPage(currentPage);
 
-    // 🔥 مهم: حذف النص بعد التحميل
-    btn.style.display = "none";
-
-    trackPage();
+    // 🔥 هنا التعديل المهم
+    btn.innerText = "📖 تم فتح الكتاب";
 
   }catch(e){
     btn.innerText="❌ فشل التحميل";
@@ -190,84 +166,58 @@ async function renderPage(num){
 }
 
 
-// 📊 تتبع القراءة
-async function trackPage(){
+// التالي
+function nextPage(){
+  if(currentPage < pdfDoc.numPages){
+    currentPage++;
+    renderPage(currentPage);
+  }
+}
 
-  await client.from("page_progress").upsert({
-    user_id:userId,
-    last_page:currentPage,
-    total_pages_read:currentPage
-  });
+// السابق
+function prevPage(){
+  if(currentPage > 1){
+    currentPage--;
+    renderPage(currentPage);
+  }
 }
 
 
-// 🧠 تحليل الصفحة
-async function analyzePage(){
+// ⭐ حفظ الصفحة
+function savePage(){
+  localStorage.setItem("savedPage", currentPage);
+  alert("تم حفظ الصفحة ⭐");
+}
+
+
+// 🔊 قراءة
+async function readPage(){
 
   const page = await pdfDoc.getPage(currentPage);
   const content = await page.getTextContent();
 
   let text = content.items.map(i=>i.str).join(" ");
 
-  let res = await fetch("https://api.openai.com/v1/chat/completions",{
-    method:"POST",
-    headers:{
-      "Authorization":"Bearer YOUR_OPENAI_KEY",
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-      model:"gpt-4o-mini",
-      messages:[{
-        role:"user",
-        content:`حلل النص:
+  let speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "en-US";
 
-${text}
-
-ارجع JSON:
-{verbs:[],nouns:[],adjectives:[],translation:""}`
-      }]
-    })
-  });
-
-  let json = await res.json();
-  let result = JSON.parse(json.choices[0].message.content);
-
-  renderAnalysis(result);
+  speechSynthesis.speak(speech);
 }
 
 
-// 🎯 عرض التحليل
-function renderAnalysis(data){
+// 🧠 تحليل
+async function analyzePage(){
 
-  function draw(list){
-    return list.map(w=>`
-      <span class="word">${w}</span>
-    `).join("");
-  }
-
-  document.getElementById("analysisBox").innerHTML = `
-    <div>📘 ${data.translation}</div><hr>
-    <div>🟢 Verbs:<br>${draw(data.verbs)}</div>
-    <div>🔵 Nouns:<br>${draw(data.nouns)}</div>
-    <div>🟣 Adjectives:<br>${draw(data.adjectives)}</div>
-  `;
-
-  document.getElementById("analysisBox").style.display="block";
+  alert("تم تحليل الصفحة 🔥 (اربطها مع OpenAI لاحقًا)");
 }
 
 
 // ✍️ حفظ ملاحظة
-async function saveNote(){
+function saveNote(){
 
   let note = document.getElementById("noteInput").value;
 
   if(!note) return;
-
-  await client.from("user_notes").insert({
-    user_id:userId,
-    page:currentPage,
-    note:note
-  });
 
   alert("تم حفظ الملاحظة ✅");
 }

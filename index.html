@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>إنجلش بالعربي</title>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <style>
+/* نفس تصميمك بدون تغيير */
 body {
   margin: 0;
   font-family: "Cairo", sans-serif;
@@ -15,7 +18,6 @@ body {
   align-items: center;
   min-height: 100vh;
 }
-
 .container {
   width: 90%;
   max-width: 400px;
@@ -25,13 +27,11 @@ body {
   text-align: center;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-
 .header {
   background: linear-gradient(135deg, #0f172a, #1e293b);
   height: 140px;
   position: relative;
 }
-
 .profile-img {
   width: 110px;
   height: 110px;
@@ -42,21 +42,14 @@ body {
   left: 50%;
   transform: translateX(-50%);
 }
-
-.content {
-  padding: 70px 20px 20px;
-}
-
+.content { padding: 70px 20px 20px; }
 h1 { margin: 10px 0; color: white; }
-
 .subtitle { color: #cbd5e1; }
-
 .students {
   color: #22c55e;
   font-weight: bold;
   margin: 10px 0;
 }
-
 .card {
   background: #1e293b;
   border-radius: 20px;
@@ -67,7 +60,6 @@ h1 { margin: 10px 0; color: white; }
   align-items: center;
   color: white;
 }
-
 button {
   background: #22c55e;
   border: none;
@@ -76,9 +68,7 @@ button {
   border-radius: 20px;
   cursor: pointer;
 }
-
 .logout { background: #ef4444; margin-top: 10px; }
-
 .whatsapp {
   display: block;
   margin-top: 15px;
@@ -89,7 +79,6 @@ button {
   text-decoration: none;
   font-weight: bold;
 }
-
 .whatsapp-float {
   position: fixed;
   bottom: 20px;
@@ -146,24 +135,29 @@ button {
 
 <script>
 
-// تحقق تسجيل الدخول
-const userId = localStorage.getItem("user_id");
-if(!userId){
-  window.location.href = "login.html";
+// 🔥 Supabase
+const client = supabase.createClient(
+  "https://ofyugbhplaynjeafdrgx.supabase.co",
+  "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
+);
+
+// 🔐 حماية حقيقية
+async function checkAuth(){
+
+  const { data } = await client.auth.getUser();
+
+  if(!data.user){
+    window.location.href = "login.html";
+    return;
+  }
+
+  // حفظ بيانات المستخدم
+  localStorage.setItem("user_id", data.user.id);
 }
 
-// اسم المستخدم
-let userName = localStorage.getItem("user_name") || "طالب";
+checkAuth();
 
-// واتساب
-let message = `السلام عليكم، أنا ${userName} وأحتاج مساعدة 🙏`;
-let encoded = encodeURIComponent(message);
-let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encoded}`;
-
-document.getElementById("whatsappLink").href = whatsappURL;
-document.getElementById("whatsappFloat").href = whatsappURL;
-
-// ⭐ عداد الطلاب الذكي
+// ⭐ عداد الطلاب
 let count = localStorage.getItem("studentsCount");
 if (!count) count = 120;
 
@@ -178,26 +172,60 @@ if (!counted) {
 document.getElementById("students").innerText =
   "👨‍🎓 أكثر من " + count + " طالب";
 
-// التنقل
-function goClass(){ window.location.href = "myclass.html"; }
-function goYoutube(){ window.location.href = "youtube.html"; }
-function goPDF(){ window.location.href = "pdf.html"; }
-function goSearch(){ window.location.href = "search.html"; }
-function goProfile(){ window.location.href = "student.html"; }
-function goTest(){ window.location.href = "test.html"; }
-function goReview(){ window.location.href = "review.html"; }
+// واتساب
+let userName = localStorage.getItem("user_name") || "طالب";
+let message = `السلام عليكم، أنا ${userName}`;
+let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encodeURIComponent(message)}`;
 
-function goBook(){ window.location.href = "headwaybook.html"; }
-function goDashboard(){ window.location.href = "mydashboard.html"; }
-function goUpdate1(){ window.location.href = "update1.html"; }
-function goUpdate2(){ window.location.href = "update2.html"; }
+document.getElementById("whatsappLink").href = whatsappURL;
+document.getElementById("whatsappFloat").href = whatsappURL;
+
+// التنقل
+function goClass(){ location.href="myclass.html"; }
+function goYoutube(){ location.href="youtube.html"; }
+function goPDF(){ location.href="pdf.html"; }
+function goSearch(){ location.href="search.html"; }
+function goProfile(){ location.href="student.html"; }
+function goTest(){ location.href="test.html"; }
+function goReview(){ location.href="review.html"; }
+function goBook(){ location.href="headwaybook.html"; }
+
+// 🔐 حماية الأدمن
+function isAdmin(){
+  let phone = localStorage.getItem("user_phone") || "";
+  phone = phone.replace(/\D/g,'');
+  if(phone.startsWith("0")) phone = phone.substring(1);
+  return phone === "544507401";
+}
+
+function goDashboard(){
+  if(!isAdmin()){
+    alert("🚫 هذه الصفحة للمسؤول فقط");
+    return;
+  }
+  location.href="mydashboard.html";
+}
+
+function goUpdate1(){
+  if(!isAdmin()){
+    alert("🚧 الصفحة تحت الإنشاء");
+    return;
+  }
+  location.href="update1.html";
+}
+
+function goUpdate2(){
+  if(!isAdmin()){
+    alert("🔄 الصفحة تحت التحديث");
+    return;
+  }
+  location.href="update2.html";
+}
 
 // خروج
 function logout(){
-  const studentsCount = localStorage.getItem("studentsCount");
   localStorage.clear();
-  localStorage.setItem("studentsCount", studentsCount);
-  window.location.href = "login.html";
+  location.href="login.html";
 }
 
 </script>

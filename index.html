@@ -166,7 +166,7 @@ async function initUser(){
 
   const userId = localStorage.getItem("user_id");
 
-  if(!userId){
+  if(!userId.user_id){
     window.location.href = "login.html";
     return;
   }

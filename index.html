@@ -2,7 +2,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إنجلش بالعربي</title><style>
+<title>إنجلش بالعربي</title>
+
+<style>
 body {
   margin: 0;
   font-family: "Cairo", sans-serif;
@@ -116,61 +118,93 @@ button {
   border-radius: 50%;
   text-decoration: none;
 }
-</style></head><body><div class="container">  <div class="header">
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
     <img src="me.jpeg" class="profile-img">
-  </div>  <div class="content"><h1>إنجلش بالعربي</h1>
-<div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
+  </div>
 
-<div class="students" id="students">
-  👨‍🎓 أكثر من 120 طالب
-</div>
+  <div class="content">
 
-<div class="card">
-  <span>📚 الفصل الذكي</span>
-  <button onclick="goClass()">ابدأ</button>
-</div>
+    <h1>إنجلش بالعربي</h1>
+    <div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
 
-<div class="card">
-  <span>📺 تحليل فيديو</span>
-  <button onclick="goYoutube()">ابدأ</button>
-</div>
+    <div class="students" id="students">
+      👨‍🎓 أكثر من 120 طالب
+    </div>
 
-<div class="card">
-  <span>📄 تحليل PDF</span>
-  <button onclick="goPDF()">ابدأ</button>
-</div>
+    <div class="card">
+      <span>📚 الفصل الذكي</span>
+      <button onclick="goClass()">ابدأ</button>
+    </div>
 
-<div class="card">
-  <span>🔍 البحث</span>
-  <button onclick="goSearch()">ابدأ</button>
-</div>
+    <div class="card">
+      <span>📺 تحليل فيديو</span>
+      <button onclick="goYoutube()">ابدأ</button>
+    </div>
 
-<div class="card">
-  <span>📝 اختبار</span>
-  <button onclick="goTest()">ابدأ</button>
-</div>
+    <div class="card">
+      <span>📄 تحليل PDF</span>
+      <button onclick="goPDF()">ابدأ</button>
+    </div>
 
-<div class="card">
-  <span>📊 مراجعة</span>
-  <button onclick="goReview()">فتح</button>
-</div>
+    <div class="card">
+      <span>🔍 البحث</span>
+      <button onclick="goSearch()">ابدأ</button>
+    </div>
 
-<div class="card">
-  <span>👤 حسابي</span>
-  <button onclick="goProfile()">فتح</button>
-</div>
+    <div class="card">
+      <span>📝 اختبار</span>
+      <button onclick="goTest()">ابدأ</button>
+    </div>
 
-<!-- واتساب -->
-<a id="whatsappLink" target="_blank" class="whatsapp">
-  💬 تواصل معي على واتساب
-</a>
+    <div class="card">
+      <span>📊 مراجعة</span>
+      <button onclick="goReview()">فتح</button>
+    </div>
 
-<button class="logout" onclick="logout()">تسجيل خروج</button>
+    <!-- الصفحات الجديدة -->
+    <div class="card">
+      <span>📘 كتاب Headway</span>
+      <button onclick="goHeadway()">فتح</button>
+    </div>
+
+    <div class="card">
+      <span>✨ ميزة جديدة</span>
+      <button onclick="goUpdate1()">عرض</button>
+    </div>
+
+    <div class="card">
+      <span>🆕 التحديثات</span>
+      <button onclick="goUpdate2()">عرض</button>
+    </div>
+
+    <div class="card">
+      <span>👤 حسابي</span>
+      <button onclick="goProfile()">فتح</button>
+    </div>
+
+    <!-- واتساب -->
+    <a id="whatsappLink" target="_blank" class="whatsapp">
+      💬 تواصل معي على واتساب
+    </a>
+
+    <button class="logout" onclick="logout()">تسجيل خروج</button>
 
   </div>
-</div><!-- زر واتساب عائم --><a id="whatsappFloat" target="_blank" class="whatsapp-float">
+</div>
+
+<!-- زر واتساب عائم -->
+<a id="whatsappFloat" target="_blank" class="whatsapp-float">
   💬
-</a><script>
+</a>
+
+<script>
 
 // تحقق تسجيل الدخول
 const userId = localStorage.getItem("user_id");
@@ -213,6 +247,11 @@ function goProfile(){ window.location.href = "student.html"; }
 function goTest(){ window.location.href = "test.html"; }
 function goReview(){ window.location.href = "review.html"; }
 
+// الصفحات الجديدة
+function goHeadway(){ window.location.href = "headwaybook.html"; }
+function goUpdate1(){ window.location.href = "update1.html"; }
+function goUpdate2(){ window.location.href = "update2.html"; }
+
 // تسجيل خروج
 function logout(){
   const studentsCount = localStorage.getItem("studentsCount");
@@ -221,5 +260,7 @@ function logout(){
   window.location.href = "login.html";
 }
 
-</script></body>
+</script>
+
+</body>
 </html>

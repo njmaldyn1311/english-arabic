@@ -9,6 +9,11 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+</script>
+
 <style>
 body{
   margin:0;
@@ -88,8 +93,8 @@ body{
   background:#1e293b;
   padding:20px;
   border-radius:15px;
-  width:90%;
-  max-width:300px;
+  width:85%;
+  max-width:280px;
 }
 
 .buy{
@@ -151,11 +156,10 @@ canvas{
 
 </div>
 
-<!-- 🔒 alert -->
+<!-- 🔒 popup -->
 <div id="alert" class="overlay">
   <div class="popup">
-    <h3>🔒 الكتاب للمشتركين فقط</h3>
-
+    <h3 id="alertText">🔒 الكتاب للمشتركين فقط</h3>
     <button class="buy" onclick="buy()">📱 شراء عبر واتساب</button>
     <button class="close" onclick="closeAlert()">إغلاق</button>
   </div>
@@ -164,8 +168,8 @@ canvas{
 <script>
 
 const client = supabase.createClient(
-  "https://ofyugbhplaynjeafdrgx.supabase.co",
-  "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
+"https://ofyugbhplaynjeafdrgx.supabase.co",
+"sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
 );
 
 let userId = localStorage.getItem("user_id");
@@ -210,20 +214,32 @@ async function openBook(){
 
   try{
 
-    const { data } = await client.storage
+    const { data, error } = await client.storage
       .from("books")
       .createSignedUrl("newHEADWAYbeginnerstudentbook.pdf",60);
 
-    const loadingTask = pdfjsLib.getDocument(data.signedUrl);
+    if(error || !data?.signedUrl){
+      throw new Error("URL Error");
+    }
+
+    const loadingTask = pdfjsLib.getDocument({
+      url: data.signedUrl
+    });
 
     pdfDoc = await loadingTask.promise;
 
     totalPages = pdfDoc.numPages;
+    currentPage = 1;
 
     renderPage();
 
   }catch(e){
-    alert("❌ فشل تحميل الكتاب");
+    console.error(e);
+
+    document.getElementById("alertText").innerText =
+      "❌ فشل تحميل الكتاب";
+
+    document.getElementById("alert").style.display="flex";
   }
 
   btn.innerText="📖 تم فتح الكتاب";

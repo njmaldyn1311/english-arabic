@@ -68,6 +68,7 @@ button {
   cursor: pointer;
 }
 .logout { background: #ef4444; margin-top: 10px; }
+
 .whatsapp {
   display: block;
   margin-top: 15px;
@@ -90,7 +91,7 @@ button {
   text-decoration: none;
 }
 
-/* Alert */
+/* Alert جميل */
 #alertBox{
   display:none;
   position:fixed;
@@ -102,6 +103,25 @@ button {
   justify-content:center;
   align-items:center;
   z-index:999;
+}
+#alertContent{
+  background:#111827;
+  padding:15px;
+  border-radius:15px;
+  width:85%;
+  max-width:260px;
+  color:white;
+  text-align:center;
+  animation:scaleIn .2s ease;
+}
+#alertContent button{
+  margin-top:10px;
+  padding:8px 15px;
+  border-radius:10px;
+}
+@keyframes scaleIn{
+  from{transform:scale(.8);opacity:0}
+  to{transform:scale(1);opacity:1}
 }
 </style>
 </head>
@@ -144,20 +164,9 @@ button {
 
 <!-- Alert -->
 <div id="alertBox">
-  <div style="
-    background:#111827;
-    padding:15px;
-    border-radius:15px;
-    width:85%;
-    max-width:260px;
-    font-size:14px;
-    color:white;
-    text-align:center;
-  ">
+  <div id="alertContent">
     <div id="alertText"></div>
-    <button onclick="closeAlert()" style="margin-top:8px;padding:8px 15px;border-radius:8px;font-size:13px;">
-      حسناً
-    </button>
+    <button onclick="closeAlert()">حسناً</button>
   </div>
 </div>
 
@@ -168,10 +177,34 @@ const client = supabase.createClient(
   "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
 );
 
-// ✅ التحقق من الأدمن (مصلح)
-function isAdminUser(){
-  const phone = localStorage.getItem("user_phone");
-  return phone === "0544507401";
+// ✅ تحقق الأدمن (حل نهائي)
+async function isAdminUser(){
+
+  try{
+    const { data } = await client.auth.getUser();
+
+    if(!data.user) return false;
+
+    const { data: userData } = await client
+      .from("users")
+      .select("phone")
+      .eq("id", data.user.id)
+      .single();
+
+    if(!userData) return false;
+
+    let phone = userData.phone.replace(/\D/g,'');
+
+    if(phone.startsWith("0")){
+      phone = phone.substring(1);
+    }
+
+    return phone === "544507401";
+
+  }catch(e){
+    console.log(e);
+    return false;
+  }
 }
 
 // Alert
@@ -183,63 +216,73 @@ function closeAlert(){
   document.getElementById("alertBox").style.display = "none";
 }
 
-// التنقل
-function goClass(){ window.location.href="myclass.html"; }
-function goYoutube(){ window.location.href="youtube.html"; }
-function goPDF(){ window.location.href="pdf.html"; }
-function goSearch(){ window.location.href="search.html"; }
-function goProfile(){ window.location.href="student.html"; }
-function goTest(){ window.location.href="test.html"; }
-function goReview(){ window.location.href="review.html"; }
-function goBook(){ window.location.href="headwaybook.html"; }
+// روابط
+function goClass(){ location.href="myclass.html"; }
+function goYoutube(){ location.href="youtube.html"; }
+function goPDF(){ location.href="pdf.html"; }
+function goSearch(){ location.href="search.html"; }
+function goProfile(){ location.href="student.html"; }
+function goTest(){ location.href="test.html"; }
+function goReview(){ location.href="review.html"; }
+function goBook(){ location.href="headwaybook.html"; }
 
-// 🔐 حماية الداشبورد
-function goDashboard(){
+// 🔐 حماية الأدمن
+async function goDashboard(){
 
-  const phone = localStorage.getItem("user_phone");
+  const isAdmin = await isAdminUser();
 
-  if(!phone){
-    showAlert("⚠️ سجل دخول أولاً");
-    return;
-  }
-
-  if(!isAdminUser()){
+  if(!isAdmin){
     showAlert("🚫 هذه الصفحة للمسؤول فقط");
     return;
   }
 
-  window.location.href="mydashboard.html";
+  location.href="mydashboard.html";
 }
 
-// 🔐 صفحات تحت التطوير
-function goUpdate1(){
-  if(!isAdminUser()){
+async function goUpdate1(){
+
+  const isAdmin = await isAdminUser();
+
+  if(!isAdmin){
     showAlert("🚧 الصفحة تحت الإنشاء");
     return;
   }
-  window.location.href="update1.html";
+
+  location.href="update1.html";
 }
 
-function goUpdate2(){
-  if(!isAdminUser()){
+async function goUpdate2(){
+
+  const isAdmin = await isAdminUser();
+
+  if(!isAdmin){
     showAlert("🔄 الصفحة تحت التحديث");
     return;
   }
-  window.location.href="update2.html";
+
+  location.href="update2.html";
 }
 
 // واتساب
-let userName = localStorage.getItem("user_name") || "طالب";
-let message = `السلام عليكم، أنا ${userName}`;
-let whatsappURL = `https://wa.me/735SJORMFI74H1?text=${encodeURIComponent(message)}`;
+let name = localStorage.getItem("user_name") || "طالب";
+let msg = encodeURIComponent(`السلام عليكم أنا ${name}`);
+let link = `https://wa.me/966544507401?text=${msg}`;
 
-document.getElementById("whatsappLink").href = whatsappURL;
-document.getElementById("whatsappFloat").href = whatsappURL;
+document.getElementById("whatsappLink").href = link;
+document.getElementById("whatsappFloat").href = link;
 
-// تسجيل خروج
+// تسجيل دخول
+(async ()=>{
+  const { data } = await client.auth.getUser();
+  if(!data.user){
+    showAlert("⚠️ سجل دخول أولاً");
+  }
+})();
+
+// خروج
 function logout(){
   localStorage.clear();
-  window.location.href = "login.html";
+  location.href="login.html";
 }
 
 </script>

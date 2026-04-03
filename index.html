@@ -121,7 +121,6 @@ button {
     <div class="card"><span>📊 مراجعة</span><button onclick="goReview()">فتح</button></div>
     <div class="card"><span>👤 حسابي</span><button onclick="goProfile()">فتح</button></div>
 
-    <!-- 🔥 إضافاتك -->
     <div class="card"><span>📘 كتابي</span><button onclick="goBook()">فتح</button></div>
     <div class="card"><span>📊 لوحة التحكم</span><button onclick="goDashboard()">فتح</button></div>
     <div class="card"><span>🚧 ميزة جديدة</span><button onclick="goUpdate1()">قريباً</button></div>
@@ -143,11 +142,9 @@ button {
   <div style="background:#111827;padding:20px;border-radius:20px;width:85%;max-width:300px;color:white;text-align:center;">
     <h3 id="notifyTitle"></h3>
     <p id="notifyText"></p>
-
     <button onclick="closeNotify()" style="margin-top:10px;background:#22c55e;padding:10px;border-radius:10px;color:white;width:100%">
       تمام 👍
     </button>
-
     <a id="whatsappBtn" target="_blank" style="display:block;margin-top:10px;background:#25D366;padding:10px;border-radius:10px;color:white;text-decoration:none;">
       💬 تواصل واتساب
     </a>
@@ -156,6 +153,7 @@ button {
 
 <script>
 
+// 🔥 Supabase
 const client = supabase.createClient(
   "https://ofyugbhplaynjeafdrgx.supabase.co",
   "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
@@ -163,30 +161,37 @@ const client = supabase.createClient(
 
 let userData = null;
 
-// 🔥 تحميل المستخدم
+// ✅ تحقق المستخدم من localStorage + database
 async function initUser(){
 
-  const { data: { user } } = await client.auth.getUser();
+  const userId = localStorage.getItem("user_id");
 
-  if(!user){
+  if(!userId){
     window.location.href = "login.html";
     return;
   }
 
-  const { data } = await client
+  const { data, error } = await client
     .from("users")
     .select("role, status, name")
-    .eq("id", user.id)
+    .eq("id", userId)
     .single();
+
+  if(error || !data){
+    localStorage.clear();
+    window.location.href = "login.html";
+    return;
+  }
 
   userData = data;
 
-  if(userData?.status === "banned"){
-    showNotify("🚫 تم حظرك", "تواصل معنا واتساب");
+  // 🚫 حظر
+  if(userData.status === "banned"){
+    showNotify("🚫 تم إيقاف حسابك", "تواصل معنا واتساب");
   }
 
   // واتساب
-  let msg = `السلام عليكم، أنا ${userData?.name || "طالب"}`;
+  let msg = `السلام عليكم، أنا ${userData.name}`;
   let url = `https://wa.me/message/735SJORMFI74H1?text=${encodeURIComponent(msg)}`;
 
   whatsappLink.href = url;
@@ -238,12 +243,12 @@ function closeNotify(){
 }
 
 // 🚪 خروج
-async function logout(){
-  await client.auth.signOut();
+function logout(){
+  localStorage.clear();
   location.href="login.html";
 }
 
-// ⭐ عداد ثابت
+// ⭐ عداد
 let count = localStorage.getItem("studentsCount") || 120;
 if(!localStorage.getItem("counted")){
   count++;

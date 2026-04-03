@@ -47,14 +47,9 @@ body {
   padding: 70px 20px 20px;
 }
 
-h1 {
-  margin: 10px 0;
-  color: white;
-}
+h1 { margin: 10px 0; color: white; }
 
-.subtitle {
-  color: #cbd5e1;
-}
+.subtitle { color: #cbd5e1; }
 
 .students {
   color: #22c55e;
@@ -82,10 +77,7 @@ button {
   cursor: pointer;
 }
 
-.logout {
-  background: #ef4444;
-  margin-top: 10px;
-}
+.logout { background: #ef4444; margin-top: 10px; }
 
 .whatsapp {
   display: block;
@@ -108,20 +100,6 @@ button {
   padding: 15px;
   border-radius: 50%;
   text-decoration: none;
-}
-
-/* Alert */
-#alertBox{
-  display:none;
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.5);
-  justify-content:center;
-  align-items:center;
-  z-index:999;
 }
 </style>
 </head>
@@ -150,7 +128,6 @@ button {
     <div class="card"><span>📊 مراجعة</span><button onclick="goReview()">فتح</button></div>
     <div class="card"><span>👤 حسابي</span><button onclick="goProfile()">فتح</button></div>
 
-    <!-- ✅ الجديد -->
     <div class="card"><span>📘 كتابي</span><button onclick="goBook()">فتح</button></div>
     <div class="card"><span>📊 لوحة التحكم</span><button onclick="goDashboard()">فتح</button></div>
     <div class="card"><span>🚧 ميزة جديدة</span><button onclick="goUpdate1()">قريباً</button></div>
@@ -167,24 +144,6 @@ button {
 
 <a id="whatsappFloat" target="_blank" class="whatsapp-float">💬</a>
 
-<!-- Alert -->
-<div id="alertBox">
-  <div style="
-    background:#111827;
-    padding:15px;
-    border-radius:15px;
-    width:80%;
-    max-width:250px;
-    color:white;
-    text-align:center;
-  ">
-    <div id="alertText"></div>
-    <button onclick="closeAlert()" style="margin-top:10px;padding:8px 15px;border-radius:10px;background:#22c55e;color:white;border:none;">
-      حسناً
-    </button>
-  </div>
-</div>
-
 <script>
 
 // تحقق تسجيل الدخول
@@ -193,48 +152,33 @@ if(!userId){
   window.location.href = "login.html";
 }
 
-// اسم الطالب
+// اسم المستخدم
 let userName = localStorage.getItem("user_name") || "طالب";
 
 // واتساب
 let message = `السلام عليكم، أنا ${userName} وأحتاج مساعدة 🙏`;
 let encoded = encodeURIComponent(message);
 let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encoded}`;
+
 document.getElementById("whatsappLink").href = whatsappURL;
 document.getElementById("whatsappFloat").href = whatsappURL;
 
-// عداد الطلاب
+// ⭐ عداد الطلاب الذكي
 let count = localStorage.getItem("studentsCount");
 if (!count) count = 120;
 
-function updateStudents() {
-  count = parseInt(count) + Math.floor(Math.random() * 2);
-  document.getElementById("students").innerText =
-    "👨‍🎓 أكثر من " + count + " طالب";
+let counted = localStorage.getItem("countedUser");
+
+if (!counted) {
+  count = parseInt(count) + 1;
   localStorage.setItem("studentsCount", count);
+  localStorage.setItem("countedUser", "yes");
 }
 
-updateStudents();
-setInterval(updateStudents, 8000);
+document.getElementById("students").innerText =
+  "👨‍🎓 أكثر من " + count + " طالب";
 
-// 🔐 تحقق الأدمن
-function isAdmin(){
-  let phone = localStorage.getItem("user_phone") || "";
-  phone = phone.replace(/\D/g,'');
-  if(phone.startsWith("0")) phone = phone.substring(1);
-  return phone === "544507401";
-}
-
-// Alert
-function showAlert(msg){
-  document.getElementById("alertText").innerText = msg;
-  document.getElementById("alertBox").style.display = "flex";
-}
-function closeAlert(){
-  document.getElementById("alertBox").style.display = "none";
-}
-
-// التنقل (بدون تغيير)
+// التنقل
 function goClass(){ window.location.href = "myclass.html"; }
 function goYoutube(){ window.location.href = "youtube.html"; }
 function goPDF(){ window.location.href = "pdf.html"; }
@@ -243,32 +187,10 @@ function goProfile(){ window.location.href = "student.html"; }
 function goTest(){ window.location.href = "test.html"; }
 function goReview(){ window.location.href = "review.html"; }
 
-// الجديد
 function goBook(){ window.location.href = "headwaybook.html"; }
-
-function goDashboard(){
-  if(!isAdmin()){
-    showAlert("🚫 هذه الصفحة للمسؤول فقط");
-    return;
-  }
-  window.location.href = "mydashboard.html";
-}
-
-function goUpdate1(){
-  if(!isAdmin()){
-    showAlert("🚧 الصفحة تحت الإنشاء");
-    return;
-  }
-  window.location.href = "update1.html";
-}
-
-function goUpdate2(){
-  if(!isAdmin()){
-    showAlert("🔄 الصفحة تحت التحديث");
-    return;
-  }
-  window.location.href = "update2.html";
-}
+function goDashboard(){ window.location.href = "mydashboard.html"; }
+function goUpdate1(){ window.location.href = "update1.html"; }
+function goUpdate2(){ window.location.href = "update2.html"; }
 
 // خروج
 function logout(){

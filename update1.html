@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>تدريب الأفعال</title>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <style>
 body{
   margin:0;
@@ -21,11 +23,6 @@ body{
   border-radius:20px;
 }
 
-.word{
-  font-size:26px;
-  margin:10px 0;
-}
-
 .row{
   display:flex;
   justify-content:space-between;
@@ -34,6 +31,14 @@ body{
   padding:12px;
   border-radius:12px;
   margin:8px 0;
+}
+
+input{
+  width:90%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  margin-bottom:10px;
 }
 
 button{
@@ -45,10 +50,7 @@ button{
 
 .listen{background:#3b82f6;color:white;}
 .record{background:#f59e0b;color:white;}
-.next{background:#22c55e;color:white;margin-top:10px;}
-
-.correct{color:#22c55e;}
-.wrong{color:#ef4444;}
+.star{background:#facc15;color:black;}
 </style>
 </head>
 
@@ -58,67 +60,82 @@ button{
 
 <div class="container">
 
+  <!-- 🔍 بحث -->
+  <input id="search" placeholder="ابحث عن فعل..." oninput="searchVerb()">
+
   <!-- base -->
   <div class="row">
-    <span id="base">go</span>
+    <span id="base">-</span>
     <button class="listen" onclick="speak(base.innerText)">🔊</button>
   </div>
 
   <!-- past -->
   <div class="row">
-    <span id="past">went</span>
+    <span id="past">-</span>
     <button class="listen" onclick="speak(past.innerText)">🔊</button>
     <button class="record" onclick="record(past.innerText)">🎤</button>
   </div>
 
   <!-- pp -->
   <div class="row">
-    <span id="pp">gone</span>
+    <span id="pp">-</span>
     <button class="listen" onclick="speak(pp.innerText)">🔊</button>
   </div>
 
-  <!-- translation -->
+  <!-- ing -->
   <div class="row">
-    <span id="ar">يذهب</span>
-  </div>
-
-  <hr>
-
-  <!-- ing training -->
-  <div class="row">
-    <span id="ing">going</span>
+    <span id="ing">-</span>
     <button class="listen" onclick="speak(ing.innerText)">🔊</button>
-    <button class="record" onclick="record(ing.innerText)">🎤 تدريب ING</button>
+    <button class="record" onclick="record(ing.innerText)">🎤</button>
   </div>
+
+  <!-- ترجمة -->
+  <div class="row">
+    <span id="ar">-</span>
+  </div>
+
+  <!-- ⭐ حفظ -->
+  <button class="star" onclick="saveVerb()">⭐ حفظ الكلمة</button>
 
   <div id="result"></div>
-
-  <button class="next" onclick="next()">➡️ التالي</button>
 
 </div>
 
 <script>
 
-// الأفعال
-const verbs = [
-  {base:"go",past:"went",pp:"gone",ing:"going",ar:"يذهب"},
-  {base:"play",past:"played",pp:"played",ing:"playing",ar:"يلعب"},
-  {base:"walk",past:"walked",pp:"walked",ing:"walking",ar:"يمشي"},
-  {base:"study",past:"studied",pp:"studied",ing:"studying",ar:"يدرس"},
-  {base:"stop",past:"stopped",pp:"stopped",ing:"stopping",ar:"يتوقف"}
-];
+const client = supabase.createClient(
+  "https://ofyugbhplaynjeafdrgx.supabase.co",
+  "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
+);
 
-let index = 0;
+let currentVerb = null;
+const userId = localStorage.getItem("user_id");
 
-function load(){
-  const v = verbs[index];
-  base.innerText = v.base;
-  past.innerText = v.past;
-  pp.innerText = v.pp;
-  ing.innerText = v.ing;
-  ar.innerText = v.ar;
+// 🔍 البحث
+async function searchVerb(){
+
+  const text = search.value;
+
+  if(text.length < 2) return;
+
+  const { data } = await client
+    .from("verbs")
+    .select("*")
+    .ilike("base", `%${text}%`)
+    .limit(1);
+
+  if(data && data.length){
+
+    const v = data[0];
+    currentVerb = v;
+
+    base.innerText = v.base;
+    past.innerText = v.past;
+    pp.innerText = v.pp;
+    ing.innerText = v.ing;
+    ar.innerText = v.ar;
+  }
 }
-load();
 
 // 🔊 صوت
 function speak(text){
@@ -127,7 +144,7 @@ function speak(text){
   speechSynthesis.speak(msg);
 }
 
-// 🎤 تسجيل
+// 🎤 تدريب
 function record(correct){
 
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -140,19 +157,28 @@ function record(correct){
     const spoken = e.results[0][0].transcript.toLowerCase();
 
     if(spoken.includes(correct.toLowerCase())){
-      result.innerHTML = `<div class="correct">✅ ممتاز</div>`;
+      result.innerHTML = `<div style="color:#22c55e">✅ ممتاز</div>`;
     }else{
-      result.innerHTML = `<div class="wrong">❌ قلت: ${spoken}</div>`;
+      result.innerHTML = `<div style="color:#ef4444">❌ قلت: ${spoken}</div>`;
     }
 
   };
 }
 
-// التالي
-function next(){
-  index = (index + 1) % verbs.length;
-  load();
-  result.innerHTML="";
+// ⭐ حفظ
+async function saveVerb(){
+
+  if(!currentVerb){
+    result.innerHTML = "❌ ابحث عن كلمة أولاً";
+    return;
+  }
+
+  await client.from("saved_verbs").insert({
+    user_id: userId,
+    verb_id: currentVerb.id
+  });
+
+  result.innerHTML = "⭐ تم الحفظ";
 }
 
 </script>

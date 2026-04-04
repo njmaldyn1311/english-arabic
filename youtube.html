@@ -25,12 +25,13 @@ body {
 }
 
 input {
-  padding: 10px;
-  width: 90%;
-  max-width: 400px;
+  padding: 8px;
+  width: 95%;
+  max-width: 350px;
   border-radius: 12px;
   border: none;
   margin: 10px 0;
+  text-align: right;
 }
 
 button {
@@ -101,6 +102,55 @@ button {
   color:#22c55e;
   font-weight:bold;
 }
+
+/* 📱 موبايل */
+@media (max-width:600px){
+
+  h2{
+    font-size:18px;
+  }
+
+  input{
+    width:95%;
+    font-size:14px;
+  }
+
+  button{
+    width:95%;
+    font-size:14px;
+  }
+
+  #player{
+    height:200px;
+  }
+
+  .sub-ar{
+    font-size:18px;
+  }
+
+}
+
+/* 🔥 Alert */
+.alert{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#ef4444;
+  color:white;
+  padding:12px 20px;
+  border-radius:12px;
+  font-size:14px;
+  z-index:9999;
+  animation:fadeInOut 4s ease forwards;
+}
+
+@keyframes fadeInOut{
+  0%{opacity:0; bottom:0;}
+  10%{opacity:1; bottom:20px;}
+  90%{opacity:1;}
+  100%{opacity:0;}
+}
 </style>
 </head>
 
@@ -110,7 +160,7 @@ button {
 
 <h2>🎥 تعلم من الفيديو بذكاء</h2>
 
-<input id="url" placeholder="ضع رابط YouTube">
+<input id="url" placeholder="🔗 ضع رابط الفيديو هنا" dir="rtl">
 <br>
 <button onclick="sendUrl()">🔗 تحليل</button>
 
@@ -139,63 +189,54 @@ const WEBHOOK="https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 let player;
 let subtitles=[];
 
-/* ✅ إصلاح استخراج ID */
+/* 🔥 Alert */
+function showAlert(msg){
+  let div=document.createElement("div");
+  div.className="alert";
+  div.innerText=msg;
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(),4000);
+}
+
+/* استخراج ID */
 function getVideoId(url){
-
   try{
-
     if(url.includes("youtu.be")){
       return url.split("/").pop().split("?")[0];
     }
-
     if(url.includes("youtube.com")){
       const u = new URL(url);
       const id = u.searchParams.get("v");
       if(id) return id;
     }
-
     if(url.length === 11){
       return url;
     }
-
     return null;
-
   }catch{
     return null;
   }
-
 }
 
-/* إنشاء الفيديو */
+/* فيديو */
 function createPlayer(id){
-
   if(player) player.destroy();
-
   player = new YT.Player('player',{
     videoId:id,
     events:{ onReady:syncLoop }
   });
-
 }
 
 /* مزامنة */
 function syncLoop(){
-
   setInterval(()=>{
-
     if(!player) return;
-
     let t = player.getCurrentTime();
-
     let current = subtitles.find(s=>t>=s.time && t<s.time+4);
-
     if(!current) return;
-
     document.getElementById("subEn").innerHTML=current.en;
     document.getElementById("subAr").innerText=current.ar;
-
   },500);
-
 }
 
 /* صوت */
@@ -207,17 +248,15 @@ function speak(t){
 
 /* حفظ */
 async function saveWord(el,en,ar){
-
   await client.from("user_words").insert({
     user_id:"user_1",
     word:en,
     translation:ar
   });
-
   el.innerText="✅";
 }
 
-/* قفز للفيديو */
+/* قفز */
 function goTo(sec){
   if(player) player.seekTo(sec,true);
 }
@@ -290,12 +329,12 @@ function show(data){
 async function sendUrl(){
 
   let url=document.getElementById("url").value;
-  if(!url) return alert("اكتب رابط");
+  if(!url) return showAlert("⚠️ اكتب رابط");
 
   let id = getVideoId(url);
 
   if(!id){
-    alert("❌ رابط الفيديو غير صحيح");
+    showAlert("❌ رابط غير صحيح");
     return;
   }
 
@@ -304,18 +343,36 @@ async function sendUrl(){
 
   createPlayer(id);
 
-  let res=await fetch(WEBHOOK,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({url})
-  });
+  let timeout = setTimeout(()=>{
+    showAlert("⏳ الفيديو طويل أو الاتصال بطيء...");
+  },7000);
 
-  let text=await res.text();
-  let data=JSON.parse(text);
+  try{
 
-  document.getElementById("loading").style.display="none";
+    let res=await fetch(WEBHOOK,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({url})
+    });
 
-  show(data);
+    let text=await res.text();
+    let data=JSON.parse(text);
+
+    clearTimeout(timeout);
+
+    document.getElementById("loading").style.display="none";
+
+    if(!data || Object.keys(data).length === 0){
+      showAlert("❌ لا توجد ترجمة، جرب فيديو آخر");
+      return;
+    }
+
+    show(data);
+
+  }catch(e){
+    showAlert("❌ حدث خطأ، أعد المحاولة");
+  }
+
 }
 
 </script>

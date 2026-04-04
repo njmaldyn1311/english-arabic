@@ -124,10 +124,7 @@ button{
   color:white;
 }
 
-/////////////////////////////
 /* 📱 موبايل */
-/////////////////////////////
-
 @media (max-width:768px){
 
   .card{
@@ -183,7 +180,12 @@ button{
 </div>
 
 <div class="container">
-  <div class="title">📚 الأفعال</div>
+
+  <!-- 🔥 العنوان + العدد -->
+  <div class="title">
+    📚 الأفعال (<span id="totalVerbs">0</span>)
+  </div>
+
   <div id="list"></div>
 </div>
 
@@ -222,12 +224,12 @@ async function saveWord(word, btn){
   btn.innerText = "✔";
 }
 
-/* 📥 تحميل */
+/* 📥 تحميل + العدد */
 async function load(){
 
-  let { data, error } = await client
+  let { data, error, count } = await client
     .from("headway_verbs")
-    .select("*");
+    .select("*", { count: "exact" });
 
   const container = document.getElementById("list");
 
@@ -240,6 +242,9 @@ async function load(){
     container.innerHTML = "⚠️ لا توجد بيانات";
     return;
   }
+
+  // 🔥 العدد
+  document.getElementById("totalVerbs").innerText = count;
 
   container.innerHTML = "";
 

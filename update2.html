@@ -1,1 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>📚 الأفعال</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:"Cairo", sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+}
+
+/* 🔥 الهيدر */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px;
+}
+
+.user-name{
+  color:#38bdf8;
+  font-size:13px;
+}
+
+.home{
+  background:#1e293b;
+  border:1px solid #334155;
+  padding:6px 10px;
+  border-radius:10px;
+  color:#38bdf8;
+  cursor:pointer;
+}
+
+/* 📦 */
+.container{
+  padding:10px;
+  max-width:1000px;
+  margin:auto;
+}
+
+.title{
+  text-align:center;
+  font-size:20px;
+  margin:10px 0;
+}
+
+/* 🔥 الجدول الأفقي المضغوط */
+.card{
+  display:grid;
+  grid-template-columns: 25px 1fr 1fr 1fr 80px 40px;
+  align-items:center;
+  gap:3px;
+
+  background:#1e293b;
+  border-radius:10px;
+  padding:6px;
+  margin-bottom:6px;
+}
+
+/* رقم */
+.index{
+  text-align:center;
+  color:#38bdf8;
+  font-weight:bold;
+  font-size:11px;
+}
+
+/* عنصر */
+.item{
+  background:#334155;
+  padding:3px 5px;
+  border-radius:6px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:11px;
+}
+
+/* ترجمة */
+.translation{
+  background:#0ea5e9;
+  padding:4px;
+  border-radius:6px;
+  text-align:center;
+  font-weight:bold;
+  font-size:11px;
+}
+
+/* أزرار */
+button{
+  border:none;
+  border-radius:6px;
+  padding:2px 4px;
+  cursor:pointer;
+  font-size:10px;
+}
+
+/* صوت */
+.speak{
+  background:#22c55e;
+  color:white;
+}
+
+/* ⭐ حفظ */
+.save{
+  background:#facc15;
+  color:#000;
+  font-weight:bold;
+}
+
+.saved{
+  background:#22c55e;
+  color:white;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <div class="user-name" id="username">👤</div>
+  <button class="home" onclick="goHome()">🏠 الرئيسية</button>
+</div>
+
+<div class="container">
+  <div class="title">📚 الأفعال</div>
+  <div id="list"></div>
+</div>
+
+<script>
+
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let user_id = localStorage.getItem("user_id");
+
+/* 👤 الاسم */
+let fullName = localStorage.getItem("user") || "طالب";
+let parts = fullName.split(" ");
+document.getElementById("username").innerText =
+  "👤 " + parts[0] + (parts[1] ? " " + parts[1] : "");
+
+/* 🔊 صوت */
+function speak(text){
+  if(!text) return;
+  speechSynthesis.cancel();
+  let u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  speechSynthesis.speak(u);
+}
+
+/* ⭐ حفظ */
+async function saveWord(word, btn){
+  await client.from("saved_verbs").insert({
+    user_id: user_id,
+    word: word
+  });
+
+  btn.classList.add("saved");
+  btn.innerText = "✔";
+}
+
+/* 📥 تحميل */
+async function load(){
+
+  let { data, error } = await client
+    .from("headway_verbs")
+    .select("*");
+
+  const container = document.getElementById("list");
+
+  if(error){
+    container.innerHTML = "❌ " + error.message;
+    return;
+  }
+
+  if(!data.length){
+    container.innerHTML = "⚠️ لا توجد بيانات";
+    return;
+  }
+
+  container.innerHTML = "";
+
+  data.forEach((w, i) => {
+
+    container.innerHTML += `
+      <div class="card">
+
+        <div class="index">${i+1}</div>
+
+        <div class="item">
+          ${w.base || w.word}
+          <button class="speak" onclick="speak('${w.base || w.word}')">🔊</button>
+        </div>
+
+        <div class="item">
+          ${w.past || '-'}
+          <button class="speak" onclick="speak('${w.past}')">🔊</button>
+        </div>
+
+        <div class="item">
+          ${w.past_participle || '-'}
+          <button class="speak" onclick="speak('${w.past_participle}')">🔊</button>
+        </div>
+
+        <div class="translation">
+          ${w.translation || ''}
+        </div>
+
+        <button class="save" onclick="saveWord('${w.word}', this)">⭐</button>
+
+      </div>
+    `;
+  });
+
+}
+
+/* رجوع */
+function goHome(){
+  window.location.href="index.html";
+}
+
+load();
+
+</script>
+
+</body>
+</html>

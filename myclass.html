@@ -6,6 +6,7 @@
 <title>الفصل الذكي</title>
 
 <style>
+
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
@@ -73,8 +74,15 @@ body{
   margin-bottom:15px;
 }
 
-.story-en{direction:ltr;text-align:justify;}
-.story-ar{direction:rtl;text-align:justify;}
+.story-en{
+  direction:ltr;
+  text-align:justify;
+}
+
+.story-ar{
+  direction:rtl;
+  text-align:justify;
+}
 
 .section-title{
   margin-top:20px;
@@ -104,19 +112,13 @@ body{
   padding:10px;
   border-radius:10px;
   font-size:18px;
+  transition:0.2s;
 }
 
-.alert{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#ef4444;
-  color:white;
-  padding:10px 15px;
-  border-radius:10px;
-  z-index:9999;
+.icon:hover{
+  transform:scale(1.1);
 }
+
 </style>
 </head>
 
@@ -154,33 +156,23 @@ body{
 
 <script>
 
+// 🔥 بيانات Supabase
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-/* 👤 اسم المستخدم */
 const fullName = localStorage.getItem("user") || "";
 const nameParts = fullName.split(" ");
-document.getElementById("username").innerText =
-  "👤 " + nameParts.slice(0,2).join(" ");
+const shortName = nameParts.slice(0,2).join(" ");
+document.getElementById("username").innerText = "👤 " + shortName;
 
-/* user id */
+function goProfile(){
+  window.location.href = "student.html";
+}
+
 let user_id = localStorage.getItem("user_id");
 if(!user_id){
   user_id = "user_" + Math.random().toString(36).substring(2,10);
   localStorage.setItem("user_id", user_id);
-}
-
-/* 🔔 Alert */
-function showAlert(msg){
-  let d=document.createElement("div");
-  d.className="alert";
-  d.innerText=msg;
-  document.body.appendChild(d);
-  setTimeout(()=>d.remove(),3000);
-}
-
-function goProfile(){
-  window.location.href="student.html";
 }
 
 let selectedType="text";
@@ -202,45 +194,38 @@ function selectType(type){
 }
 
 function speak(text){
-  let u=new SpeechSynthesisUtterance(text);
-  u.lang="en-US";
-  speechSynthesis.speak(u);
+  let utter = new SpeechSynthesisUtterance(text);
+  utter.lang="en-US";
+  speechSynthesis.speak(utter);
 }
 
-/* ⭐ حفظ */
+/* ⭐ حفظ في Supabase بدل localStorage */
 async function saveWord(el,en,ar){
-
-  if(el.innerText==="✔") return;
 
   try{
 
-    let res = await fetch(SUPABASE_URL + "/rest/v1/user_words", {
-      method:"POST",
-      headers:{
-        "apikey":SUPABASE_KEY,
-        "Authorization":"Bearer "+SUPABASE_KEY,
-        "Content-Type":"application/json",
-        "Prefer":"return=representation"
+    await fetch(SUPABASE_URL + "/rest/v1/user_words", {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
       },
-      body:JSON.stringify({
-        user_id:user_id,
-        word:en,
-        translation:ar
+      body: JSON.stringify({
+        user_id: user_id,
+        word: en,
+        translation: ar
       })
     });
 
-    if(!res.ok){
-      let err=await res.text();
-      console.error(err);
-      showAlert("❌ فشل الحفظ");
-      return;
-    }
+    // ✅ تغيير الشكل
+    el.innerText = "✅";
+    el.style.background = "#22c55e";
 
-    el.innerText="✔";
-    el.style.background="#22c55e";
-
-  }catch(e){
-    showAlert("❌ مشكلة في الاتصال");
+  }catch(err){
+    console.error(err);
+    alert("❌ فشل الحفظ");
   }
 
 }
@@ -274,7 +259,7 @@ async function generateLesson(){
   let input=document.getElementById("textInput").value;
 
   if(!input){
-    showAlert("⚠️ اكتب شي");
+    alert("اكتب شي");
     return;
   }
 
@@ -295,7 +280,7 @@ async function generateLesson(){
 
     let data = await res.json();
 
-    document.getElementById("textInput").value="";
+    document.getElementById("textInput").value = "";
 
     document.getElementById("lesson").innerHTML=`
       <div class="card">

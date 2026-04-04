@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>📚 الأفعال</title>
+<title>📦 الأسماء</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
@@ -54,17 +54,30 @@ body{
   margin:10px 0;
 }
 
-/* 🔥 الجدول الأفقي المضغوط */
+/* 🔥 كارد متجاوب */
 .card{
   display:grid;
-  grid-template-columns: 25px 1fr 1fr 1fr 80px 40px;
+  grid-template-columns: 25px 1fr 100px 70px 40px;
   align-items:center;
-  gap:3px;
+  gap:4px;
 
   background:#1e293b;
   border-radius:10px;
   padding:6px;
   margin-bottom:6px;
+}
+
+/* 📱 موبايل */
+@media(max-width:600px){
+  .card{
+    grid-template-columns: 20px 1fr 80px 60px 35px;
+    gap:3px;
+    padding:5px;
+  }
+
+  .item, .translation{
+    font-size:10px;
+  }
 }
 
 /* رقم */
@@ -75,7 +88,7 @@ body{
   font-size:11px;
 }
 
-/* عنصر */
+/* كلمة */
 .item{
   background:#334155;
   padding:3px 5px;
@@ -84,6 +97,7 @@ body{
   justify-content:space-between;
   align-items:center;
   font-size:11px;
+  overflow:hidden;
 }
 
 /* ترجمة */
@@ -94,6 +108,15 @@ body{
   text-align:center;
   font-weight:bold;
   font-size:11px;
+}
+
+/* الوحدة */
+.unit{
+  background:#22c55e;
+  text-align:center;
+  padding:4px;
+  border-radius:6px;
+  font-size:10px;
 }
 
 /* أزرار */
@@ -111,7 +134,7 @@ button{
   color:white;
 }
 
-/* ⭐ حفظ */
+/* حفظ */
 .save{
   background:#facc15;
   color:#000;
@@ -124,8 +147,8 @@ button{
 }
 
 </style>
-
 </head>
+
 <body>
 
 <div class="header">
@@ -134,7 +157,7 @@ button{
 </div>
 
 <div class="container">
-  <div class="title">📚 الأفعال</div>
+  <div class="title">📦 الأسماء</div>
   <div id="list"></div>
 </div>
 
@@ -151,7 +174,7 @@ let user_id = localStorage.getItem("user_id");
 let fullName = localStorage.getItem("user") || "طالب";
 let parts = fullName.split(" ");
 document.getElementById("username").innerText =
-  "👤 " + parts[0] + (parts[1] ? " " + parts[1] : "");
+  "👤 " + parts[0];
 
 /* 🔊 صوت */
 function speak(text){
@@ -164,7 +187,7 @@ function speak(text){
 
 /* ⭐ حفظ */
 async function saveWord(word, btn){
-  await client.from("saved_verbs").insert({
+  await client.from("saved_nouns").insert({
     user_id: user_id,
     word: word
   });
@@ -177,7 +200,7 @@ async function saveWord(word, btn){
 async function load(){
 
   let { data, error } = await client
-    .from("headway_verbs")
+    .from("headway_nouns")
     .select("*");
 
   const container = document.getElementById("list");
@@ -202,22 +225,16 @@ async function load(){
         <div class="index">${i+1}</div>
 
         <div class="item">
-          ${w.base || w.word}
-          <button class="speak" onclick="speak('${w.base || w.word}')">🔊</button>
-        </div>
-
-        <div class="item">
-          ${w.past || '-'}
-          <button class="speak" onclick="speak('${w.past}')">🔊</button>
-        </div>
-
-        <div class="item">
-          ${w.past_participle || '-'}
-          <button class="speak" onclick="speak('${w.past_participle}')">🔊</button>
+          ${w.word}
+          <button class="speak" onclick="speak('${w.word}')">🔊</button>
         </div>
 
         <div class="translation">
           ${w.translation || ''}
+        </div>
+
+        <div class="unit">
+          ${w.unit || '-'}
         </div>
 
         <button class="save" onclick="saveWord('${w.word}', this)">⭐</button>

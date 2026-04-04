@@ -25,13 +25,12 @@ body {
 }
 
 input {
-  padding: 8px;
-  width: 95%;
-  max-width: 350px;
+  padding: 10px;
+  width: 90%;
+  max-width: 400px;
   border-radius: 12px;
   border: none;
   margin: 10px 0;
-  text-align: right;
 }
 
 button {
@@ -102,37 +101,6 @@ button {
   color:#22c55e;
   font-weight:bold;
 }
-
-/* 📱 موبايل */
-@media (max-width:600px){
-  h2{font-size:18px;}
-  input{width:95%;font-size:14px;}
-  button{width:95%;font-size:14px;}
-  #player{height:200px;}
-  .sub-ar{font-size:18px;}
-}
-
-/* 🔥 Alert */
-.alert{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#ef4444;
-  color:white;
-  padding:12px 20px;
-  border-radius:12px;
-  font-size:14px;
-  z-index:9999;
-  animation:fadeInOut 4s ease forwards;
-}
-
-@keyframes fadeInOut{
-  0%{opacity:0; bottom:0;}
-  10%{opacity:1; bottom:20px;}
-  90%{opacity:1;}
-  100%{opacity:0;}
-}
 </style>
 </head>
 
@@ -142,7 +110,7 @@ button {
 
 <h2>🎥 تعلم من الفيديو بذكاء</h2>
 
-<input id="url" placeholder="🔗 ضع رابط الفيديو هنا" dir="rtl">
+<input id="url" placeholder="ضع رابط YouTube">
 <br>
 <button onclick="sendUrl()">🔗 تحليل</button>
 
@@ -171,44 +139,46 @@ const WEBHOOK="https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 let player;
 let subtitles=[];
 
-/* 🔥 Alert */
-function showAlert(msg){
-  let div=document.createElement("div");
-  div.className="alert";
-  div.innerText=msg;
-  document.body.appendChild(div);
-  setTimeout(()=>div.remove(),4000);
-}
-
-/* ID */
+/* ✅ إصلاح استخراج ID */
 function getVideoId(url){
+
   try{
+
     if(url.includes("youtu.be")){
       return url.split("/").pop().split("?")[0];
     }
+
     if(url.includes("youtube.com")){
       const u = new URL(url);
-      return u.searchParams.get("v");
+      const id = u.searchParams.get("v");
+      if(id) return id;
     }
+
     if(url.length === 11){
       return url;
     }
+
     return null;
+
   }catch{
     return null;
   }
+
 }
 
-/* فيديو */
+/* إنشاء الفيديو */
 function createPlayer(id){
+
   if(player) player.destroy();
+
   player = new YT.Player('player',{
     videoId:id,
     events:{ onReady:syncLoop }
   });
+
 }
 
-/* 🔥 مزامنة ذكية */
+/* مزامنة */
 function syncLoop(){
 
   setInterval(()=>{
@@ -217,21 +187,14 @@ function syncLoop(){
 
     let t = player.getCurrentTime();
 
-    let index = subtitles.findIndex(s => t >= s.time);
+    let current = subtitles.find(s=>t>=s.time && t<s.time+4);
 
-    if(index === -1) return;
+    if(!current) return;
 
-    let current = subtitles[index];
-    let next = subtitles[index + 1];
+    document.getElementById("subEn").innerHTML=current.en;
+    document.getElementById("subAr").innerText=current.ar;
 
-    let end = next ? next.time : current.time + 3;
-
-    if(t >= current.time && t <= end){
-      document.getElementById("subEn").innerHTML=current.en;
-      document.getElementById("subAr").innerText=current.ar;
-    }
-
-  },300);
+  },500);
 
 }
 
@@ -244,15 +207,17 @@ function speak(t){
 
 /* حفظ */
 async function saveWord(el,en,ar){
+
   await client.from("user_words").insert({
     user_id:"user_1",
     word:en,
     translation:ar
   });
+
   el.innerText="✅";
 }
 
-/* قفز */
+/* قفز للفيديو */
 function goTo(sec){
   if(player) player.seekTo(sec,true);
 }
@@ -271,26 +236,46 @@ function show(data){
 
     data[cat].forEach(w=>{
 
+      const word=w.en||w.word||"";
+      const ar=w.ar||w.arabic||"";
+
+      const ex=w.example||"";
+      const ex_ar=w.example_ar||"";
+
       subtitles.push({
         time:w.time||0,
-        en:w.example||"",
-        ar:w.example_ar||""
+        en:ex,
+        ar:ex_ar
       });
+
+      let highlighted = ex.replace(
+        new RegExp(word,"gi"),
+        `<span class="highlight">${word}</span>`
+      );
 
       html+=`
         <div class="word-box">
+
           <div class="word-top">
             <div>
-              <span class="en">${w.en}</span>
-              <span class="ar">${w.ar}</span>
+              <span class="en">${word}</span>
+              <span class="ar">${ar}</span>
             </div>
+
             <div>
-              <span class="icon" onclick="speak('${w.en}')">🔊</span>
-              <span class="icon" onclick="saveWord(this,'${w.en}','${w.ar}')">⭐</span>
+              <span class="icon" onclick="speak('${word}')">🔊</span>
+              <span class="icon" onclick="saveWord(this,'${word}','${ar}')">⭐</span>
             </div>
           </div>
-          <div class="example" onclick="goTo(${w.time||0})">${w.example||""}</div>
-          <div class="example-ar">${w.example_ar||""}</div>
+
+          <div class="example" onclick="goTo(${w.time||0})">
+            ${highlighted}
+          </div>
+
+          <div class="example-ar">
+            ${ex_ar}
+          </div>
+
         </div>
       `;
     });
@@ -305,43 +290,32 @@ function show(data){
 async function sendUrl(){
 
   let url=document.getElementById("url").value;
-  if(!url) return showAlert("⚠️ اكتب رابط");
+  if(!url) return alert("اكتب رابط");
 
   let id = getVideoId(url);
-  if(!id) return showAlert("❌ رابط غير صحيح");
+
+  if(!id){
+    alert("❌ رابط الفيديو غير صحيح");
+    return;
+  }
 
   document.getElementById("loading").style.display="block";
   document.getElementById("videoBox").style.display="block";
 
   createPlayer(id);
 
-  let timeout=setTimeout(()=>{
-    showAlert("⏳ الفيديو طويل...");
-  },7000);
+  let res=await fetch(WEBHOOK,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({url})
+  });
 
-  try{
+  let text=await res.text();
+  let data=JSON.parse(text);
 
-    let res=await fetch(WEBHOOK,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({url})
-    });
+  document.getElementById("loading").style.display="none";
 
-    let data=await res.json();
-
-    clearTimeout(timeout);
-    document.getElementById("loading").style.display="none";
-
-    if(!data || Object.keys(data).length===0){
-      return showAlert("❌ لا توجد ترجمة");
-    }
-
-    show(data);
-
-  }catch(e){
-    showAlert("❌ خطأ، أعد المحاولة");
-  }
-
+  show(data);
 }
 
 </script>

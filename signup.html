@@ -3,14 +3,11 @@
 <head>
 <meta charset="UTF-8">
 
-<!-- 🔥 منع الزوم -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <title>تسجيل طالب</title>
 
 <style>
-
-/* 🌍 عام */
 *{ box-sizing:border-box; }
 
 body {
@@ -65,7 +62,7 @@ input {
   border-radius:12px;
   border:none;
   text-align:center;
-  font-size:16px; /* 🔥 حل الزوم */
+  font-size:16px;
 }
 
 input::placeholder { color:#9ca3af; }
@@ -75,11 +72,7 @@ input:focus {
   box-shadow:0 0 0 2px #38bdf8;
 }
 
-input, textarea, select {
-  font-size:16px !important;
-}
-
-/* dropdown */
+/* 🔥 إصلاح الدروب داون */
 .custom-select {
   position: relative;
   background: white;
@@ -92,11 +85,12 @@ input, textarea, select {
   padding:0 15px;
   cursor:pointer;
   margin:8px 0;
+  z-index:1;
 }
 
 .options {
   position:absolute;
-  top:55px;
+  top:100%;
   right:0;
   left:0;
   background:white;
@@ -104,7 +98,7 @@ input, textarea, select {
   display:none;
   overflow:hidden;
   box-shadow:0 10px 25px rgba(0,0,0,0.2);
-  z-index:10;
+  z-index:999;
 }
 
 .options div {
@@ -171,37 +165,12 @@ button {
   color:white;
   font-size:16px;
   cursor:pointer;
+  transition:0.3s;
 }
 
-.popup{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.5);
-  display:none;
-  justify-content:center;
-  align-items:center;
-}
-
-.popup-box{
-  background:white;
-  color:black;
-  padding:25px;
-  border-radius:20px;
-  text-align:center;
-  width:85%;
-  max-width:300px;
-}
-
-.popup button{
-  margin-top:15px;
-  background:#22c55e;
-  border:none;
-  padding:10px;
-  border-radius:10px;
-  color:white;
+button:disabled{
+  opacity:0.6;
+  cursor:not-allowed;
 }
 
 </style>
@@ -221,8 +190,8 @@ button {
 <input id="district" placeholder="الحي">
 
 <!-- الجنس -->
-<div class="custom-select" onclick="event.stopPropagation(); toggleDropdown()">
-  <span id="selected">اختر الجنس ▼</span>
+<div class="custom-select" onclick="toggleDropdown()">
+  <span id="selectedGenderText">اختر الجنس ▼</span>
 </div>
 <div class="options" id="dropdown">
   <div onclick="selectOption(event,'ذكر')">ذكر</div>
@@ -230,8 +199,8 @@ button {
 </div>
 
 <!-- المستوى -->
-<div class="custom-select" onclick="event.stopPropagation(); toggleLevelDropdown()">
-  <span id="selectedLevel">المستوى ▼</span>
+<div class="custom-select" onclick="toggleLevelDropdown()">
+  <span id="selectedLevelText">المستوى ▼</span>
 </div>
 <div class="options" id="levelDropdown">
   <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
@@ -258,16 +227,47 @@ button {
 
 </div>
 
-<div class="popup" id="popup">
-  <div class="popup-box">
-    <h3>🎉 تم التسجيل</h3>
-    <p>تم إنشاء حسابك بنجاح</p>
-    <button onclick="goHome()">ابدأ الآن</button>
-  </div>
-</div>
-
 <script>
 
+const dropdown = document.getElementById("dropdown");
+const levelDropdown = document.getElementById("levelDropdown");
+
+let selectedGender = "";
+let selectedLevelValue = "";
+
+/* 🔽 الجنس */
+function toggleDropdown(){
+  levelDropdown.style.display="none";
+  dropdown.style.display = dropdown.style.display==="block"?"none":"block";
+}
+
+function selectOption(e,value){
+  e.stopPropagation();
+  selectedGender=value;
+  document.getElementById("selectedGenderText").innerText=value+" ▼";
+  dropdown.style.display="none";
+}
+
+/* 🔽 المستوى */
+function toggleLevelDropdown(){
+  dropdown.style.display="none";
+  levelDropdown.style.display = levelDropdown.style.display==="block"?"none":"block";
+}
+
+function selectLevel(e,value){
+  e.stopPropagation();
+  selectedLevelValue=value;
+  document.getElementById("selectedLevelText").innerText=value+" ▼";
+  levelDropdown.style.display="none";
+}
+
+/* إغلاق */
+document.addEventListener("click",()=>{
+  dropdown.style.display="none";
+  levelDropdown.style.display="none";
+});
+
+/* 🔄 لودينج */
 function setLoading(state){
   let btn=document.getElementById("signupBtn");
   btn.disabled=state;
@@ -276,51 +276,22 @@ function setLoading(state){
 
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
-let selectedGender = "";
-let selectedLevel = "";
-
-function toggleDropdown(){
-  dropdown.style.display = dropdown.style.display==="block"?"none":"block";
-}
-
-function selectOption(e,value){
-  e.stopPropagation();
-  selectedGender=value;
-  selected.innerText=value+" ▼";
-  dropdown.style.display="none";
-}
-
-function toggleLevelDropdown(){
-  levelDropdown.style.display = levelDropdown.style.display==="block"?"none":"block";
-}
-
-function selectLevel(e,value){
-  e.stopPropagation();
-  selectedLevel=value;
-  selectedLevel.innerText=value+" ▼";
-  levelDropdown.style.display="none";
-}
-
-document.addEventListener("click",()=>{
-  dropdown.style.display="none";
-  levelDropdown.style.display="none";
-});
-
+/* 🚀 تسجيل */
 async function signup(){
 
   const skills=[...document.querySelectorAll(".skills input:checked")].map(el=>el.value);
 
   const data={
-    name:name.value.trim(),
-    phone:phone.value.trim(),
-    city:city.value.trim(),
-    district:district.value.trim(),
+    name:document.getElementById("name").value.trim(),
+    phone:document.getElementById("phone").value.trim(),
+    city:document.getElementById("city").value.trim(),
+    district:document.getElementById("district").value.trim(),
     gender:selectedGender,
-    level:selectedLevel,
+    level:selectedLevelValue,
     skills:skills,
-    job1:job1.value.trim(),
-    job2:job2.value.trim(),
-    job3:job3.value.trim()
+    job1:document.getElementById("job1").value.trim(),
+    job2:document.getElementById("job2").value.trim(),
+    job3:document.getElementById("job3").value.trim()
   };
 
   if(!data.name||!data.phone){
@@ -328,7 +299,7 @@ async function signup(){
     return;
   }
 
-  if(!selectedGender||!selectedLevel){
+  if(!selectedGender||!selectedLevelValue){
     alert("اختر الجنس والمستوى ⚠️");
     return;
   }
@@ -343,18 +314,14 @@ async function signup(){
     });
 
     setTimeout(()=>{
-      popup.style.display="flex";
+      alert("✅ تم التسجيل");
       setLoading(false);
     },500);
 
   }catch{
-    alert("خطأ ❌");
+    alert("❌ خطأ");
     setLoading(false);
   }
-}
-
-function goHome(){
-  location.href="index.html";
 }
 
 </script>

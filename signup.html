@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 
-<!-- 🔥 حل مشكلة الزوم -->
+<!-- 🔥 منع الزوم -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <title>تسجيل طالب</title>
@@ -24,7 +24,6 @@ body {
   padding:15px;
 }
 
-/* خلفية */
 body::before{
   content:"";
   position:fixed;
@@ -35,7 +34,6 @@ body::before{
   z-index:-1;
 }
 
-/* 📦 الكرت */
 .box {
   width:100%;
   max-width:420px;
@@ -48,7 +46,6 @@ body::before{
   color:white;
 }
 
-/* 🔥 عدد الطلاب */
 .stats{
   background: rgba(34,197,94,0.15);
   border:1px solid rgba(34,197,94,0.3);
@@ -58,10 +55,8 @@ body::before{
   font-size:14px;
 }
 
-/* 🧠 العنوان */
 h2 { margin-bottom:15px; }
 
-/* 📝 الحقول */
 input {
   width:100%;
   height:50px;
@@ -80,12 +75,11 @@ input:focus {
   box-shadow:0 0 0 2px #38bdf8;
 }
 
-/* 🔥 تثبيت إضافي */
 input, textarea, select {
   font-size:16px !important;
 }
 
-/* 🔽 dropdown */
+/* dropdown */
 .custom-select {
   position: relative;
   background: white;
@@ -93,8 +87,9 @@ input, textarea, select {
   height: 50px;
   border-radius: 12px;
   display:flex;
+  justify-content:space-between;
   align-items:center;
-  justify-content:center;
+  padding:0 15px;
   cursor:pointer;
   margin:8px 0;
 }
@@ -121,7 +116,6 @@ input, textarea, select {
   background:#f1f5f9;
 }
 
-/* 🏷️ عنوان */
 .label {
   margin-top:15px;
   margin-bottom:5px;
@@ -129,7 +123,6 @@ input, textarea, select {
   color:#cbd5f5;
 }
 
-/* ✅ checkbox */
 .skills {
   background:white;
   border-radius:12px;
@@ -168,7 +161,6 @@ input, textarea, select {
   right:3px;
 }
 
-/* 🎯 زر */
 button {
   width:100%;
   height:50px;
@@ -181,7 +173,6 @@ button {
   cursor:pointer;
 }
 
-/* ✅ popup */
 .popup{
   position:fixed;
   top:0;
@@ -229,21 +220,23 @@ button {
 <input id="city" placeholder="المدينة">
 <input id="district" placeholder="الحي">
 
+<!-- الجنس -->
 <div class="custom-select" onclick="event.stopPropagation(); toggleDropdown()">
-  <div id="selected">اختر الجنس</div>
-  <div class="options" id="dropdown">
-    <div onclick="selectOption(event,'ذكر')">ذكر</div>
-    <div onclick="selectOption(event,'أنثى')">أنثى</div>
-  </div>
+  <span id="selected">اختر الجنس ▼</span>
+</div>
+<div class="options" id="dropdown">
+  <div onclick="selectOption(event,'ذكر')">ذكر</div>
+  <div onclick="selectOption(event,'أنثى')">أنثى</div>
 </div>
 
+<!-- المستوى -->
 <div class="custom-select" onclick="event.stopPropagation(); toggleLevelDropdown()">
-  <div id="selectedLevel">المستوى</div>
-  <div class="options" id="levelDropdown">
-    <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
-    <div onclick="selectLevel(event,'متوسط')">متوسط</div>
-    <div onclick="selectLevel(event,'متقدم')">متقدم</div>
-  </div>
+  <span id="selectedLevel">المستوى ▼</span>
+</div>
+<div class="options" id="levelDropdown">
+  <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
+  <div onclick="selectLevel(event,'متوسط')">متوسط</div>
+  <div onclick="selectLevel(event,'متقدم')">متقدم</div>
 </div>
 
 <div class="label">❗ لا أستطيع</div>
@@ -257,11 +250,10 @@ button {
 
 <div class="label">🎯 اهتماماتك المهنية</div>
 
-<input id="job1">
-<input id="job2">
-<input id="job3">
+<input id="job1" placeholder="مثال: طبيب - مهندس">
+<input id="job2" placeholder="مثال: برمجة - تجارة">
+<input id="job3" placeholder="مثال: سفر - مقابلات">
 
-<!-- 🔥 زر معدل -->
 <button id="signupBtn" onclick="signup()">تسجيل</button>
 
 </div>
@@ -276,89 +268,74 @@ button {
 
 <script>
 
-/* 🔥 loading */
 function setLoading(state){
   let btn=document.getElementById("signupBtn");
-
-  if(state){
-    btn.disabled=true;
-    btn.innerText="⏳ جاري التسجيل...";
-    btn.style.opacity="0.7";
-  }else{
-    btn.disabled=false;
-    btn.innerText="تسجيل";
-    btn.style.opacity="1";
-  }
+  btn.disabled=state;
+  btn.innerText=state ? "⏳ جاري التسجيل..." : "تسجيل";
 }
 
-/* نفس كودك بدون تغيير */
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
 let selectedGender = "";
 let selectedLevel = "";
 
 function toggleDropdown(){
-  document.getElementById("levelDropdown").style.display = "none";
-  const drop = document.getElementById("dropdown");
-  drop.style.display = drop.style.display === "block" ? "none" : "block";
+  dropdown.style.display = dropdown.style.display==="block"?"none":"block";
 }
 
-function selectOption(e, value){
+function selectOption(e,value){
   e.stopPropagation();
-  selectedGender = value;
-  document.getElementById("selected").innerText = value;
-  document.getElementById("dropdown").style.display = "none";
+  selectedGender=value;
+  selected.innerText=value+" ▼";
+  dropdown.style.display="none";
 }
 
 function toggleLevelDropdown(){
-  document.getElementById("dropdown").style.display = "none";
-  const drop = document.getElementById("levelDropdown");
-  drop.style.display = drop.style.display === "block" ? "none" : "block";
+  levelDropdown.style.display = levelDropdown.style.display==="block"?"none":"block";
 }
 
-function selectLevel(e, value){
+function selectLevel(e,value){
   e.stopPropagation();
-  selectedLevel = value;
-  document.getElementById("selectedLevel").innerText = value;
-  document.getElementById("levelDropdown").style.display = "none";
+  selectedLevel=value;
+  selectedLevel.innerText=value+" ▼";
+  levelDropdown.style.display="none";
 }
 
-document.addEventListener("click", function(){
-  document.getElementById("dropdown").style.display = "none";
-  document.getElementById("levelDropdown").style.display = "none";
+document.addEventListener("click",()=>{
+  dropdown.style.display="none";
+  levelDropdown.style.display="none";
 });
 
 async function signup(){
 
-  const skills = [...document.querySelectorAll(".skills input:checked")]
-    .map(el => el.value);
+  const skills=[...document.querySelectorAll(".skills input:checked")].map(el=>el.value);
 
-  const data = {
-    name: name.value.trim(),
-    phone: phone.value.trim(),
-    city: city.value.trim(),
-    district: district.value.trim(),
-    gender: selectedGender,
-    level: selectedLevel,
-    skills: skills,
-    job1: job1.value.trim(),
-    job2: job2.value.trim(),
-    job3: job3.value.trim()
+  const data={
+    name:name.value.trim(),
+    phone:phone.value.trim(),
+    city:city.value.trim(),
+    district:district.value.trim(),
+    gender:selectedGender,
+    level:selectedLevel,
+    skills:skills,
+    job1:job1.value.trim(),
+    job2:job2.value.trim(),
+    job3:job3.value.trim()
   };
 
-  if(!data.name || !data.phone){
+  if(!data.name||!data.phone){
     alert("يرجى إدخال الاسم ورقم الجوال ⚠️");
     return;
   }
 
-  if(!selectedGender || !selectedLevel){
+  if(!selectedGender||!selectedLevel){
     alert("اختر الجنس والمستوى ⚠️");
     return;
   }
 
   setLoading(true);
 
-  try {
+  try{
     await fetch(WEBHOOK,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
@@ -366,18 +343,18 @@ async function signup(){
     });
 
     setTimeout(()=>{
-      document.getElementById("popup").style.display = "flex";
+      popup.style.display="flex";
       setLoading(false);
     },500);
 
-  } catch (error) {
-    alert("خطأ في الاتصال ❌");
+  }catch{
+    alert("خطأ ❌");
     setLoading(false);
   }
 }
 
 function goHome(){
-  window.location.href = "index.html";
+  location.href="index.html";
 }
 
 </script>

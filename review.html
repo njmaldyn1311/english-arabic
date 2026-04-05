@@ -189,7 +189,7 @@ let current = 0;
 async function loadWords(){
 
   let { data } = await client
-    .from("user_words")
+    .from("user_star_words")
     .select("*")
     .eq("user_id", user_id)
     .order("created_at", { ascending:false })

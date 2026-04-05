@@ -2,7 +2,9 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 🔥 منع الزوم -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <title>دخول الطالب</title>
 
@@ -66,6 +68,13 @@ input {
   border:none;
   margin:10px 0;
   text-align:center;
+
+  font-size:16px; /* 🔥 يمنع الزوم */
+  -webkit-appearance:none;
+}
+
+input, textarea, select {
+  font-size:16px !important;
 }
 
 button {

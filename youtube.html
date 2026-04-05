@@ -2,7 +2,9 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 🔥 منع التكبير العشوائي -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <title>AI Video Learning PRO+</title>
 
@@ -10,6 +12,12 @@
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <style>
+
+/* 🔥 منع مشاكل التكبير في iPhone */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: white;
@@ -18,30 +26,38 @@ body {
   margin: 0;
 }
 
+/* 🔥 تثبيت عرض التصميم */
 .container {
+  width: 100%;
   max-width: 700px;
   margin: auto;
   padding: 15px;
 }
 
+/* 🔥 أهم تعديل هنا */
 input {
-  padding: 10px;
+  padding: 12px;
   width: 90%;
   max-width: 400px;
   border-radius: 12px;
   border: none;
   margin: 10px 0;
+
+  font-size: 16px; /* 🚀 يمنع zoom في الآيفون */
 }
 
+/* تحسين الأزرار */
 button {
   background: #22c55e;
-  padding: 10px 20px;
+  padding: 12px 22px;
   border: none;
   border-radius: 12px;
   color: white;
   cursor: pointer;
+  font-size: 15px;
 }
 
+/* الكروت */
 .card {
   background: #1e293b;
   margin: 15px 0;
@@ -49,23 +65,27 @@ button {
   border-radius: 15px;
 }
 
+/* الفيديو */
 #player {
   width: 100%;
-  height: 260px;
+  height: 220px;
   border-radius: 15px;
 }
 
+/* النصوص */
 .sub-en {
   color: #38bdf8;
   font-weight: bold;
+  font-size: 16px;
 }
 
 .sub-ar {
   color: #facc15;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
 }
 
+/* الكلمات */
 .word-box{
   border-bottom:1px solid #334155;
   padding:10px;
@@ -84,23 +104,39 @@ button {
 .icon{
   cursor:pointer;
   margin-left:5px;
+  font-size:18px;
 }
 
 .example{
   margin-top:5px;
   color:#e2e8f0;
   cursor:pointer;
+  font-size:14px;
 }
 
 .example-ar{
   color:#facc15;
-  font-size:15px;
+  font-size:14px;
 }
 
 .highlight{
   color:#22c55e;
   font-weight:bold;
 }
+
+/* 🔥 تحسين الجوال */
+@media (max-width: 500px){
+
+  #player{
+    height:180px;
+  }
+
+  .sub-ar{
+    font-size:18px;
+  }
+
+}
+
 </style>
 </head>
 
@@ -126,199 +162,6 @@ button {
 <div id="result"></div>
 
 </div>
-
-<script>
-
-const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
-
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-const WEBHOOK="https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
-
-let player;
-let subtitles=[];
-
-/* ✅ إصلاح استخراج ID */
-function getVideoId(url){
-
-  try{
-
-    if(url.includes("youtu.be")){
-      return url.split("/").pop().split("?")[0];
-    }
-
-    if(url.includes("youtube.com")){
-      const u = new URL(url);
-      const id = u.searchParams.get("v");
-      if(id) return id;
-    }
-
-    if(url.length === 11){
-      return url;
-    }
-
-    return null;
-
-  }catch{
-    return null;
-  }
-
-}
-
-/* إنشاء الفيديو */
-function createPlayer(id){
-
-  if(player) player.destroy();
-
-  player = new YT.Player('player',{
-    videoId:id,
-    events:{ onReady:syncLoop }
-  });
-
-}
-
-/* مزامنة */
-function syncLoop(){
-
-  setInterval(()=>{
-
-    if(!player) return;
-
-    let t = player.getCurrentTime();
-
-    let current = subtitles.find(s=>t>=s.time && t<s.time+4);
-
-    if(!current) return;
-
-    document.getElementById("subEn").innerHTML=current.en;
-    document.getElementById("subAr").innerText=current.ar;
-
-  },500);
-
-}
-
-/* صوت */
-function speak(t){
-  let u=new SpeechSynthesisUtterance(t);
-  u.lang="en-US";
-  speechSynthesis.speak(u);
-}
-
-/* حفظ */
-async function saveWord(el,en,ar){
-
-  await client.from("user_words").insert({
-    user_id:"user_1",
-    word:en,
-    translation:ar
-  });
-
-  el.innerText="✅";
-}
-
-/* قفز للفيديو */
-function goTo(sec){
-  if(player) player.seekTo(sec,true);
-}
-
-/* عرض */
-function show(data){
-
-  subtitles=[];
-  let html="";
-
-  for(let cat in data){
-
-    if(!Array.isArray(data[cat])) continue;
-
-    html+=`<div class="card"><h3>${cat}</h3>`;
-
-    data[cat].forEach(w=>{
-
-      const word=w.en||w.word||"";
-      const ar=w.ar||w.arabic||"";
-
-      const ex=w.example||"";
-      const ex_ar=w.example_ar||"";
-
-      subtitles.push({
-        time:w.time||0,
-        en:ex,
-        ar:ex_ar
-      });
-
-      let highlighted = ex.replace(
-        new RegExp(word,"gi"),
-        `<span class="highlight">${word}</span>`
-      );
-
-      html+=`
-        <div class="word-box">
-
-          <div class="word-top">
-            <div>
-              <span class="en">${word}</span>
-              <span class="ar">${ar}</span>
-            </div>
-
-            <div>
-              <span class="icon" onclick="speak('${word}')">🔊</span>
-              <span class="icon" onclick="saveWord(this,'${word}','${ar}')">⭐</span>
-            </div>
-          </div>
-
-          <div class="example" onclick="goTo(${w.time||0})">
-            ${highlighted}
-          </div>
-
-          <div class="example-ar">
-            ${ex_ar}
-          </div>
-
-        </div>
-      `;
-    });
-
-    html+="</div>";
-  }
-
-  document.getElementById("result").innerHTML=html;
-}
-
-/* إرسال */
-async function sendUrl(){
-
-  let url=document.getElementById("url").value;
-  if(!url) return alert("اكتب رابط");
-
-  let id = getVideoId(url);
-
-  if(!id){
-    alert("❌ رابط الفيديو غير صحيح");
-    return;
-  }
-
-  document.getElementById("loading").style.display="block";
-  document.getElementById("videoBox").style.display="block";
-
-  createPlayer(id);
-
-  let res=await fetch(WEBHOOK,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({url})
-  });
-
-  let text=await res.text();
-  let data=JSON.parse(text);
-
-  document.getElementById("loading").style.display="none";
-
-  show(data);
-}
-
-</script>
 
 </body>
 </html>

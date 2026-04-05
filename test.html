@@ -9,7 +9,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <style>
-
 *{box-sizing:border-box}
 
 body{
@@ -19,7 +18,6 @@ body{
   color:white;
 }
 
-/* 🔥 الهيدر */
 .header{
   position:absolute;
   top:15px;
@@ -30,10 +28,7 @@ body{
   align-items:center;
 }
 
-.user-name{
-  color:#38bdf8;
-  font-size:14px;
-}
+.user-name{ color:#38bdf8; font-size:14px; }
 
 .home{
   background:#1e293b;
@@ -44,7 +39,6 @@ body{
   cursor:pointer;
 }
 
-/* 📦 */
 .container{
   min-height:100vh;
   display:flex;
@@ -63,16 +57,8 @@ body{
 }
 
 .title{font-size:22px;margin-bottom:10px;}
-
-.question{
-  font-size:18px;
-  margin:15px 0;
-}
-
-.speaker{
-  font-size:26px;
-  cursor:pointer;
-}
+.question{font-size:18px;margin:15px 0;}
+.speaker{font-size:26px;cursor:pointer;}
 
 input{
   width:100%;
@@ -100,7 +86,6 @@ button{
 
 .check{background:#22c55e;}
 
-/* 🔥 alert */
 .toast{
   position:fixed;
   top:50%;
@@ -116,7 +101,6 @@ button{
 
 .success{background:#22c55e;}
 .error{background:#ef4444;}
-
 </style>
 </head>
 
@@ -128,7 +112,6 @@ button{
 </div>
 
 <div class="container">
-
   <div class="card">
 
     <div class="title">🧠 اختبار ذكي</div>
@@ -144,7 +127,6 @@ button{
     <button id="mainBtn" class="check" onclick="check()">تحقق</button>
 
   </div>
-
 </div>
 
 <div id="toast" class="toast"></div>
@@ -156,7 +138,34 @@ const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+/* 🔥 توحيد user_id */
 let user_id = localStorage.getItem("user_id");
+
+if(!user_id){
+  user_id = "user_" + Math.random().toString(36).substr(2,9);
+  localStorage.setItem("user_id", user_id);
+}
+
+console.log("USER:", user_id);
+
+/* 🔥 تتبع */
+async function track(action){
+  await fetch(SUPABASE_URL + "/rest/v1/user_activity", {
+    method: "POST",
+    headers:{
+      "apikey": SUPABASE_KEY,
+      "Authorization":"Bearer "+SUPABASE_KEY,
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
+      user_id: user_id,
+      page: "quiz_page",
+      action: action
+    })
+  });
+}
+
+track("دخول صفحة الاختبار");
 
 /* 👤 الاسم */
 let fullName = localStorage.getItem("user") || "طالب";
@@ -164,6 +173,7 @@ let parts = fullName.split(" ");
 document.getElementById("username").innerText =
   "👤 " + parts[0] + (parts[1] ? " " + parts[1] : "");
 
+/* البيانات */
 let words = [];
 let current = 0;
 let type = "";
@@ -172,20 +182,15 @@ let currentWord = null;
 let correctCount = 0;
 let total = 0;
 
-// 🧠 تطبيع عربي
 function normalizeArabic(text){
-  return text
-    .replace(/ال/g,"")
-    .replace(/[يتن]/g,"")
-    .replace(/[أإآ]/g,"ا")
-    .trim();
+  return text.replace(/ال/g,"").replace(/[يتن]/g,"").replace(/[أإآ]/g,"ا").trim();
 }
 
-// تحميل
+/* تحميل الكلمات */
 async function load(){
 
   let { data } = await client
-    .from("user_words")
+    .from("user_star_words") // 🔥 تم التعديل
     .select("*")
     .eq("user_id", user_id);
 
@@ -199,7 +204,7 @@ async function load(){
   next();
 }
 
-// السؤال
+/* السؤال */
 function next(){
 
   if(current >= words.length){
@@ -215,23 +220,17 @@ function next(){
   let types = ["mcq","write","listen"];
   type = types[Math.floor(Math.random()*types.length)];
 
-  document.getElementById("answers").innerHTML = "";
-  document.getElementById("input").value = "";
+  answers.innerHTML = "";
+  input.value = "";
 
   total++;
 
   if(type === "mcq"){
-
     hideAll();
-    document.getElementById("question").innerText = "ما معنى: " + en;
+    question.innerText = "ما معنى: " + en;
 
-    let unique = [...new Map(words.map(i => [i.translation,i])).values()];
-    let options = unique.sort(()=>0.5-Math.random()).slice(0,3);
-
-    if(!options.find(o=>o.translation===ar)){
-      options[0]=currentWord;
-    }
-
+    let options = [...words].sort(()=>0.5-Math.random()).slice(0,3);
+    options.push(currentWord);
     options = options.sort(()=>0.5-Math.random());
 
     options.forEach(o=>{
@@ -239,18 +238,18 @@ function next(){
       btn.className="option";
       btn.innerText=o.translation;
       btn.onclick=()=>checkChoice(btn.innerText, ar);
-      document.getElementById("answers").appendChild(btn);
+      answers.appendChild(btn);
     });
   }
 
   if(type === "write"){
     showInput();
-    document.getElementById("question").innerText = "اكتب المعنى بالعربي: " + en;
+    question.innerText = "اكتب المعنى بالعربي: " + en;
   }
 
   if(type === "listen"){
     showInput();
-    document.getElementById("question").innerText = "🎧 استمع واكتب المعنى";
+    question.innerText = "🎧 استمع واكتب المعنى";
     speak(en);
   }
 }
@@ -265,7 +264,6 @@ function showInput(){
   input.style.display="block";
 }
 
-// صوت
 function speak(text){
   speechSynthesis.cancel();
   let u=new SpeechSynthesisUtterance(text);
@@ -277,21 +275,21 @@ function play(){
   speak(currentWord.word);
 }
 
-// اختيار
+/* الإجابة */
 function checkChoice(selected, correct){
   let ok = selected === correct;
   if(ok) correctCount++;
+
+  track("إجابة " + (ok ? "صحيحة" : "خطأ"));
 
   toast(correct, ok);
   nextStep();
 }
 
-// كتابة
 function check(){
-
   if(type==="mcq") return;
 
-  let val = document.getElementById("input").value.trim();
+  let val = input.value.trim();
   let correct = currentWord.translation;
 
   let ok =
@@ -300,17 +298,18 @@ function check(){
 
   if(ok) correctCount++;
 
+  track("إجابة كتابة " + (ok ? "صحيحة" : "خطأ"));
+
   toast(correct, ok);
   nextStep();
 }
 
-// التالي
 function nextStep(){
   current++;
   setTimeout(next,800);
 }
 
-// النهاية
+/* النهاية */
 async function finish(){
 
   let percent=Math.round((correctCount/total)*100);
@@ -325,11 +324,12 @@ async function finish(){
     score:percent
   });
 
+  track("انتهى الاختبار: " + percent + "%");
+
   mainBtn.innerText="🔄 إعادة الاختبار";
   mainBtn.onclick=restart;
 }
 
-// إعادة
 function restart(){
   current=0;
   correctCount=0;
@@ -343,16 +343,12 @@ function restart(){
   next();
 }
 
-// 🔥 alert
+/* toast */
 function toast(correct, ok){
 
   let t=document.getElementById("toast");
 
-  if(ok){
-    t.innerHTML = "✅<br>إجابة صحيحة";
-  }else{
-    t.innerHTML = "❌<br>" + correct;
-  }
+  t.innerHTML = ok ? "✅<br>إجابة صحيحة" : "❌<br>" + correct;
 
   t.className="toast "+(ok?"success":"error");
   t.style.display="block";
@@ -360,7 +356,6 @@ function toast(correct, ok){
   setTimeout(()=>t.style.display="none",1200);
 }
 
-// رجوع
 function goHome(){
   window.location.href="index.html";
 }

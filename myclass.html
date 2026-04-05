@@ -6,7 +6,6 @@
 <title>الفصل الذكي</title>
 
 <style>
-
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
@@ -17,6 +16,7 @@ body{
 .top{display:flex;justify-content:space-between;padding:15px;}
 .user{color:#38bdf8;}
 .points{color:#FFD700;}
+
 .review{
   background:#6366f1;
   padding:10px;
@@ -74,15 +74,8 @@ body{
   margin-bottom:15px;
 }
 
-.story-en{
-  direction:ltr;
-  text-align:justify;
-}
-
-.story-ar{
-  direction:rtl;
-  text-align:justify;
-}
+.story-en{ direction:ltr; text-align:justify; }
+.story-ar{ direction:rtl; text-align:justify; }
 
 .section-title{
   margin-top:20px;
@@ -112,13 +105,7 @@ body{
   padding:10px;
   border-radius:10px;
   font-size:18px;
-  transition:0.2s;
 }
-
-.icon:hover{
-  transform:scale(1.1);
-}
-
 </style>
 </head>
 
@@ -156,10 +143,39 @@ body{
 
 <script>
 
-// 🔥 بيانات Supabase
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
+/* 🔥 توحيد user_id */
+let user_id = localStorage.getItem("user_id");
+
+if(!user_id){
+  user_id = "user_" + Math.random().toString(36).substring(2,10);
+  localStorage.setItem("user_id", user_id);
+}
+
+console.log("USER:", user_id);
+
+/* 🔥 تتبع */
+async function track(action){
+  await fetch(SUPABASE_URL + "/rest/v1/user_activity", {
+    method: "POST",
+    headers:{
+      "apikey": SUPABASE_KEY,
+      "Authorization":"Bearer "+SUPABASE_KEY,
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
+      user_id: user_id,
+      page: "class_page",
+      action: action
+    })
+  });
+}
+
+track("دخول الفصل");
+
+/* 👤 الاسم */
 const fullName = localStorage.getItem("user") || "";
 const nameParts = fullName.split(" ");
 const shortName = nameParts.slice(0,2).join(" ");
@@ -167,12 +183,6 @@ document.getElementById("username").innerText = "👤 " + shortName;
 
 function goProfile(){
   window.location.href = "student.html";
-}
-
-let user_id = localStorage.getItem("user_id");
-if(!user_id){
-  user_id = "user_" + Math.random().toString(36).substring(2,10);
-  localStorage.setItem("user_id", user_id);
 }
 
 let selectedType="text";
@@ -199,38 +209,30 @@ function speak(text){
   speechSynthesis.speak(utter);
 }
 
-/* ⭐ حفظ في Supabase بدل localStorage */
+/* ⭐ حفظ */
 async function saveWord(el,en,ar){
 
-  try{
+  await fetch(SUPABASE_URL + "/rest/v1/user_star_words", {
+    method: "POST",
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      user_id: user_id,
+      word: en,
+      translation: ar
+    })
+  });
 
-    await fetch(SUPABASE_URL + "/rest/v1/user_words", {
-      method: "POST",
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + SUPABASE_KEY,
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal"
-      },
-      body: JSON.stringify({
-        user_id: user_id,
-        word: en,
-        translation: ar
-      })
-    });
+  track("حفظ كلمة من الفصل");
 
-    // ✅ تغيير الشكل
-    el.innerText = "✅";
-    el.style.background = "#22c55e";
-
-  }catch(err){
-    console.error(err);
-    alert("❌ فشل الحفظ");
-  }
-
+  el.innerText="✅";
+  el.style.background="#22c55e";
 }
 
-/* عرض الكلمات */
+/* عرض */
 function renderWords(words){
   let html="";
   for(let section in words){
@@ -262,6 +264,8 @@ async function generateLesson(){
     alert("اكتب شي");
     return;
   }
+
+  track("إنشاء درس");
 
   document.getElementById("lesson").innerHTML =
     `<div class="loading">⏳ جاري إنشاء الدرس...</div>`;

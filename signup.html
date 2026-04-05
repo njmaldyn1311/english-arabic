@@ -2,15 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-
-<!-- 🔥 منع الزوم -->
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>تسجيل طالب</title>
 
 <style>
-
-/* 🌍 عام */
 *{ box-sizing:border-box; }
 
 body {
@@ -24,7 +20,6 @@ body {
   padding:15px;
 }
 
-/* خلفية */
 body::before{
   content:"";
   position:fixed;
@@ -35,7 +30,6 @@ body::before{
   z-index:-1;
 }
 
-/* 📦 الكرت */
 .box {
   width:100%;
   max-width:420px;
@@ -48,20 +42,16 @@ body::before{
   color:white;
 }
 
-/* 🔥 عدد الطلاب */
 .stats{
   background: rgba(34,197,94,0.15);
   border:1px solid rgba(34,197,94,0.3);
   padding:10px;
   border-radius:12px;
   margin-bottom:15px;
-  font-size:14px;
 }
 
-/* 🧠 العنوان */
 h2 { margin-bottom:15px; }
 
-/* 📝 الحقول */
 input {
   width:100%;
   height:50px;
@@ -70,28 +60,20 @@ input {
   border-radius:12px;
   border:none;
   text-align:center;
-  font-size:16px; /* 🔥 يمنع الزوم */
+  font-size:16px;
 }
 
-input::placeholder { color:#9ca3af; }
-
-input:focus {
-  outline:none;
-  box-shadow:0 0 0 2px #38bdf8;
-}
-
-/* 🔽 dropdown */
 .custom-select {
-  position: relative;
-  background: white;
-  color: black;
-  height: 50px;
-  border-radius: 12px;
+  background:white;
+  color:black;
+  height:50px;
+  border-radius:12px;
   display:flex;
   align-items:center;
   justify-content:center;
   cursor:pointer;
   margin:8px 0;
+  position:relative;
 }
 
 .options {
@@ -102,68 +84,13 @@ input:focus {
   background:white;
   border-radius:12px;
   display:none;
-  overflow:hidden;
-  box-shadow:0 10px 25px rgba(0,0,0,0.2);
   z-index:10;
 }
 
 .options div {
   padding:12px;
-  cursor:pointer;
 }
 
-.options div:hover {
-  background:#f1f5f9;
-}
-
-/* 🏷️ عنوان */
-.label {
-  margin-top:15px;
-  margin-bottom:5px;
-  font-size:14px;
-  color:#cbd5f5;
-}
-
-/* ✅ checkbox */
-.skills {
-  background:white;
-  border-radius:12px;
-  padding:12px;
-  color:black;
-  text-align:right;
-}
-
-.check {
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin:8px 0;
-  cursor:pointer;
-}
-
-.check input { display:none; }
-
-.check span {
-  width:20px;
-  height:20px;
-  border:2px solid #3b82f6;
-  border-radius:6px;
-  position:relative;
-}
-
-.check input:checked + span {
-  background:#3b82f6;
-}
-
-.check input:checked + span::after {
-  content:"✓";
-  color:white;
-  position:absolute;
-  top:-2px;
-  right:3px;
-}
-
-/* 🎯 زر */
 button {
   width:100%;
   height:50px;
@@ -173,58 +100,6 @@ button {
   background:#22c55e;
   color:white;
   font-size:16px;
-  cursor:pointer;
-}
-
-/* 🔔 Toast */
-.toast{
-  position:fixed;
-  top:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#22c55e;
-  color:white;
-  padding:10px 16px;
-  border-radius:12px;
-  font-size:13px;
-  z-index:9999;
-  display:none;
-}
-
-.toast.error{
-  background:#ef4444;
-}
-
-/* ✅ popup */
-.popup{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.5);
-  display:none;
-  justify-content:center;
-  align-items:center;
-}
-
-.popup-box{
-  background:white;
-  color:black;
-  padding:25px;
-  border-radius:20px;
-  text-align:center;
-  width:85%;
-  max-width:300px;
-}
-
-.popup button{
-  margin-top:15px;
-  background:#22c55e;
-  border:none;
-  padding:10px;
-  border-radius:10px;
-  color:white;
 }
 
 </style>
@@ -232,23 +107,18 @@ button {
 
 <body>
 
-<div class="toast" id="toast"></div>
-
 <div class="box">
 
-<div class="stats">🔥 أكثر من 1200 طالب بدأوا التعلم معنا</div>
-
-<h2>🚀 تسجيل طالب جديد</h2>
+<h2>🚀 تسجيل طالب</h2>
 
 <input id="name" placeholder="اسم الطالب">
 <input id="phone" placeholder="رقم الجوال">
-<input id="city" placeholder="المدينة">
-<input id="district" placeholder="الحي">
 
 <!-- الجنس -->
 <div class="custom-select" onclick="toggleDropdown()">
-  <div id="selected">اختر الجنس</div>
+  <div id="selected">اختر الجنس ▼</div>
 </div>
+
 <div class="options" id="dropdown">
   <div onclick="selectOption(event,'ذكر')">ذكر</div>
   <div onclick="selectOption(event,'أنثى')">أنثى</div>
@@ -256,144 +126,76 @@ button {
 
 <!-- المستوى -->
 <div class="custom-select" onclick="toggleLevelDropdown()">
-  <div id="selectedLevel">المستوى</div>
+  <div id="selectedLevel">المستوى ▼</div>
 </div>
+
 <div class="options" id="levelDropdown">
   <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
   <div onclick="selectLevel(event,'متوسط')">متوسط</div>
   <div onclick="selectLevel(event,'متقدم')">متقدم</div>
 </div>
 
-<div class="label">❗ لا أستطيع</div>
+<button onclick="signup()">تسجيل</button>
 
-<div class="skills">
-  <label class="check"><input type="checkbox" value="القراءة"><span></span> القراءة</label>
-  <label class="check"><input type="checkbox" value="الكتابة"><span></span> الكتابة</label>
-  <label class="check"><input type="checkbox" value="التحدث"><span></span> التحدث</label>
-  <label class="check"><input type="checkbox" value="كل ما ذكر صحيح"><span></span> كل ما ذكر صحيح</label>
-</div>
-
-<div class="label">🎯 اهتماماتك المهنية</div>
-
-<input id="job1" placeholder="مثال: طبيب - مهندس">
-<input id="job2" placeholder="مثال: برمجة - تجارة">
-<input id="job3" placeholder="مثال: سفر - مقابلات">
-
-<button id="signupBtn" onclick="signup()">تسجيل</button>
-
-</div>
-
-<div class="popup" id="popup">
-  <div class="popup-box">
-    <h3>🎉 تم التسجيل</h3>
-    <p>تم إنشاء حسابك بنجاح</p>
-    <button onclick="goHome()">ابدأ الآن</button>
-  </div>
 </div>
 
 <script>
 
-let selectedGender = "";
-let selectedLevel = "";
+let selectedGender="";
+let selectedLevel="";
 
-/* 🔔 Toast */
-function showToast(msg,type="success"){
-  let t=document.getElementById("toast");
-  t.innerText=msg;
-  t.className="toast "+(type==="error"?"error":"");
-  t.style.display="block";
-  setTimeout(()=>t.style.display="none",2500);
-}
-
-/* ⏳ Loading */
-function setLoading(state){
-  let btn=document.getElementById("signupBtn");
-  btn.disabled=state;
-  btn.innerText = state ? "⏳ جاري التسجيل..." : "تسجيل";
-}
-
-/* الجنس */
+/* 🔽 فتح */
 function toggleDropdown(){
-  levelDropdown.style.display="none";
-  dropdown.style.display = dropdown.style.display==="block"?"none":"block";
+  const drop=document.getElementById("dropdown");
+  const level=document.getElementById("levelDropdown");
+
+  level.style.display="none";
+  drop.style.display = drop.style.display==="block"?"none":"block";
 }
 
-function selectOption(e,value){
-  e.stopPropagation();
-  selectedGender=value;
-  selected.innerText=value;
-  dropdown.style.display="none";
-}
-
-/* المستوى */
 function toggleLevelDropdown(){
-  dropdown.style.display="none";
-  levelDropdown.style.display = levelDropdown.style.display==="block"?"none":"block";
+  const drop=document.getElementById("dropdown");
+  const level=document.getElementById("levelDropdown");
+
+  drop.style.display="none";
+  level.style.display = level.style.display==="block"?"none":"block";
 }
 
-function selectLevel(e,value){
+/* اختيار */
+function selectOption(e,val){
   e.stopPropagation();
-  selectedLevel=value;
-  document.getElementById("selectedLevel").innerText=value;
-  levelDropdown.style.display="none";
+  selectedGender=val;
+  document.getElementById("selected").innerText=val+" ▼";
+  document.getElementById("dropdown").style.display="none";
 }
 
+function selectLevel(e,val){
+  e.stopPropagation();
+  selectedLevel=val;
+  document.getElementById("selectedLevel").innerText=val+" ▼";
+  document.getElementById("levelDropdown").style.display="none";
+}
+
+/* إغلاق */
 document.addEventListener("click",()=>{
-  dropdown.style.display="none";
-  levelDropdown.style.display="none";
+  document.getElementById("dropdown").style.display="none";
+  document.getElementById("levelDropdown").style.display="none";
 });
 
-/* إرسال */
-const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
+/* تسجيل */
+function signup(){
 
-async function signup(){
-
-  const skills=[...document.querySelectorAll(".skills input:checked")].map(el=>el.value);
-
-  const data={
-    name:name.value.trim(),
-    phone:phone.value.trim(),
-    city:city.value.trim(),
-    district:district.value.trim(),
-    gender:selectedGender,
-    level:selectedLevel,
-    skills:skills,
-    job1:job1.value.trim(),
-    job2:job2.value.trim(),
-    job3:job3.value.trim()
-  };
-
-  if(!data.name || !data.phone){
-    showToast("⚠️ اكتب الاسم ورقم الجوال","error");
+  if(!name.value || !phone.value){
+    alert("اكتب البيانات");
     return;
   }
 
   if(!selectedGender || !selectedLevel){
-    showToast("⚠️ اختر الجنس والمستوى","error");
+    alert("اختر الجنس والمستوى");
     return;
   }
 
-  setLoading(true);
-  showToast("⏳ جاري التسجيل...");
-
-  try{
-    await fetch(WEBHOOK,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify(data)
-    });
-
-    setLoading(false);
-    popup.style.display="flex";
-
-  }catch{
-    setLoading(false);
-    showToast("❌ خطأ في الاتصال","error");
-  }
-}
-
-function goHome(){
-  location.href="index.html";
+  alert("تم التسجيل ✅");
 }
 
 </script>

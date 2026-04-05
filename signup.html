@@ -7,6 +7,8 @@
 <title>تسجيل طالب</title>
 
 <style>
+
+/* 🌍 عام */
 *{ box-sizing:border-box; }
 
 body {
@@ -20,6 +22,7 @@ body {
   padding:15px;
 }
 
+/* خلفية */
 body::before{
   content:"";
   position:fixed;
@@ -30,6 +33,7 @@ body::before{
   z-index:-1;
 }
 
+/* 📦 الكرت */
 .box {
   width:100%;
   max-width:420px;
@@ -42,16 +46,20 @@ body::before{
   color:white;
 }
 
+/* 🔥 عدد الطلاب */
 .stats{
   background: rgba(34,197,94,0.15);
   border:1px solid rgba(34,197,94,0.3);
   padding:10px;
   border-radius:12px;
   margin-bottom:15px;
+  font-size:14px;
 }
 
+/* 🧠 العنوان */
 h2 { margin-bottom:15px; }
 
+/* 📝 الحقول */
 input {
   width:100%;
   height:50px;
@@ -60,20 +68,28 @@ input {
   border-radius:12px;
   border:none;
   text-align:center;
-  font-size:16px;
+  font-size:15px;
 }
 
+input::placeholder { color:#9ca3af; }
+
+input:focus {
+  outline:none;
+  box-shadow:0 0 0 2px #38bdf8;
+}
+
+/* 🔽 dropdown */
 .custom-select {
-  background:white;
-  color:black;
-  height:50px;
-  border-radius:12px;
+  position: relative;
+  background: white;
+  color: black;
+  height: 50px;
+  border-radius: 12px;
   display:flex;
   align-items:center;
   justify-content:center;
   cursor:pointer;
   margin:8px 0;
-  position:relative;
 }
 
 .options {
@@ -84,13 +100,68 @@ input {
   background:white;
   border-radius:12px;
   display:none;
+  overflow:hidden;
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
   z-index:10;
 }
 
 .options div {
   padding:12px;
+  cursor:pointer;
 }
 
+.options div:hover {
+  background:#f1f5f9;
+}
+
+/* 🏷️ عنوان */
+.label {
+  margin-top:15px;
+  margin-bottom:5px;
+  font-size:14px;
+  color:#cbd5f5;
+}
+
+/* ✅ checkbox */
+.skills {
+  background:white;
+  border-radius:12px;
+  padding:12px;
+  color:black;
+  text-align:right;
+}
+
+.check {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:8px 0;
+  cursor:pointer;
+}
+
+.check input { display:none; }
+
+.check span {
+  width:20px;
+  height:20px;
+  border:2px solid #3b82f6;
+  border-radius:6px;
+  position:relative;
+}
+
+.check input:checked + span {
+  background:#3b82f6;
+}
+
+.check input:checked + span::after {
+  content:"✓";
+  color:white;
+  position:absolute;
+  top:-2px;
+  right:3px;
+}
+
+/* 🎯 زر */
 button {
   width:100%;
   height:50px;
@@ -100,6 +171,41 @@ button {
   background:#22c55e;
   color:white;
   font-size:16px;
+  cursor:pointer;
+}
+
+button:hover { background:#16a34a; }
+
+/* ✅ popup */
+.popup{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.popup-box{
+  background:white;
+  color:black;
+  padding:25px;
+  border-radius:20px;
+  text-align:center;
+  width:85%;
+  max-width:300px;
+}
+
+.popup button{
+  margin-top:15px;
+  background:#22c55e;
+  border:none;
+  padding:10px;
+  border-radius:10px;
+  color:white;
 }
 
 </style>
@@ -109,93 +215,164 @@ button {
 
 <div class="box">
 
-<h2>🚀 تسجيل طالب</h2>
+<div class="stats">🔥 أكثر من 1200 طالب بدأوا التعلم معنا</div>
+
+<h2>🚀 تسجيل طالب جديد</h2>
 
 <input id="name" placeholder="اسم الطالب">
 <input id="phone" placeholder="رقم الجوال">
+<input id="city" placeholder="المدينة">
+<input id="district" placeholder="الحي">
 
 <!-- الجنس -->
-<div class="custom-select" onclick="toggleDropdown()">
-  <div id="selected">اختر الجنس ▼</div>
-</div>
-
-<div class="options" id="dropdown">
-  <div onclick="selectOption(event,'ذكر')">ذكر</div>
-  <div onclick="selectOption(event,'أنثى')">أنثى</div>
+<div class="custom-select" onclick="event.stopPropagation(); toggleDropdown()">
+  <div id="selected">اختر الجنس</div>
+  <div class="options" id="dropdown">
+    <div onclick="selectOption(event,'ذكر')">ذكر</div>
+    <div onclick="selectOption(event,'أنثى')">أنثى</div>
+  </div>
 </div>
 
 <!-- المستوى -->
-<div class="custom-select" onclick="toggleLevelDropdown()">
-  <div id="selectedLevel">المستوى ▼</div>
+<div class="custom-select" onclick="event.stopPropagation(); toggleLevelDropdown()">
+  <div id="selectedLevel">المستوى</div>
+  <div class="options" id="levelDropdown">
+    <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
+    <div onclick="selectLevel(event,'متوسط')">متوسط</div>
+    <div onclick="selectLevel(event,'متقدم')">متقدم</div>
+  </div>
 </div>
 
-<div class="options" id="levelDropdown">
-  <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
-  <div onclick="selectLevel(event,'متوسط')">متوسط</div>
-  <div onclick="selectLevel(event,'متقدم')">متقدم</div>
+<div class="label">❗ لا أستطيع</div>
+
+<div class="skills">
+  <label class="check">
+    <input type="checkbox" value="القراءة">
+    <span></span> القراءة
+  </label>
+
+  <label class="check">
+    <input type="checkbox" value="الكتابة">
+    <span></span> الكتابة
+  </label>
+
+  <label class="check">
+    <input type="checkbox" value="التحدث">
+    <span></span> التحدث
+  </label>
+
+  <label class="check">
+    <input type="checkbox" value="كل ما ذكر صحيح">
+    <span></span> كل ما ذكر صحيح
+  </label>
 </div>
+
+<div class="label">🎯 اهتماماتك المهنية</div>
+
+<!-- ✅ رجعنا الـ placeholder -->
+<input id="job1" placeholder="مثال: طبيب - مهندس">
+<input id="job2" placeholder="مثال: برمجة - تجارة">
+<input id="job3" placeholder="مثال: سفر - مقابلات">
 
 <button onclick="signup()">تسجيل</button>
 
 </div>
 
+<!-- popup -->
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <h3>🎉 تم التسجيل</h3>
+    <p>تم إنشاء حسابك بنجاح</p>
+    <button onclick="goHome()">ابدأ الآن</button>
+  </div>
+</div>
+
 <script>
 
-let selectedGender="";
-let selectedLevel="";
+let selectedGender = "";
+let selectedLevel = "";
 
-/* 🔽 فتح */
+/* الجنس */
 function toggleDropdown(){
-  const drop=document.getElementById("dropdown");
-  const level=document.getElementById("levelDropdown");
-
-  level.style.display="none";
-  drop.style.display = drop.style.display==="block"?"none":"block";
+  document.getElementById("levelDropdown").style.display = "none";
+  const drop = document.getElementById("dropdown");
+  drop.style.display = drop.style.display === "block" ? "none" : "block";
 }
 
+function selectOption(e, value){
+  e.stopPropagation();
+  selectedGender = value;
+  document.getElementById("selected").innerText = value;
+  document.getElementById("dropdown").style.display = "none";
+}
+
+/* المستوى */
 function toggleLevelDropdown(){
-  const drop=document.getElementById("dropdown");
-  const level=document.getElementById("levelDropdown");
-
-  drop.style.display="none";
-  level.style.display = level.style.display==="block"?"none":"block";
+  document.getElementById("dropdown").style.display = "none";
+  const drop = document.getElementById("levelDropdown");
+  drop.style.display = drop.style.display === "block" ? "none" : "block";
 }
 
-/* اختيار */
-function selectOption(e,val){
+function selectLevel(e, value){
   e.stopPropagation();
-  selectedGender=val;
-  document.getElementById("selected").innerText=val+" ▼";
-  document.getElementById("dropdown").style.display="none";
-}
-
-function selectLevel(e,val){
-  e.stopPropagation();
-  selectedLevel=val;
-  document.getElementById("selectedLevel").innerText=val+" ▼";
-  document.getElementById("levelDropdown").style.display="none";
+  selectedLevel = value;
+  document.getElementById("selectedLevel").innerText = value;
+  document.getElementById("levelDropdown").style.display = "none";
 }
 
 /* إغلاق */
-document.addEventListener("click",()=>{
-  document.getElementById("dropdown").style.display="none";
-  document.getElementById("levelDropdown").style.display="none";
+document.addEventListener("click", function(){
+  document.getElementById("dropdown").style.display = "none";
+  document.getElementById("levelDropdown").style.display = "none";
 });
 
-/* تسجيل */
-function signup(){
+/* إرسال */
+const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
-  if(!name.value || !phone.value){
-    alert("اكتب البيانات");
+async function signup(){
+
+  const skills = [...document.querySelectorAll(".skills input:checked")]
+    .map(el => el.value);
+
+  const data = {
+    name: document.getElementById("name").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    city: document.getElementById("city").value.trim(),
+    district: document.getElementById("district").value.trim(),
+    gender: selectedGender,
+    level: selectedLevel,
+    skills: skills,
+    job1: document.getElementById("job1").value.trim(),
+    job2: document.getElementById("job2").value.trim(),
+    job3: document.getElementById("job3").value.trim()
+  };
+
+  if(!data.name || !data.phone){
+    alert("يرجى إدخال الاسم ورقم الجوال ⚠️");
     return;
   }
 
   if(!selectedGender || !selectedLevel){
-    alert("اختر الجنس والمستوى");
+    alert("اختر الجنس والمستوى ⚠️");
     return;
   }
 
-  alert("تم التسجيل ✅");
+  try {
+    await fetch(WEBHOOK,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify(data)
+    });
+
+    document.getElementById("popup").style.display = "flex";
+
+  } catch (error) {
+    alert("خطأ في الاتصال ❌");
+  }
+}
+
+function goHome(){
+  window.location.href = "index.html";
 }
 
 </script>

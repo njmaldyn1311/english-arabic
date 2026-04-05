@@ -191,9 +191,8 @@ async function loadWords(){
   let { data } = await client
     .from("user_star_words")
     .select("*")
-    .eq("user_id", user_1)
-    .order("created_at", { ascending:false })
-    .limit(10);
+    .eq("user_id", user_id)
+    .order("created_at", { ascending:false });
 
   words = data || [];
 

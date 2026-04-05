@@ -72,7 +72,6 @@ input:focus {
   box-shadow:0 0 0 2px #38bdf8;
 }
 
-/* 🔥 إصلاح الدروب داون */
 .custom-select {
   position: relative;
   background: white;
@@ -85,7 +84,6 @@ input:focus {
   padding:0 15px;
   cursor:pointer;
   margin:8px 0;
-  z-index:1;
 }
 
 .options {
@@ -165,18 +163,39 @@ button {
   color:white;
   font-size:16px;
   cursor:pointer;
-  transition:0.3s;
 }
 
 button:disabled{
   opacity:0.6;
-  cursor:not-allowed;
+}
+
+/* 🔔 Toast */
+.toast{
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#22c55e;
+  color:white;
+  padding:12px 18px;
+  border-radius:12px;
+  font-size:14px;
+  z-index:9999;
+  display:none;
+  max-width:90%;
+  text-align:center;
+}
+
+.toast.error{
+  background:#ef4444;
 }
 
 </style>
 </head>
 
 <body>
+
+<div class="toast" id="toast"></div>
 
 <div class="box">
 
@@ -229,13 +248,31 @@ button:disabled{
 
 <script>
 
+const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
+
 const dropdown = document.getElementById("dropdown");
 const levelDropdown = document.getElementById("levelDropdown");
 
-let selectedGender = "";
-let selectedLevelValue = "";
+let selectedGender="";
+let selectedLevelValue="";
 
-/* 🔽 الجنس */
+/* 🔔 Toast */
+function showToast(msg,type="success"){
+  let t=document.getElementById("toast");
+  t.innerText=msg;
+  t.className="toast "+(type==="error"?"error":"");
+  t.style.display="block";
+  setTimeout(()=>t.style.display="none",3000);
+}
+
+/* 🔄 Loading */
+function setLoading(state){
+  let btn=document.getElementById("signupBtn");
+  btn.disabled=state;
+  btn.innerText=state ? "⏳ جاري التسجيل..." : "تسجيل";
+}
+
+/* الجنس */
 function toggleDropdown(){
   levelDropdown.style.display="none";
   dropdown.style.display = dropdown.style.display==="block"?"none":"block";
@@ -248,7 +285,7 @@ function selectOption(e,value){
   dropdown.style.display="none";
 }
 
-/* 🔽 المستوى */
+/* المستوى */
 function toggleLevelDropdown(){
   dropdown.style.display="none";
   levelDropdown.style.display = levelDropdown.style.display==="block"?"none":"block";
@@ -267,44 +304,36 @@ document.addEventListener("click",()=>{
   levelDropdown.style.display="none";
 });
 
-/* 🔄 لودينج */
-function setLoading(state){
-  let btn=document.getElementById("signupBtn");
-  btn.disabled=state;
-  btn.innerText=state ? "⏳ جاري التسجيل..." : "تسجيل";
-}
-
-const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
-
 /* 🚀 تسجيل */
 async function signup(){
 
   const skills=[...document.querySelectorAll(".skills input:checked")].map(el=>el.value);
 
   const data={
-    name:document.getElementById("name").value.trim(),
-    phone:document.getElementById("phone").value.trim(),
-    city:document.getElementById("city").value.trim(),
-    district:document.getElementById("district").value.trim(),
+    name:name.value.trim(),
+    phone:phone.value.trim(),
+    city:city.value.trim(),
+    district:district.value.trim(),
     gender:selectedGender,
     level:selectedLevelValue,
     skills:skills,
-    job1:document.getElementById("job1").value.trim(),
-    job2:document.getElementById("job2").value.trim(),
-    job3:document.getElementById("job3").value.trim()
+    job1:job1.value.trim(),
+    job2:job2.value.trim(),
+    job3:job3.value.trim()
   };
 
   if(!data.name||!data.phone){
-    alert("يرجى إدخال الاسم ورقم الجوال ⚠️");
+    showToast("اكتب الاسم ورقم الجوال","error");
     return;
   }
 
   if(!selectedGender||!selectedLevelValue){
-    alert("اختر الجنس والمستوى ⚠️");
+    showToast("اختر الجنس والمستوى","error");
     return;
   }
 
   setLoading(true);
+  showToast("⏳ جاري التسجيل...");
 
   try{
     await fetch(WEBHOOK,{
@@ -313,15 +342,17 @@ async function signup(){
       body:JSON.stringify(data)
     });
 
+    showToast("✅ تم التسجيل بنجاح");
+
     setTimeout(()=>{
-      alert("✅ تم التسجيل");
-      setLoading(false);
-    },500);
+      location.href="index.html";
+    },800);
 
   }catch{
-    alert("❌ خطأ");
-    setLoading(false);
+    showToast("❌ خطأ في الاتصال","error");
   }
+
+  setLoading(false);
 }
 
 </script>

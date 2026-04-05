@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 🔥 منع الزوم -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <title>تسجيل طالب</title>
 
@@ -10,9 +12,9 @@
 *{ box-sizing:border-box; }
 
 body {
-  margin:0;
-  font-family:"Cairo",sans-serif;
-  background:linear-gradient(135deg,#0f172a,#1e3a8a);
+  margin: 0;
+  font-family: "Cairo", sans-serif;
+  background: linear-gradient(135deg,#0f172a,#1e3a8a);
   display:flex;
   justify-content:center;
   align-items:center;
@@ -30,34 +32,71 @@ body::before{
   z-index:-1;
 }
 
-.box{
+.box {
   width:100%;
   max-width:420px;
   padding:25px;
   border-radius:20px;
-  background:rgba(255,255,255,0.05);
-  backdrop-filter:blur(15px);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(15px);
+  box-shadow:0 10px 40px rgba(0,0,0,0.5);
   text-align:center;
   color:white;
 }
 
-.stats{
-  background:rgba(34,197,94,0.15);
-  padding:10px;
-  border-radius:12px;
-  margin-bottom:15px;
-}
-
-input{
+/* 🔥 inputs بدون زوم */
+input {
   width:100%;
   height:50px;
+  padding:0 14px;
   margin:8px 0;
   border-radius:12px;
   border:none;
   text-align:center;
+  font-size:16px; /* 🔥 مهم */
+  -webkit-appearance:none;
 }
 
-button{
+input:focus {
+  outline:none;
+  box-shadow:0 0 0 2px #38bdf8;
+}
+
+input, textarea, select {
+  font-size:16px !important;
+}
+
+/* dropdown */
+.custom-select {
+  position: relative;
+  background: white;
+  color: black;
+  height: 50px;
+  border-radius: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  margin:8px 0;
+}
+
+.options {
+  position:absolute;
+  top:55px;
+  right:0;
+  left:0;
+  background:white;
+  border-radius:12px;
+  display:none;
+  z-index:10;
+}
+
+.options div {
+  padding:12px;
+}
+
+/* زر */
+button {
   width:100%;
   height:50px;
   margin-top:15px;
@@ -69,7 +108,7 @@ button{
   cursor:pointer;
 }
 
-/* 🔔 Toast */
+/* Toast */
 .toast{
   position:fixed;
   top:20px;
@@ -79,65 +118,67 @@ button{
   color:white;
   padding:12px 18px;
   border-radius:12px;
-  font-size:14px;
-  z-index:9999;
   display:none;
-  max-width:90%;
+  z-index:9999;
 }
-
 .toast.error{background:#ef4444;}
 
-.popup{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.5);
-  display:none;
-  justify-content:center;
-  align-items:center;
-}
-
-.popup-box{
-  background:white;
-  color:black;
-  padding:25px;
-  border-radius:20px;
-  text-align:center;
-}
 </style>
 </head>
 
 <body>
 
-<div id="toast" class="toast"></div>
+<div class="toast" id="toast"></div>
 
 <div class="box">
 
-<div class="stats">🔥 أكثر من 1200 طالب</div>
-
-<h2>🚀 تسجيل طالب</h2>
+<h2>🚀 تسجيل طالب جديد</h2>
 
 <input id="name" placeholder="اسم الطالب">
 <input id="phone" placeholder="رقم الجوال">
+<input id="city" placeholder="المدينة">
+<input id="district" placeholder="الحي">
+
+<!-- الجنس -->
+<div class="custom-select" onclick="toggleDropdown()">
+  <div id="selected">اختر الجنس</div>
+  <div class="options" id="dropdown">
+    <div onclick="selectGender(event,'ذكر')">ذكر</div>
+    <div onclick="selectGender(event,'أنثى')">أنثى</div>
+  </div>
+</div>
+
+<!-- المستوى -->
+<div class="custom-select" onclick="toggleLevel()">
+  <div id="selectedLevel">المستوى</div>
+  <div class="options" id="levelDropdown">
+    <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
+    <div onclick="selectLevel(event,'متوسط')">متوسط</div>
+    <div onclick="selectLevel(event,'متقدم')">متقدم</div>
+  </div>
+</div>
+
+<input id="job1" placeholder="اهتمام 1">
+<input id="job2" placeholder="اهتمام 2">
+<input id="job3" placeholder="اهتمام 3">
 
 <button id="signupBtn" onclick="signup()">تسجيل</button>
 
 </div>
 
-<div id="popup" class="popup">
-  <div class="popup-box">
-    <h3>🎉 تم التسجيل</h3>
-    <button onclick="goHome()">ابدأ</button>
-  </div>
-</div>
-
 <script>
 
-const WEBHOOK="https://n8n.srv1495053.hstgr.cloud/webhook/signup";
+const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
-/* 🔔 Toast */
+/* 🔥 user_id موحد */
+let user_id = localStorage.getItem("user_id");
+
+if(!user_id){
+  user_id = crypto.randomUUID();
+  localStorage.setItem("user_id", user_id);
+}
+
+/* Toast */
 function showToast(msg,type="success"){
   let t=document.getElementById("toast");
   t.innerText=msg;
@@ -146,62 +187,78 @@ function showToast(msg,type="success"){
   setTimeout(()=>t.style.display="none",3000);
 }
 
-/* ⏳ Loading */
+/* loading */
 function setLoading(state){
   let btn=document.getElementById("signupBtn");
-  if(state){
-    btn.disabled=true;
-    btn.innerText="⏳ جاري التسجيل...";
-  }else{
-    btn.disabled=false;
-    btn.innerText="تسجيل";
-  }
+  btn.disabled=state;
+  btn.innerText=state ? "⏳ جاري التسجيل..." : "تسجيل";
 }
 
-/* 🚀 signup */
+/* dropdown */
+let gender="", level="";
+
+function toggleDropdown(){
+  dropdown.style.display = dropdown.style.display==="block"?"none":"block";
+}
+
+function selectGender(e,val){
+  e.stopPropagation();
+  gender=val;
+  selected.innerText=val;
+  dropdown.style.display="none";
+}
+
+function toggleLevel(){
+  levelDropdown.style.display = levelDropdown.style.display==="block"?"none":"block";
+}
+
+function selectLevel(e,val){
+  e.stopPropagation();
+  level=val;
+  selectedLevel.innerText=val;
+  levelDropdown.style.display="none";
+}
+
+/* signup */
 async function signup(){
 
-  let name=document.getElementById("name").value.trim();
-  let phone=document.getElementById("phone").value.trim();
+  let data = {
+    user_id: user_id,
+    name: name.value,
+    phone: phone.value,
+    city: city.value,
+    district: district.value,
+    gender: gender,
+    level: level,
+    job1: job1.value,
+    job2: job2.value,
+    job3: job3.value
+  };
 
-  if(!name || !phone){
-    showToast("اكتب البيانات","error");
+  if(!data.name || !data.phone){
+    showToast("اكتب الاسم والجوال","error");
     return;
   }
 
   setLoading(true);
-  showToast("🔄 جاري التسجيل...");
 
   try{
-
-    let res=await fetch(WEBHOOK,{
+    await fetch(WEBHOOK,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({name,phone})
+      body:JSON.stringify(data)
     });
-
-    let data=await res.json().catch(()=>null);
-
-    if(data && data.exists){
-      showToast("⚠️ الرقم موجود","error");
-      setLoading(false);
-      return;
-    }
 
     showToast("✅ تم التسجيل");
 
     setTimeout(()=>{
-      popup.style.display="flex";
+      location.href="index.html";
     },800);
 
-  }catch(e){
-    showToast("❌ خطأ");
+  }catch{
+    showToast("❌ خطأ","error");
     setLoading(false);
   }
-}
-
-function goHome(){
-  location.href="index.html";
 }
 
 </script>

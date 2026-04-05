@@ -7,9 +7,7 @@
 <title>دخول الطالب</title>
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body {
   margin:0;
@@ -22,7 +20,6 @@ body {
   padding:15px;
 }
 
-/* خلفية */
 body::before{
   content:"";
   position:fixed;
@@ -33,7 +30,6 @@ body::before{
   z-index:-1;
 }
 
-/* الكرت */
 .box {
   width:100%;
   max-width:400px;
@@ -44,7 +40,6 @@ body::before{
   backdrop-filter: blur(15px);
   background: rgba(255,255,255,0.05);
   border:1px solid rgba(255,255,255,0.1);
-  box-shadow:0 10px 30px rgba(0,0,0,0.5);
 }
 
 .logo{
@@ -52,12 +47,8 @@ body::before{
   margin-bottom:10px;
 }
 
-h2 {
-  margin-bottom:15px;
-  font-size:20px;
-}
+h2 { margin-bottom:15px; }
 
-/* 🔥 عدد الطلاب */
 .stats{
   margin-bottom:15px;
   font-size:14px;
@@ -66,7 +57,6 @@ h2 {
 
 .stats strong{
   color:#22c55e;
-  font-size:18px;
 }
 
 input {
@@ -76,8 +66,6 @@ input {
   border:none;
   margin:10px 0;
   text-align:center;
-  font-size:16px;
-  outline:none;
 }
 
 button {
@@ -89,11 +77,6 @@ button {
   color:white;
   font-size:16px;
   cursor:pointer;
-  transition:0.3s;
-}
-
-button:hover{
-  background:#16a34a;
 }
 
 .link {
@@ -103,42 +86,31 @@ button:hover{
   cursor:pointer;
 }
 
-/* ✅ popup */
-.popup{
+/* 🔔 Toast */
+.toast{
   position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.5);
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#22c55e;
+  color:white;
+  padding:12px 18px;
+  border-radius:12px;
+  font-size:14px;
+  z-index:9999;
   display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:999;
-}
-
-.popup-box{
-  background:white;
-  color:black;
-  padding:20px;
-  border-radius:15px;
-  width:90%;
-  max-width:300px;
+  max-width:90%;
   text-align:center;
 }
 
-.popup-box button{
-  margin-top:15px;
-  padding:8px 15px;
-  border:none;
-  background:#22c55e;
-  color:white;
-  border-radius:8px;
-}
+.toast.error{background:#ef4444;}
+
 </style>
 </head>
 
 <body>
+
+<div class="toast" id="toast"></div>
 
 <div class="box">
 
@@ -146,84 +118,98 @@ button:hover{
 
 <h2>🔐 دخول الطالب</h2>
 
-<!-- 🔥 تسويق -->
 <div class="stats">
-  أكثر من <strong>+1,200 طالب</strong> يتعلم معنا يومياً 🚀
+  أكثر من <strong>+1,200 طالب</strong> يتعلم معنا 🚀
 </div>
 
 <input id="phone" placeholder="📱 رقم الجوال">
 
-<button onclick="login()">دخول</button>
+<button id="loginBtn" onclick="login()">دخول</button>
 
 <span class="link" onclick="goSignup()">ليس لديك حساب؟ سجل الآن</span>
 
-</div>
-
-<!-- ✅ popup -->
-<div id="popup" class="popup">
-  <div class="popup-box">
-    <p id="popupText"></p>
-    <button onclick="closePopup()">حسناً</button>
-  </div>
 </div>
 
 <script>
 
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/login";
 
-function showPopup(msg){
-  document.getElementById("popupText").innerText = msg;
-  document.getElementById("popup").style.display = "flex";
+/* 🔔 Toast */
+function showToast(msg,type="success"){
+  let t=document.getElementById("toast");
+  t.innerText=msg;
+  t.className="toast "+(type==="error"?"error":"");
+  t.style.display="block";
+  setTimeout(()=>t.style.display="none",3000);
 }
 
-function closePopup(){
-  document.getElementById("popup").style.display = "none";
+/* ⏳ Loading */
+function setLoading(state){
+  let btn=document.getElementById("loginBtn");
+  if(state){
+    btn.disabled=true;
+    btn.innerText="⏳ جاري تسجيل الدخول...";
+    btn.style.opacity="0.7";
+  }else{
+    btn.disabled=false;
+    btn.innerText="دخول";
+    btn.style.opacity="1";
+  }
 }
 
+/* 🔐 login */
 async function login(){
 
-  const phone = document.getElementById("phone").value.trim();
+  let phone=document.getElementById("phone").value.trim();
 
   if(!phone){
-    showPopup("اكتب رقم الجوال");
+    showToast("اكتب رقم الجوال","error");
     return;
   }
 
+  setLoading(true);
+  showToast("🔄 جاري تسجيل الدخول...");
+
   try{
 
-    const res = await fetch(WEBHOOK,{
+    let res=await fetch(WEBHOOK,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body:JSON.stringify({ phone })
     });
 
-    const data = await res.json();
-
-    console.log("🔥 RESPONSE:", data);
+    let data=await res.json();
 
     if(!data || !data.user_id){
-      showPopup("❌ الرقم غير مسجل");
+      showToast("❌ الرقم غير مسجل","error");
+      setLoading(false);
       return;
     }
 
-    localStorage.setItem("user_id", data.user_id);
-    localStorage.setItem("user", data.name);
-    localStorage.setItem("phone", data.phone);
+    if(data.blocked===true){
+      showToast("🚫 حسابك محظور","error");
+      setLoading(false);
+      return;
+    }
 
-    showPopup("✅ تم تسجيل الدخول");
+    localStorage.setItem("user_id",data.user_id);
+    localStorage.setItem("user",data.name);
+    localStorage.setItem("phone",data.phone);
+
+    showToast("✅ تم تسجيل الدخول");
 
     setTimeout(()=>{
-      window.location.href = "index.html";
-    },1000);
+      location.href="index.html";
+    },800);
 
-  }catch(err){
-    console.error(err);
-    showPopup("❌ خطأ في الاتصال");
+  }catch(e){
+    showToast("❌ خطأ في الاتصال","error");
+    setLoading(false);
   }
 }
 
 function goSignup(){
-  window.location.href = "signup.html";
+  location.href="signup.html";
 }
 
 </script>

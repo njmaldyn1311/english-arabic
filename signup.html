@@ -41,6 +41,8 @@ body::before{
   box-shadow:0 10px 40px rgba(0,0,0,0.5);
   text-align:center;
   color:white;
+
+  position:relative; /* 🔥 مهم */
 }
 
 .stats{
@@ -72,6 +74,7 @@ input:focus {
   box-shadow:0 0 0 2px #38bdf8;
 }
 
+/* 🔥 dropdown */
 .custom-select {
   position: relative;
   background: white;
@@ -88,7 +91,7 @@ input:focus {
 
 .options {
   position:absolute;
-  top:100%;
+  top:110%;
   right:0;
   left:0;
   background:white;
@@ -96,7 +99,7 @@ input:focus {
   display:none;
   overflow:hidden;
   box-shadow:0 10px 25px rgba(0,0,0,0.2);
-  z-index:999;
+  z-index:9999;
 }
 
 .options div {
@@ -169,21 +172,27 @@ button:disabled{
   opacity:0.6;
 }
 
-/* 🔔 Toast */
+/* 🔔 Toast احترافي */
 .toast{
   position:fixed;
   top:20px;
   left:50%;
-  transform:translateX(-50%);
+  transform:translateX(-50%) scale(0.9);
   background:#22c55e;
   color:white;
-  padding:12px 18px;
-  border-radius:12px;
+  padding:14px 20px;
+  border-radius:14px;
   font-size:14px;
-  z-index:9999;
+  z-index:99999;
   display:none;
   max-width:90%;
   text-align:center;
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
+  transition:0.3s;
+}
+
+.toast.show{
+  transform:translateX(-50%) scale(1);
 }
 
 .toast.error{
@@ -260,12 +269,16 @@ let selectedLevelValue="";
 function showToast(msg,type="success"){
   let t=document.getElementById("toast");
   t.innerText=msg;
-  t.className="toast "+(type==="error"?"error":"");
+  t.className="toast show "+(type==="error"?"error":"");
   t.style.display="block";
-  setTimeout(()=>t.style.display="none",3000);
+
+  setTimeout(()=>{
+    t.classList.remove("show");
+    setTimeout(()=>t.style.display="none",300);
+  },3000);
 }
 
-/* 🔄 Loading */
+/* Loading */
 function setLoading(state){
   let btn=document.getElementById("signupBtn");
   btn.disabled=state;
@@ -304,7 +317,7 @@ document.addEventListener("click",()=>{
   levelDropdown.style.display="none";
 });
 
-/* 🚀 تسجيل */
+/* تسجيل */
 async function signup(){
 
   const skills=[...document.querySelectorAll(".skills input:checked")].map(el=>el.value);
@@ -323,12 +336,12 @@ async function signup(){
   };
 
   if(!data.name||!data.phone){
-    showToast("اكتب الاسم ورقم الجوال","error");
+    showToast("⚠️ اكتب الاسم ورقم الجوال","error");
     return;
   }
 
   if(!selectedGender||!selectedLevelValue){
-    showToast("اختر الجنس والمستوى","error");
+    showToast("⚠️ اختر الجنس والمستوى","error");
     return;
   }
 

@@ -92,23 +92,42 @@ body{
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-// ✅ إنشاء user_id لكل طالب
+/* 🔥 توحيد user_id */
 let user_id = localStorage.getItem("user_id");
 
 if(!user_id){
-  user_id = crypto.randomUUID();
+  user_id = "user_" + Math.random().toString(36).substr(2,9);
   localStorage.setItem("user_id", user_id);
 }
 
 console.log("USER:", user_id);
 
-// 👤 الاسم
+/* 🔥 تتبع */
+async function track(action){
+  await fetch(SUPABASE_URL + "/rest/v1/user_activity", {
+    method: "POST",
+    headers:{
+      "apikey": SUPABASE_KEY,
+      "Authorization":"Bearer "+SUPABASE_KEY,
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
+      user_id: user_id,
+      page: "account_page",
+      action: action
+    })
+  });
+}
+
+track("دخول صفحة الحساب");
+
+/* 👤 الاسم */
 let fullName = localStorage.getItem("user") || "طالب";
 let parts = fullName.split(" ");
 let shortName = parts[0] + (parts[1] ? " " + parts[1] : "");
 document.getElementById("username").innerText = "👤 " + shortName;
 
-// الكلمات
+/* الكلمات */
 let words = [];
 
 async function loadWords(){
@@ -146,7 +165,7 @@ function renderWords(){
   document.getElementById("words").innerHTML = html || "لا توجد كلمات";
 }
 
-// 🧠 اختبار
+/* 🧠 اختبار */
 let currentQuestion;
 
 function nextQuestion(){
@@ -186,10 +205,14 @@ function answer(btn, selected){
 
   let correct = currentQuestion.translation;
 
-  if(selected === correct){
+  let ok = selected === correct;
+
+  if(ok){
     btn.classList.add("correct");
+    track("إجابة صحيحة");
   }else{
     btn.classList.add("wrong");
+    track("إجابة خطأ");
   }
 
   setTimeout(()=>{

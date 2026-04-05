@@ -44,9 +44,7 @@ button {
   font-size:14px;
 }
 
-button:disabled{
-  opacity:0.6;
-}
+button:disabled{ opacity:0.6; }
 
 #result { width:100%; }
 
@@ -102,70 +100,82 @@ const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let user_id = localStorage.getItem("user_id") || "user_" + Math.random();
+/* 🔥 توحيد user_id */
+let user_id = localStorage.getItem("user_id");
 
-// 🔄 حل المشكلة هنا (تصفير الحالة عند تغيير الملف)
+if(!user_id){
+  user_id = "user_" + Math.random().toString(36).substr(2,9);
+  localStorage.setItem("user_id", user_id);
+}
+
+console.log("USER:", user_id);
+
+/* 🔥 تتبع */
+async function track(action){
+  await fetch(SUPABASE_URL + "/rest/v1/user_activity", {
+    method: "POST",
+    headers:{
+      "apikey": SUPABASE_KEY,
+      "Authorization":"Bearer "+SUPABASE_KEY,
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
+      user_id: user_id,
+      page: "pdf_page",
+      action: action
+    })
+  });
+}
+
+track("دخول صفحة PDF");
+
+/* 🔄 إعادة الحالة */
 document.getElementById("file").addEventListener("change", () => {
-
-  const status = document.getElementById("status");
-  const btn = document.getElementById("analyzeBtn");
-
   status.innerHTML = "";
-  status.style.color = "white";
-
-  btn.disabled = false;
-  btn.innerText = "🚀 تحليل";
-
+  analyzeBtn.disabled = false;
+  analyzeBtn.innerText = "🚀 تحليل";
 });
 
-// 🔊 صوت
+/* 🔊 صوت */
 function speak(word){
   const u = new SpeechSynthesisUtterance(word);
   u.lang="en-US";
   speechSynthesis.speak(u);
 }
 
-// ⭐ حفظ
+/* ⭐ حفظ */
 async function saveWord(el,en,ar){
 
-  try{
-    await client.from("user_words").insert({
-      user_id:user_id,
-      word:en,
-      translation:ar
-    });
+  await client.from("user_star_words").insert({
+    user_id: user_id,
+    word: en,
+    translation: ar
+  });
 
-    el.innerText="✅";
-    el.style.background="#22c55e";
+  track("حفظ كلمة من PDF");
 
-  }catch(e){
-    console.log(e);
-    alert("❌ خطأ في الحفظ");
-  }
-
+  el.innerText="✅";
+  el.style.background="#22c55e";
 }
 
-// 🚀 رفع
+/* 🚀 رفع */
 async function upload(){
 
-  const fileInput = document.getElementById("file");
   const file = fileInput.files[0];
-  const status = document.getElementById("status");
-  const result = document.getElementById("result");
-  const btn = document.getElementById("analyzeBtn");
-
   if(!file) return alert("اختر ملف");
+
+  track("رفع PDF");
 
   const maxSize = 5 * 1024 * 1024;
 
   if(file.size > maxSize){
-    status.innerHTML="⚠️ الملف كبير (5MB max)";
+    status.innerHTML="⚠️ الملف كبير";
     status.style.color="#f87171";
     return;
   }
 
-  btn.disabled=true;
-  btn.innerText="⏳ جاري التحليل...";
+  analyzeBtn.disabled=true;
+  analyzeBtn.innerText="⏳ جاري التحليل...";
   status.innerHTML="⏳ جاري التحليل...";
   status.style.color="#facc15";
 
@@ -189,12 +199,11 @@ async function upload(){
 
     status.innerHTML="✅ تم التحليل";
     status.style.color="#22c55e";
-    btn.disabled=false;
-    btn.innerText="🚀 تحليل";
+    analyzeBtn.disabled=false;
+    analyzeBtn.innerText="🚀 تحليل";
 
     function renderList(list){
-      if(!list || list.length===0) return "";
-
+      if(!list) return "";
       return list.map(item=>`
         <div class="word">
           <span class="en">${item.word || item.phrase || ""}</span>
@@ -214,20 +223,15 @@ async function upload(){
       ${data.nouns?.length ? `<div class="box"><h3 class="title">📌 الأسماء</h3>${renderList(data.nouns)}</div>` : ""}
       ${data.adjectives?.length ? `<div class="box"><h3 class="title">📌 الصفات</h3>${renderList(data.adjectives)}</div>` : ""}
       ${data.idioms?.length ? `<div class="box"><h3 class="title">📌 العبارات</h3>${renderList(data.idioms)}</div>` : ""}
-      ${(data.phrasal_verbs?.length || data.phrasalVerbs?.length)
-        ? `<div class="box"><h3 class="title">📌 الأفعال المركبة</h3>${renderList(data.phrasal_verbs || data.phrasalVerbs)}</div>`
-        : ""}
     `;
 
-    // 🔥 أهم سطر
     fileInput.value = "";
 
   }catch(err){
-    console.error(err);
-    status.innerHTML="❌ خطأ في الاتصال";
+    status.innerHTML="❌ خطأ";
     status.style.color="#ef4444";
-    btn.disabled=false;
-    btn.innerText="🚀 تحليل";
+    analyzeBtn.disabled=false;
+    analyzeBtn.innerText="🚀 تحليل";
   }
 
 }

@@ -6,7 +6,6 @@
 <title>حسابي</title>
 
 <style>
-
 body{
   margin:0;
   font-family:"Cairo", sans-serif;
@@ -64,14 +63,8 @@ body{
   background:#475569;
 }
 
-.correct{
-  background:#22c55e !important;
-}
-
-.wrong{
-  background:#ef4444 !important;
-}
-
+.correct{ background:#22c55e !important; }
+.wrong{ background:#ef4444 !important; }
 </style>
 </head>
 
@@ -83,13 +76,11 @@ body{
   <div class="user" id="username">👤</div>
 </div>
 
-<!-- 🧠 الاختبار أول -->
 <div class="card">
   <h3>🧠 اختبار ذكي</h3>
   <div id="quiz"></div>
 </div>
 
-<!-- ⭐ الكلمات تحت -->
 <div class="card">
   <h3>⭐ الكلمات المحفوظة</h3>
   <div id="words">⏳ تحميل...</div>
@@ -101,19 +92,27 @@ body{
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
+// ✅ إنشاء user_id لكل طالب
 let user_id = localStorage.getItem("user_id");
 
-/* 👤 الاسم (أول + ثاني فقط) */
+if(!user_id){
+  user_id = crypto.randomUUID();
+  localStorage.setItem("user_id", user_id);
+}
+
+console.log("USER:", user_id);
+
+// 👤 الاسم
 let fullName = localStorage.getItem("user") || "طالب";
 let parts = fullName.split(" ");
 let shortName = parts[0] + (parts[1] ? " " + parts[1] : "");
 document.getElementById("username").innerText = "👤 " + shortName;
 
-/* الكلمات */
+// الكلمات
 let words = [];
 
 async function loadWords(){
-console.log("USER:", user_id);
+
   let res = await fetch(
     SUPABASE_URL + "/rest/v1/user_star_words?user_id=eq." + user_id + "&order=created_at.desc",
     {
@@ -126,14 +125,12 @@ console.log("USER:", user_id);
 
   let data = await res.json();
 
-  // 🔥 آخر درس (آخر 20 كلمة)
   words = data.slice(0,20);
 
   document.getElementById("count").innerText = words.length;
 
   renderWords();
   nextQuestion();
-
 }
 
 function renderWords(){
@@ -149,7 +146,7 @@ function renderWords(){
   document.getElementById("words").innerHTML = html || "لا توجد كلمات";
 }
 
-/* 🧠 الاختبار */
+// 🧠 اختبار
 let currentQuestion;
 
 function nextQuestion(){
@@ -198,15 +195,12 @@ function answer(btn, selected){
   setTimeout(()=>{
     nextQuestion();
   }, 1000);
-
 }
 
-/* رجوع */
 function goHome(){
   window.location.href="index.html";
 }
 
-/* تشغيل */
 loadWords();
 
 </script>

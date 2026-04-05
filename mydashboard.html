@@ -1,8 +1,14 @@
-<!DOCTYPE html><html lang="ar">
+<!DOCTYPE html>
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title><script src="https://unpkg.com/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
+<title>Dashboard</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
 body{
   background:#0f172a;
   color:white;
@@ -76,16 +82,33 @@ button{
 .ban{background:#ef4444;color:white;}
 .unban{background:#22c55e;color:white;}
 .plan{color:white;}
-</style></head><body><div class="container"><h3>📊 Dashboard</h3><div class="stats">
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h3>📊 Dashboard</h3>
+
+<div class="stats">
   <div class="stat">👥 المستخدمين <div id="total" class="num">0</div></div>
   <div class="stat">💰 المدفوع <div id="paid" class="num">0</div></div>
   <div class="stat">🆓 مجاني <div id="free" class="num">0</div></div>
   <div class="stat">🚫 محظور <div id="banned" class="num">0</div></div>
   <div class="stat">📈 نشط اليوم <div id="active" class="num">0</div></div>
   <div class="stat">💰 أرباح <div id="revenue" class="num">0</div></div>
-</div><canvas id="chart"></canvas>
+</div>
 
-<input id="search" class="search" placeholder="🔍 بحث"><div id="users"></div></div><script>
+<canvas id="chart"></canvas>
+
+<input id="search" class="search" placeholder="🔍 بحث">
+
+<div id="users"></div>
+
+</div>
+
+<script>
 
 const client = supabase.createClient(
   "https://ofyugbhplaynjeafdrgx.supabase.co",
@@ -94,19 +117,53 @@ const client = supabase.createClient(
 
 let users=[];
 
-// 🔥 تحميل البيانات
+// 🔥 تحميل + ربط activity
 async function load(){
 
-  const { data } = await client
+  const { data: usersData } = await client
     .from("users")
     .select("*")
     .order("created_at",{ascending:false});
 
-  users=data;
+  const { data: activity } = await client
+    .from("user_activity")
+    .select("*");
 
-  stats(data);
-  render(data);
-  drawChart(data);
+  users = (usersData || []).map(u=>{
+
+    const logs = (activity || []).filter(a=>a.user_id === u.id);
+
+    let totalTime = logs.length * 5;
+
+    let last = logs.sort((a,b)=>
+      new Date(b.created_at) - new Date(a.created_at)
+    )[0];
+
+    let usage = {
+      video: logs.filter(a=>a.page==="youtube_page").length,
+      pdf: logs.filter(a=>a.page==="pdf_page").length,
+      word: logs.filter(a=>a.action?.includes("كلمة")).length,
+      class: logs.filter(a=>a.page==="class_page").length,
+      exam: logs.filter(a=>a.page==="test_page").length,
+      review: logs.filter(a=>a.page==="review_page").length
+    };
+
+    let top = Object.keys(usage).reduce((a,b)=> usage[a]>usage[b]?a:b,"video");
+
+    return {
+      ...u,
+      total_time: totalTime,
+      last_active: last?.created_at || u.last_active,
+      last_page: last?.page || "-",
+      usage,
+      top
+    };
+
+  });
+
+  stats(users);
+  render(users);
+  drawChart(users);
 }
 
 // 📊 الإحصائيات
@@ -118,13 +175,15 @@ function stats(data){
   document.getElementById("paid").innerText = data.filter(u=>u.plan==="paid").length;
   document.getElementById("free").innerText = data.filter(u=>u.plan==="free").length;
   document.getElementById("banned").innerText = data.filter(u=>u.status==="banned").length;
-  document.getElementById("active").innerText = data.filter(u=>u.last_active?.startsWith(today)).length;
+
+  document.getElementById("active").innerText =
+    data.filter(u=>u.last_active && u.last_active.slice(0,10) === today).length;
 
   let revenue = data.reduce((sum,u)=> sum+(u.price||0),0);
   document.getElementById("revenue").innerText = revenue+"$";
 }
 
-// 📈 الرسم البياني
+// 📈 الرسم
 function drawChart(data){
 
   let map={};
@@ -147,13 +206,13 @@ function drawChart(data){
   });
 }
 
-// 🔽 فتح التفاصيل
+// 🔽 تفاصيل
 function toggleDetails(id){
   let el=document.getElementById("details-"+id);
   el.style.display = el.style.display==="block" ? "none" : "block";
 }
 
-// 🎨 عرض المستخدمين
+// 🎨 عرض
 function render(list){
 
   let html="";
@@ -167,17 +226,6 @@ function render(list){
       let days = Math.floor(diff/(1000*60*60*24));
       remaining = days>0 ? `⏳ ${days} يوم` : "❌ انتهى";
     }
-
-    let usage = {
-      video: u.video_time || 0,
-      pdf: u.pdf_time || 0,
-      word: u.word_time || 0,
-      class: u.class_time || 0,
-      exam: u.exam_time || 0,
-      review: u.review_time || 0
-    };
-
-    let top = Object.keys(usage).reduce((a,b)=> usage[a]>usage[b]?a:b);
 
     html+=`
     <div class="card" onclick="toggleDetails('${u.id}')">
@@ -216,20 +264,19 @@ function render(list){
         </button>
       </div>
 
-      <!-- 🔽 التفاصيل -->
       <div id="details-${u.id}" style="display:none;margin-top:10px;background:#0f172a;padding:10px;border-radius:8px">
 
-        <div class="small">📌 المصدر: ${u.source || "غير معروف"}</div>
-        <div class="small">🔥 أكثر استخدام: ${top}</div>
+        <div class="small">📌 المصدر: ${u.last_page}</div>
+        <div class="small">🔥 أكثر استخدام: ${u.top}</div>
 
         <hr>
 
-        <div class="small">🎥 فيديو: ${Math.floor(usage.video/60)} دقيقة</div>
-        <div class="small">📄 PDF: ${Math.floor(usage.pdf/60)} دقيقة</div>
-        <div class="small">📚 كلمات: ${Math.floor(usage.word/60)} دقيقة</div>
-        <div class="small">🏫 فصل: ${Math.floor(usage.class/60)} دقيقة</div>
-        <div class="small">📝 اختبار: ${Math.floor(usage.exam/60)} دقيقة</div>
-        <div class="small">🔁 مراجعة: ${Math.floor(usage.review/60)} دقيقة</div>
+        <div class="small">🎥 فيديو: ${Math.floor(u.usage.video/60)}</div>
+        <div class="small">📄 PDF: ${Math.floor(u.usage.pdf/60)}</div>
+        <div class="small">📚 كلمات: ${Math.floor(u.usage.word/60)}</div>
+        <div class="small">🏫 فصل: ${Math.floor(u.usage.class/60)}</div>
+        <div class="small">📝 اختبار: ${Math.floor(u.usage.exam/60)}</div>
+        <div class="small">🔁 مراجعة: ${Math.floor(u.usage.review/60)}</div>
 
         <hr>
 
@@ -245,7 +292,7 @@ function render(list){
   document.getElementById("users").innerHTML=html;
 }
 
-// 🔍 البحث
+// 🔍 بحث
 document.getElementById("search").oninput=(e)=>{
   let v=e.target.value.toLowerCase();
   render(users.filter(u=>
@@ -283,5 +330,7 @@ async function toggle(id,plan){
 
 load();
 
-</script></body>
+</script>
+
+</body>
 </html>

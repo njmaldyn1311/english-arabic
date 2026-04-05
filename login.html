@@ -68,8 +68,7 @@ input {
   border:none;
   margin:10px 0;
   text-align:center;
-
-  font-size:16px; /* 🔥 يمنع الزوم */
+  font-size:16px;
   -webkit-appearance:none;
 }
 
@@ -144,12 +143,42 @@ button {
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/login";
 
 /* 🔔 Toast */
-function showToast(msg,type="success"){
+function showToast(msg,type="success",withBtn=false){
   let t=document.getElementById("toast");
-  t.innerText=msg;
+
+  let button = "";
+
+  if(withBtn){
+    button = `
+      <div style="margin-top:10px;">
+        <button onclick="goWhatsApp()" style="
+          background:#25D366;
+          border:none;
+          padding:8px 12px;
+          border-radius:8px;
+          color:white;
+          font-size:13px;
+          cursor:pointer;
+        ">
+          اشترك الآن
+        </button>
+      </div>
+    `;
+  }
+
+  t.innerHTML = msg.replace(/\n/g,"<br>") + button;
   t.className="toast "+(type==="error"?"error":"");
   t.style.display="block";
-  setTimeout(()=>t.style.display="none",3000);
+
+  setTimeout(()=>t.style.display="none",4000);
+}
+
+/* واتساب */
+function goWhatsApp(){
+  let phone = localStorage.getItem("phone") || "";
+  let msg = `السلام عليكم، أريد الاشتراك 🙏\nرقمي: ${phone}`;
+  let url = "https://wa.me/message/735SJORMFI74H1?text=" + encodeURIComponent(msg);
+  window.open(url,"_blank");
 }
 
 /* ⏳ Loading */
@@ -190,7 +219,7 @@ async function login(){
     let data=await res.json();
 
     if(!data || !data.user_id){
-      showToast("❌ الرقم غير مسجل","error");
+      showToast("🚫 حسابك غير مشترك\n📱 تواصل معنا للاشتراك","error",true);
       setLoading(false);
       return;
     }

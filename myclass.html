@@ -2,7 +2,10 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 🔥 حل مشكلة الزوم -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
 <title>الفصل الذكي</title>
 
 <style>
@@ -54,6 +57,12 @@ body{
   border-radius:15px;
   margin-top:10px;
   box-sizing:border-box;
+
+  font-size:16px; /* 🔥 يمنع الزوم */
+}
+
+input, textarea {
+  font-size:16px !important;
 }
 
 .btn{
@@ -122,15 +131,9 @@ body{
 
 <div class="card">
 
-  <div class="select" onclick="toggleOptions()">
+  <!-- 🔥 نص فقط -->
+  <div class="select">
     <span id="typeText">📝 نص</span>
-    <span>▼</span>
-  </div>
-
-  <div class="options" id="options">
-    <div class="option" onclick="selectType('text')">📝 نص</div>
-    <div class="option" onclick="selectType('link')">🔗 رابط</div>
-    <div class="option" onclick="selectType('pdf')">📄 PDF</div>
   </div>
 
   <input id="textInput" class="input" placeholder="... اكتب النص هنا">
@@ -146,11 +149,11 @@ body{
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-/* 🔥 توحيد user_id */
+/* 🔥 user_id موحد */
 let user_id = localStorage.getItem("user_id");
 
 if(!user_id){
-  user_id = "user_" + Math.random().toString(36).substring(2,10);
+  user_id = crypto.randomUUID();
   localStorage.setItem("user_id", user_id);
 }
 
@@ -158,19 +161,23 @@ console.log("USER:", user_id);
 
 /* 🔥 تتبع */
 async function track(action){
-  await fetch(SUPABASE_URL + "/rest/v1/user_activity", {
-    method: "POST",
-    headers:{
-      "apikey": SUPABASE_KEY,
-      "Authorization":"Bearer "+SUPABASE_KEY,
-      "Content-Type":"application/json"
-    },
-    body: JSON.stringify({
-      user_id: user_id,
-      page: "class_page",
-      action: action
-    })
-  });
+  try{
+    await fetch(SUPABASE_URL + "/rest/v1/user_activity", {
+      method: "POST",
+      headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization":"Bearer "+SUPABASE_KEY,
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+        page: "class_page",
+        action: action
+      })
+    });
+  }catch(e){
+    console.log("tracking error");
+  }
 }
 
 track("دخول الفصل");
@@ -183,24 +190,6 @@ document.getElementById("username").innerText = "👤 " + shortName;
 
 function goProfile(){
   window.location.href = "student.html";
-}
-
-let selectedType="text";
-
-function toggleOptions(){
-  let o=document.getElementById("options");
-  o.style.display=o.style.display==="block"?"none":"block";
-}
-
-function selectType(type){
-  selectedType=type;
-  document.getElementById("options").style.display="none";
-
-  let text="📝 نص";
-  if(type==="link") text="🔗 رابط";
-  if(type==="pdf") text="📄 PDF";
-
-  document.getElementById("typeText").innerText=text;
 }
 
 function speak(text){
@@ -226,7 +215,7 @@ async function saveWord(el,en,ar){
     })
   });
 
-  track("حفظ كلمة من الفصل");
+  track("حفظ كلمة");
 
   el.innerText="✅";
   el.style.background="#22c55e";
@@ -277,7 +266,7 @@ async function generateLesson(){
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({
         inputPart: input,
-        type: selectedType,
+        type: "text",
         user_id: user_id
       })
     });

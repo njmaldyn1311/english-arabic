@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="ar" dir="rtl">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +16,6 @@ body {
   min-height: 100vh;
 }
 
-/* الحاوية */
 .container {
   width: 90%;
   max-width: 400px;
@@ -26,14 +26,12 @@ body {
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* الهيدر */
 .header {
   background: linear-gradient(135deg, #0f172a, #1e293b);
   height: 140px;
   position: relative;
 }
 
-/* صورة */
 .profile-img {
   width: 110px;
   height: 110px;
@@ -45,28 +43,19 @@ body {
   transform: translateX(-50%);
 }
 
-/* المحتوى */
 .content {
   padding: 70px 20px 20px;
 }
 
-h1 {
-  margin: 10px 0;
-  color: white;
-}
+h1 { margin: 10px 0; color: white; }
+.subtitle { color: #cbd5e1; }
 
-.subtitle {
-  color: #cbd5e1;
-}
-
-/* الطلاب */
 .students {
   color: #22c55e;
   font-weight: bold;
   margin: 10px 0;
 }
 
-/* الكروت */
 .card {
   background: #1e293b;
   border-radius: 20px;
@@ -78,7 +67,6 @@ h1 {
   color: white;
 }
 
-/* الأزرار */
 button {
   background: #22c55e;
   border: none;
@@ -88,13 +76,8 @@ button {
   cursor: pointer;
 }
 
-/* تسجيل خروج */
-.logout {
-  background: #ef4444;
-  margin-top: 10px;
-}
+.logout { background: #ef4444; margin-top: 10px; }
 
-/* واتساب */
 .whatsapp {
   display: block;
   margin-top: 15px;
@@ -106,7 +89,6 @@ button {
   font-weight: bold;
 }
 
-/* زر عائم */
 .whatsapp-float {
   position: fixed;
   bottom: 20px;
@@ -119,7 +101,6 @@ button {
   text-decoration: none;
 }
 
-/* 🔔 الإشعارات */
 .notification {
   position: fixed;
   top: 20px;
@@ -129,26 +110,17 @@ button {
   color: white;
   padding: 15px 20px;
   border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
   display: none;
-  z-index: 999;
-  animation: fadeIn 0.5s;
 }
 
-.notification.success { border-left: 5px solid #22c55e; }
-.notification.error { border-left: 5px solid #ef4444; }
-.notification.info { border-left: 5px solid #3b82f6; }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateX(50%) translateY(-20px); }
-  to { opacity: 1; transform: translateX(50%) translateY(0); }
-}
+.success { border-left: 5px solid #22c55e; }
+.error { border-left: 5px solid #ef4444; }
+.info { border-left: 5px solid #3b82f6; }
 </style>
 </head>
 
 <body>
 
-<!-- 🔔 الإشعار -->
 <div id="notification" class="notification"></div>
 
 <div class="container">
@@ -162,64 +134,20 @@ button {
     <h1>إنجلش بالعربي</h1>
     <div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
 
-    <div class="students" id="students">
-      👨‍🎓 أكثر من 120 طالب
-    </div>
+    <div class="students" id="students">👨‍🎓 أكثر من 120 طالب</div>
 
-    <div class="card">
-      <span>📚 الفصل الذكي</span>
-      <button onclick="goClass()">ابدأ</button>
-    </div>
+    <div class="card"><span>📚 الفصل الذكي</span><button onclick="goClass()">ابدأ</button></div>
+    <div class="card"><span>📺 تحليل فيديو</span><button onclick="goYoutube()">ابدأ</button></div>
+    <div class="card"><span>📄 تحليل PDF</span><button onclick="goPDF()">ابدأ</button></div>
+    <div class="card"><span>🔍 البحث</span><button onclick="goSearch()">ابدأ</button></div>
+    <div class="card"><span>📝 اختبار</span><button onclick="goTest()">ابدأ</button></div>
+    <div class="card"><span>📊 مراجعة</span><button onclick="goReview()">فتح</button></div>
+    <div class="card"><span>📘 كتابي</span><button onclick="goHeadway()">فتح</button></div>
+    <div class="card"><span>✨ ميزة جديدة</span><button onclick="goUpdate1()">عرض</button></div>
+    <div class="card"><span>🆕 التحديثات</span><button onclick="goUpdate2()">عرض</button></div>
+    <div class="card"><span>👤 حسابي</span><button onclick="goProfile()">فتح</button></div>
 
-    <div class="card">
-      <span>📺 تحليل فيديو</span>
-      <button onclick="goYoutube()">ابدأ</button>
-    </div>
-
-    <div class="card">
-      <span>📄 تحليل PDF</span>
-      <button onclick="goPDF()">ابدأ</button>
-    </div>
-
-    <div class="card">
-      <span>🔍 البحث</span>
-      <button onclick="goSearch()">ابدأ</button>
-    </div>
-
-    <div class="card">
-      <span>📝 اختبار</span>
-      <button onclick="goTest()">ابدأ</button>
-    </div>
-
-    <div class="card">
-      <span>📊 مراجعة</span>
-      <button onclick="goReview()">فتح</button>
-    </div>
-
-    <div class="card">
-      <span>📘 كتابي </span>
-      <button onclick="goHeadway()">فتح</button>
-    </div>
-
-    <div class="card">
-      <span>✨ ميزة جديدة</span>
-      <button onclick="goUpdate1()">عرض</button>
-    </div>
-
-    <div class="card">
-      <span>🆕 التحديثات</span>
-      <button onclick="goUpdate2()">عرض</button>
-    </div>
-
-    <div class="card">
-      <span>👤 حسابي</span>
-      <button onclick="goProfile()">فتح</button>
-    </div>
-
-    <a id="whatsappLink" target="_blank" class="whatsapp">
-      💬 تواصل معي على واتساب
-    </a>
-
+    <a id="whatsappLink" target="_blank" class="whatsapp">💬 تواصل معي</a>
     <button class="logout" onclick="logout()">تسجيل خروج</button>
 
   </div>
@@ -229,82 +157,62 @@ button {
 
 <script>
 
-// تحقق تسجيل الدخول
-const userId = localStorage.getItem("user_id");
-if(!userId){
-  window.location.href = "login.html";
+// 🔥 user_id موحد
+let user_id = localStorage.getItem("user_id");
+if(!user_id){
+  user_id = "user_" + Math.random().toString(36).substr(2,9);
+  localStorage.setItem("user_id", user_id);
 }
 
-// اسم الطالب
-let userName = localStorage.getItem("user_name") || "طالب";
+// 🔥 Supabase
+const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+
+// 🔥 تتبع
+async function track(action){
+  fetch(SUPABASE_URL+"/rest/v1/user_activity",{
+    method:"POST",
+    headers:{
+      "apikey":SUPABASE_KEY,
+      "Authorization":"Bearer "+SUPABASE_KEY,
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      user_id:user_id,
+      page:"home",
+      action:action
+    })
+  });
+}
+
+track("دخول الرئيسية");
 
 // واتساب
-let message = `السلام عليكم، أنا ${userName} وأحتاج مساعدة 🙏`;
-let encoded = encodeURIComponent(message);
-let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encoded}`;
+let name=localStorage.getItem("user_name")||"طالب";
+let msg=encodeURIComponent("السلام عليكم أنا "+name);
+let link=`https://wa.me/message/735SJORMFI74H1?text=${msg}`;
 
-document.getElementById("whatsappLink").href = whatsappURL;
-document.getElementById("whatsappFloat").href = whatsappURL;
+whatsappLink.href=link;
+whatsappFloat.href=link;
 
-// 🔔 إشعارات
-function showNotification(text, type="info") {
-  const notif = document.getElementById("notification");
-  notif.className = "notification " + type;
-  notif.innerText = text;
-  notif.style.display = "block";
+// تنقل + تتبع
+function goClass(){track("الفصل");location="myclass.html";}
+function goYoutube(){track("فيديو");location="youtube.html";}
+function goPDF(){track("PDF");location="pdf.html";}
+function goSearch(){track("بحث");location="search.html";}
+function goProfile(){track("حساب");location="student.html";}
+function goTest(){track("اختبار");location="test.html";}
+function goReview(){track("مراجعة");location="review.html";}
+function goHeadway(){track("كتاب");location="headwaybook.html";}
+function goUpdate1(){track("ميزة");location="update1.html";}
+function goUpdate2(){track("تحديثات");location="update2.html";}
 
-  setTimeout(() => {
-    notif.style.display = "none";
-  }, 4000);
-}
-
-// 👨‍🎓 عداد طبيعي
-let count = parseInt(localStorage.getItem("studentsCount")) || 120;
-
-function updateStudents() {
-  if (Math.random() > 0.3) return;
-  count += 1;
-  document.getElementById("students").innerText =
-    "👨‍🎓 أكثر من " + count + " طالب";
-  localStorage.setItem("studentsCount", count);
-}
-
-function randomInterval() {
-  updateStudents();
-  const next = Math.floor(Math.random() * 30000) + 30000;
-  setTimeout(randomInterval, next);
-}
-
-randomInterval();
-
-// 🔁 تنقل
-function goClass(){ window.location.href = "myclass.html"; }
-function goYoutube(){ window.location.href = "youtube.html"; }
-function goPDF(){ window.location.href = "pdf.html"; }
-function goSearch(){ window.location.href = "search.html"; }
-function goProfile(){ window.location.href = "student.html"; }
-function goTest(){ window.location.href = "test.html"; }
-function goReview(){ window.location.href = "review.html"; }
-function goHeadway(){ window.location.href = "headwaybook.html"; }
-function goUpdate1(){ window.location.href = "update1.html"; }
-function goUpdate2(){ window.location.href = "update2.html"; }
-
-// تسجيل خروج
+// خروج
 function logout(){
-  const studentsCount = localStorage.getItem("studentsCount");
+  track("خروج");
   localStorage.clear();
-  localStorage.setItem("studentsCount", studentsCount);
-  window.location.href = "login.html";
+  location="login.html";
 }
-
-// 🔥 أمثلة إشعارات (تشيلها لاحقاً)
-setTimeout(()=>{
-  showNotification("✨ تم إضافة ميزة جديدة!", "success");
-},2000);
-
-setTimeout(()=>{
-  showNotification("🆕 تم تحديث النظام", "info");
-},6000);
 
 </script>
 

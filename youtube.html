@@ -227,7 +227,7 @@ function speak(t){
 }
 
 async function saveWord(el,en,ar){
-  await client.from("user_words").insert({
+  await client.from("user_star_words").insert({
     user_id:"user_1",
     word:en,
     translation:ar

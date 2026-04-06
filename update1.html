@@ -91,9 +91,71 @@ button{
 .save{ background:#22c55e; color:#000; font-weight:bold; }
 .saved{ background:#22c55e; color:white; }
 
+/* 📱 تحسين الموبايل */
 @media (max-width:768px){
-  .card{ grid-template-columns: 30px 1fr 1fr; }
+
+  .card{
+    grid-template-columns: 30px 1fr 1fr;
+    gap:6px;
+    padding:8px;
+  }
+
+  .translation{
+    grid-column: span 3;
+    font-size:13px;
+  }
+
+  .save{
+    grid-column: span 3;
+    width:100%;
+    padding:6px;
+  }
+
+  .item{
+    font-size:11px;
+    padding:4px;
+  }
+
+  button{
+    font-size:10px;
+    padding:3px 5px;
+  }
 }
+
+/* 📲 آيفون */
+@media (max-width:480px){
+
+  .title{
+    font-size:18px;
+  }
+
+  .header{
+    flex-direction:row;
+    gap:5px;
+  }
+
+  .user-name{
+    font-size:13px;
+  }
+
+  .home{
+    padding:6px 10px;
+    font-size:12px;
+  }
+
+  .card{
+    grid-template-columns: 25px 1fr;
+  }
+
+  .translation{
+    grid-column: span 2;
+  }
+
+  .save{
+    grid-column: span 2;
+  }
+}
+
 </style>
 
 </head>

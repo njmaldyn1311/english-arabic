@@ -46,6 +46,20 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
   color:#38bdf8;
 }
 
+#analysisBox div{
+  margin-bottom:8px;
+  line-height:1.8;
+}
+
+#analysisBox span{
+  display:inline-block;
+  background:#38bdf8;
+  padding:5px 10px;
+  margin:3px;
+  border-radius:10px;
+  font-size:13px;
+}
+
 .loader{
   display:none;
   margin-top:10px;
@@ -93,7 +107,6 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
 
   <canvas id="pdf"></canvas>
 
-  <!-- أزرار -->
   <div class="bottom-buttons">
     <button onclick="prevPage()">⬅ السابق</button>
     <button onclick="nextPage()">التالي ➡</button>
@@ -101,43 +114,48 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
     <button onclick="readPage()">🔊 قراءة</button>
   </div>
 
-  <!-- ملاحظات -->
   <div class="note-box">
     <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
   </div>
 
   <button class="btn green" onclick="saveNote()">💾 حفظ</button>
 
-  <!-- تحليل -->
   <button class="btn orange" onclick="analyzePage()">🧠 تحليل الصفحة</button>
 
-  <!-- لودينج -->
   <div class="loader" id="loader">
     <div class="spinner"></div>
     <div>جاري التحليل...</div>
   </div>
 
-  <!-- نتيجة -->
+  <!-- ✅ تحليل جديد -->
   <div class="analysis-box" id="analysisBox">
-    <h3>🧠 الشرح</h3>
-    <p id="summary"></p>
 
-    <h3>🌍 الترجمة</h3>
-    <p id="translation"></p>
+    <h3>🧠 الأفعال</h3>
+    <div id="verbs"></div>
 
-    <h3>📌 كلمات مهمة</h3>
-    <p id="keywords"></p>
+    <h3>📦 الأسماء</h3>
+    <div id="nouns"></div>
+
+    <h3>⭐ الظروف</h3>
+    <div id="adverbs"></div>
+
+    <h3>🔗 حروف الجر</h3>
+    <div id="prepositions"></div>
+
+    <h3>🎨 الصفات</h3>
+    <div id="adjectives"></div>
+
+    <h3>💬 العبارات</h3>
+    <div id="expressions"></div>
+
+    <h3>📘 القاعدة</h3>
+    <div id="grammar"></div>
+
+    <button class="btn green" onclick="speakAnalysis()">🔊 قراءة التحليل</button>
+    <button class="btn download" onclick="saveAnalysis()">💾 حفظ التحليل</button>
+
   </div>
 
-</div>
-
-<!-- شراء -->
-<div id="alert" class="overlay">
-  <div class="popup">
-    <div id="alertText">🔒 الكتاب للمشتركين فقط</div>
-    <button class="buy" onclick="buy()">📱 شراء عبر واتساب</button>
-    <button class="close" onclick="closeAlert()">إغلاق</button>
-  </div>
 </div>
 
 <script>
@@ -175,7 +193,7 @@ async function openBook(){
   await checkUser();
 
   if(!isPaid){
-    document.getElementById("alert").style.display="flex";
+    alert("🔒 الكتاب للمشتركين فقط");
     btn.innerText="📥 تحميل وفتح";
     btn.disabled=false;
     return;
@@ -246,9 +264,15 @@ async function analyzePage(){
 
     const data = await res.json();
 
-    document.getElementById("summary").innerText = data.summary || "لا يوجد";
-    document.getElementById("translation").innerText = data.translation || "لا يوجد";
-    document.getElementById("keywords").innerText = (data.keywords || []).join(" - ");
+    const chips = (arr)=> (arr || []).map(i=>`<span>${i}</span>`).join("");
+
+    document.getElementById("verbs").innerHTML = chips(data.verbs);
+    document.getElementById("nouns").innerHTML = chips(data.nouns);
+    document.getElementById("adverbs").innerHTML = chips(data.adverbs);
+    document.getElementById("prepositions").innerHTML = chips(data.prepositions);
+    document.getElementById("adjectives").innerHTML = chips(data.adjectives);
+    document.getElementById("expressions").innerHTML = (data.expressions || []).join("<br>");
+    document.getElementById("grammar").innerText = data.grammar || "";
 
     loader.style.display="none";
     box.style.display="block";
@@ -259,18 +283,36 @@ async function analyzePage(){
   }
 }
 
-function saveNote(){
+async function saveNote(){
   let note = document.getElementById("noteInput").value;
   if(!note) return;
+
+  await client.from("notes").insert({
+    user_id: userId,
+    page: currentPage,
+    note: note
+  });
+
   alert("تم حفظ الملاحظة ✅");
 }
 
-function buy(){
-  window.open("https://wa.me/966509079576","_blank");
+function speakAnalysis(){
+  let text = document.getElementById("analysisBox").innerText;
+  let speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "ar-SA";
+  speechSynthesis.speak(speech);
 }
 
-function closeAlert(){
-  document.getElementById("alert").style.display="none";
+async function saveAnalysis(){
+  let content = document.getElementById("analysisBox").innerText;
+
+  await client.from("analysis").insert({
+    user_id: userId,
+    page: currentPage,
+    content: content
+  });
+
+  alert("تم حفظ التحليل ✅");
 }
 
 </script>

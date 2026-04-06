@@ -10,134 +10,25 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-body{
-  margin:0;
-  background:#0f172a;
-  font-family:Arial;
-  color:white;
-  text-align:center;
-}
-
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px 15px;
-}
-
-.home-btn{
-  background:#38bdf8;
-  padding:8px 15px;
-  border-radius:10px;
-  border:none;
-  color:white;
-}
-
-.username{
-  font-size:14px;
-}
-
-.card{
-  background:#e5e7eb;
-  color:black;
-  margin:15px;
-  padding:15px;
-  border-radius:20px;
-}
-
-.btn{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  margin-top:10px;
-  color:white;
-  font-size:16px;
-}
-
+/* نفس تصميمك بدون تغيير */
+body{margin:0;background:#0f172a;font-family:Arial;color:white;text-align:center;}
+.header{display:flex;justify-content:space-between;align-items:center;padding:10px 15px;}
+.home-btn{background:#38bdf8;padding:8px 15px;border-radius:10px;border:none;color:white;}
+.username{font-size:14px;}
+.card{background:#e5e7eb;color:black;margin:15px;padding:15px;border-radius:20px;}
+.btn{width:100%;padding:12px;border:none;border-radius:12px;margin-top:10px;color:white;font-size:16px;}
 .download{background:#3b82f6;}
 .green{background:#22c55e;}
 .orange{background:#f59e0b;}
-
-canvas{
-  width:100%;
-  border-radius:15px;
-  margin-top:10px;
-}
-
-.bottom-buttons{
-  display:flex;
-  gap:5px;
-  margin-top:10px;
-}
-
-.bottom-buttons button{
-  flex:1;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  color:white;
-  font-size:13px;
-  background:#22c55e;
-}
-
-.note-box{
-  width:100%;
-  margin-top:10px;
-}
-
-textarea{
-  width:100%;
-  height:60px;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  box-sizing:border-box;
-}
-
-/* popup */
-.overlay{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.7);
-  display:none;
-  justify-content:center;
-  align-items:center;
-}
-
-.popup{
-  background:#1e293b;
-  padding:20px;
-  border-radius:15px;
-  width:85%;
-  max-width:300px;
-  text-align:right;
-  max-height:80vh;
-  overflow:auto;
-}
-
-.buy{
-  background:#f59e0b;
-  width:100%;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  color:white;
-  margin-top:10px;
-}
-
-.close{
-  background:#64748b;
-  width:100%;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  color:white;
-  margin-top:10px;
-}
+canvas{width:100%;border-radius:15px;margin-top:10px;}
+.bottom-buttons{display:flex;gap:5px;margin-top:10px;}
+.bottom-buttons button{flex:1;padding:10px;border:none;border-radius:10px;color:white;font-size:13px;background:#22c55e;}
+.note-box{width:100%;margin-top:10px;}
+textarea{width:100%;height:60px;padding:10px;border-radius:10px;border:none;box-sizing:border-box;}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;}
+.popup{background:#1e293b;padding:20px;border-radius:15px;width:85%;max-width:300px;text-align:right;max-height:80vh;overflow:auto;}
+.buy{background:#f59e0b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
+.close{background:#64748b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
 </style>
 
 </head>
@@ -154,9 +45,7 @@ textarea{
 
   <h2 id="priceBox">💰 سعر الكتاب: 250 ريال</h2>
 
-  <button id="openBtn" class="btn download" onclick="openBook()">
-    📥 تحميل وفتح
-  </button>
+  <button id="openBtn" class="btn download" onclick="openBook()">📥 تحميل وفتح</button>
 
   <canvas id="pdf"></canvas>
 
@@ -177,7 +66,6 @@ textarea{
 
 </div>
 
-<!-- popup -->
 <div id="alert" class="overlay">
   <div class="popup">
     <div id="alertText">...</div>
@@ -188,7 +76,7 @@ textarea{
 
 <script>
 
-const AI_WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/headway";
+const AI_WEBHOOK = "https://your-n8n-url/webhook/analyze-page";
 
 const client = supabase.createClient(
 "https://ofyugbhplaynjeafdrgx.supabase.co",
@@ -203,6 +91,7 @@ const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/publ
 let pdfDoc = null;
 let currentPage = 1;
 
+/* المستخدم */
 async function checkUser(){
   const { data } = await client
     .from("users")
@@ -216,10 +105,9 @@ async function checkUser(){
   }
 }
 
-function goHome(){
-  location.href="index.html";
-}
+function goHome(){ location.href="index.html"; }
 
+/* فتح الكتاب */
 async function openBook(){
 
   const btn = document.getElementById("openBtn");
@@ -239,13 +127,9 @@ async function openBook(){
   try{
     const loadingTask = pdfjsLib.getDocument(PDF_URL);
     pdfDoc = await loadingTask.promise;
-
     await renderPage(currentPage);
-
     document.getElementById("priceBox").style.display="none";
-
     btn.innerText="📖 تم فتح الكتاب";
-
   }catch{
     btn.innerText="❌ فشل التحميل";
   }
@@ -253,6 +137,7 @@ async function openBook(){
   btn.disabled=false;
 }
 
+/* عرض */
 async function renderPage(num){
   const page = await pdfDoc.getPage(num);
   const canvas = document.getElementById("pdf");
@@ -267,25 +152,17 @@ async function renderPage(num){
   client.from("users").update({ last_page:num }).eq("id", userId);
 }
 
-function nextPage(){
-  if(currentPage < pdfDoc.numPages){
-    currentPage++;
-    renderPage(currentPage);
-  }
-}
+/* تنقل */
+function nextPage(){ if(currentPage < pdfDoc.numPages){ currentPage++; renderPage(currentPage);} }
+function prevPage(){ if(currentPage > 1){ currentPage--; renderPage(currentPage);} }
 
-function prevPage(){
-  if(currentPage > 1){
-    currentPage--;
-    renderPage(currentPage);
-  }
-}
-
+/* حفظ */
 function savePage(){
   localStorage.setItem("savedPage", currentPage);
   alert("تم حفظ الصفحة ⭐");
 }
 
+/* قراءة */
 async function readPage(){
   const page = await pdfDoc.getPage(currentPage);
   const content = await page.getTextContent();
@@ -295,6 +172,7 @@ async function readPage(){
   speechSynthesis.speak(speech);
 }
 
+/* 🔥 تحليل ذكي */
 async function analyzePage(){
 
   if(!pdfDoc){
@@ -303,10 +181,26 @@ async function analyzePage(){
   }
 
   try{
+
+    // 🔎 تحقق من التخزين
+    const { data: saved } = await client
+      .from("page_analysis")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("page", currentPage)
+      .single();
+
+    if(saved){
+      showAnalysis(saved);
+      return;
+    }
+
+    // 📄 استخراج النص
     const page = await pdfDoc.getPage(currentPage);
     const content = await page.getTextContent();
     let text = content.items.map(i=>i.str).join(" ");
 
+    // 🤖 إرسال لـ n8n
     const res = await fetch(AI_WEBHOOK,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
@@ -315,22 +209,42 @@ async function analyzePage(){
 
     const data = await res.json();
 
-    document.getElementById("alertText").innerHTML = `
-      <h3>🧠 الشرح</h3>
-      <p>${data.summary || ""}</p>
+    // 💾 حفظ
+    await client.from("page_analysis").insert({
+      user_id: userId,
+      page: currentPage,
+      summary: data.summary,
+      translation: data.translation,
+      keywords: JSON.stringify(data.keywords || [])
+    });
 
-      <h3>🌍 الترجمة</h3>
-      <p>${data.translation || ""}</p>
-
-      <h3>📌 كلمات مهمة</h3>
-      <p>${(data.keywords||[]).join(" - ")}</p>
-    `;
-
-    document.getElementById("alert").style.display="flex";
+    showAnalysis(data);
 
   }catch(e){
     alert("❌ فشل التحليل");
   }
+}
+
+/* عرض */
+function showAnalysis(data){
+
+  let keywords = data.keywords;
+  if(typeof keywords === "string"){
+    try{ keywords = JSON.parse(keywords); }catch{ keywords=[]; }
+  }
+
+  document.getElementById("alertText").innerHTML = `
+    <h3>🧠 الشرح</h3>
+    <p>${data.summary || ""}</p>
+
+    <h3>🌍 الترجمة</h3>
+    <p>${data.translation || ""}</p>
+
+    <h3>📌 كلمات مهمة</h3>
+    <p>${(keywords||[]).join(" - ")}</p>
+  `;
+
+  document.getElementById("alert").style.display="flex";
 }
 
 function saveNote(){
@@ -340,7 +254,7 @@ function saveNote(){
 }
 
 function buy(){
-  window.open("https://wa.me/966509079576","_blank");
+  window.open("https://wa.me/966000000000","_blank");
 }
 
 function closeAlert(){

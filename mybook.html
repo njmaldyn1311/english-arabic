@@ -222,7 +222,20 @@ async function analyzePage(){
       body: JSON.stringify({ text })
     });
 
-    const data = await res.json();
+    const raw = await res.json();
+
+    // 🔥 الحل هنا
+    let data;
+
+    try{
+      let txt = raw.content?.[0]?.text || raw.text || "";
+      txt = txt.replace(/```json/g,"").replace(/```/g,"").trim();
+      data = JSON.parse(txt);
+    }catch(e){
+      showError("❌ فشل قراءة البيانات");
+      document.getElementById("loadingBox").style.display="none";
+      return;
+    }
 
     document.getElementById("loadingBox").style.display="none";
     showAnalysis(data);
@@ -232,7 +245,6 @@ async function analyzePage(){
     showError("❌ فشل التحليل");
   }
 }
-
 function showAnalysis(data){
 
   let keywords = data.keywords || [];

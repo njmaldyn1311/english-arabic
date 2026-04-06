@@ -10,141 +10,226 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-body{margin:0;background:#0f172a;font-family:Arial;color:white;text-align:center;}
-.header{display:flex;justify-content:space-between;padding:10px;}
-.home-btn{background:#38bdf8;padding:8px 15px;border-radius:10px;border:none;color:white;}
-.card{background:#e5e7eb;color:black;margin:15px;padding:15px;border-radius:20px;}
-.btn{width:100%;padding:12px;border:none;border-radius:12px;margin-top:10px;color:white;font-size:16px;}
+body{
+  margin:0;
+  background:#0f172a;
+  font-family:Arial;
+  color:white;
+  text-align:center;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 15px;
+}
+
+.home-btn{
+  background:#38bdf8;
+  padding:8px 15px;
+  border-radius:10px;
+  border:none;
+  color:white;
+}
+
+.card{
+  background:#e5e7eb;
+  color:black;
+  margin:15px;
+  padding:15px;
+  border-radius:20px;
+}
+
+.btn{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  margin-top:10px;
+  color:white;
+  font-size:16px;
+}
+
 .download{background:#3b82f6;}
 .green{background:#22c55e;}
 .orange{background:#f59e0b;}
-canvas{width:100%;border-radius:15px;margin-top:10px;}
-.bottom-buttons{display:flex;gap:5px;margin-top:10px;}
-.bottom-buttons button{flex:1;padding:10px;border:none;border-radius:10px;color:white;font-size:13px;background:#22c55e;}
-textarea{width:100%;height:60px;padding:10px;border-radius:10px;border:none;margin-top:10px}
 
-/* 🔥 التحليل */
-#analysisBox{
-  display:none;
-  margin-top:15px;
-  background:#1e293b;
-  color:white;
-  padding:15px;
+canvas{
+  width:100%;
   border-radius:15px;
-  text-align:right;
+  margin-top:10px;
 }
-.title{color:#38bdf8;font-weight:bold;margin-top:10px}
 
-/* ⏳ */
-#loadingBox{
+.bottom-buttons{
+  display:grid;
+  grid-template-columns: repeat(4,1fr);
+  gap:8px;
+  margin-top:10px;
+}
+
+.bottom-buttons button{
+  padding:10px;
+  border:none;
+  border-radius:12px;
+  color:white;
+  font-size:13px;
+  background:#22c55e;
+}
+
+textarea{
+  width:100%;
+  height:45px;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  box-sizing:border-box;
+}
+
+/* 🔥 لودينج */
+.loading{
   display:none;
   margin-top:10px;
-  background:#334155;
-  padding:10px;
+  padding:12px;
+  background:#1e40af;
   border-radius:10px;
 }
 
-/* ❌ */
-#errorBox{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:red;
-  padding:10px;
-  border-radius:10px;
+/* 🔥 نتائج */
+.result-box{
   display:none;
+  background:#1e293b;
+  padding:15px;
+  border-radius:15px;
+  margin-top:10px;
+  text-align:right;
 }
-</style>
 
+.result-box h3{
+  margin:10px 0 5px;
+  color:#38bdf8;
+}
+
+.result-box p{
+  margin:0;
+  line-height:1.6;
+}
+
+</style>
 </head>
+
 <body>
 
 <div class="header">
   <div id="userName">👤</div>
-  <button class="home-btn">🏠</button>
+  <button class="home-btn" onclick="location.href='index.html'">🏠</button>
 </div>
 
 <h2>📘 كتابي</h2>
 
 <div class="card">
 
-  <button id="openBtn" class="btn download" onclick="openBook()">📥 تحميل وفتح</button>
+<button class="btn download" onclick="openBook()">📥 تحميل</button>
 
-  <canvas id="pdf"></canvas>
+<canvas id="pdf"></canvas>
 
-  <!-- 🔥 الأزرار فوق -->
-  <div class="bottom-buttons">
-    <button onclick="prevPage()">⬅</button>
-    <button onclick="nextPage()">➡</button>
-    <button onclick="savePage()">⭐</button>
-    <button onclick="readPage()">🔊</button>
-  </div>
-
-  <!-- ✍️ ملاحظات -->
-  <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
-  <button class="btn green" onclick="saveNote()">💾 حفظ</button>
-
-  <!-- 🧠 زر التحليل -->
-  <button class="btn orange" onclick="analyzePage()">🧠 تحليل الصفحة</button>
-
-  <div id="loadingBox">⏳ جاري التحليل...</div>
-
-  <!-- 🔥 النتيجة -->
-  <div id="analysisBox"></div>
-
+<!-- 🔥 أزرار فوق -->
+<div class="bottom-buttons">
+  <button onclick="prevPage()">⬅</button>
+  <button onclick="nextPage()">➡</button>
+  <button onclick="savePage()">⭐</button>
+  <button onclick="readPage()">🔊</button>
 </div>
 
-<div id="errorBox"></div>
+<textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
+
+<button class="btn green" onclick="saveNote()">💾 حفظ</button>
+
+<button class="btn orange" onclick="analyzePage()">🧠 تحليل الصفحة</button>
+
+<!-- 🔥 لودينج -->
+<div id="loading" class="loading">⏳ جاري التحليل...</div>
+
+<!-- 🔥 النتائج -->
+<div id="resultBox" class="result-box">
+  <h3>🧠 الشرح</h3>
+  <p id="summary"></p>
+
+  <h3>🌍 الترجمة</h3>
+  <p id="translation"></p>
+
+  <h3>📌 كلمات مهمة</h3>
+  <p id="keywords"></p>
+</div>
+
+</div>
 
 <script>
 
 const AI_WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/headway";
 
+const client = supabase.createClient(
+"https://ofyugbhplaynjeafdrgx.supabase.co",
+"sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
+);
+
 let pdfDoc=null;
 let currentPage=1;
+let rendering=false;
+
+const PDF_URL="https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
 async function openBook(){
-  const loadingTask = pdfjsLib.getDocument("https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf");
+  const loadingTask = pdfjsLib.getDocument(PDF_URL);
   pdfDoc = await loadingTask.promise;
   renderPage(currentPage);
 }
 
 async function renderPage(num){
-  const page = await pdfDoc.getPage(num);
-  const canvas = document.getElementById("pdf");
-  const ctx = canvas.getContext("2d");
-  const viewport = page.getViewport({scale:1.5});
-  canvas.height = viewport.height;
-  canvas.width = viewport.width;
-  await page.render({canvasContext:ctx,viewport}).promise;
+
+  if(rendering) return;
+  rendering=true;
+
+  try{
+    const page = await pdfDoc.getPage(num);
+    const canvas = document.getElementById("pdf");
+    const ctx = canvas.getContext("2d");
+
+    const viewport = page.getViewport({ scale:1.5 });
+
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    await page.render({ canvasContext:ctx, viewport }).promise;
+
+  }catch(e){}
+
+  rendering=false;
 }
 
-function nextPage(){currentPage++;renderPage(currentPage);}
-function prevPage(){currentPage--;renderPage(currentPage);}
+function nextPage(){ if(currentPage<pdfDoc.numPages){currentPage++;renderPage(currentPage);} }
+function prevPage(){ if(currentPage>1){currentPage--;renderPage(currentPage);} }
 
-function savePage(){showError("تم حفظ ⭐");}
+function savePage(){ alert("تم الحفظ ⭐"); }
 
-function saveNote(){showError("تم حفظ الملاحظة");}
+function saveNote(){ alert("تم حفظ الملاحظة ✅"); }
 
-function readPage(){}
-
-function showError(msg){
-  let e=document.getElementById("errorBox");
-  e.innerText=msg;
-  e.style.display="block";
-  setTimeout(()=>e.style.display="none",2000);
+async function readPage(){
+  const page = await pdfDoc.getPage(currentPage);
+  const content = await page.getTextContent();
+  let text = content.items.map(i=>i.str).join(" ");
+  speechSynthesis.speak(new SpeechSynthesisUtterance(text));
 }
 
 /* 🔥 التحليل */
 async function analyzePage(){
 
   if(!pdfDoc){
-    showError("افتح الكتاب أولاً");
+    alert("افتح الكتاب أولاً");
     return;
   }
 
-  document.getElementById("loadingBox").style.display="block";
+  document.getElementById("loading").style.display="block";
+  document.getElementById("resultBox").style.display="none";
 
   try{
 
@@ -158,44 +243,25 @@ async function analyzePage(){
       body: JSON.stringify({ text })
     });
 
-    const raw = await res.json();
+    let resData = await res.json();
 
-    let data;
+    let data = resData?.content?.[0]?.text || resData;
 
-    try{
-      let txt = raw.content?.[0]?.text || raw.text || "";
-      txt = txt.replace(/```json/g,"").replace(/```/g,"").trim();
-      data = JSON.parse(txt);
-    }catch{
-      showError("خطأ في البيانات");
-      return;
+    if(typeof data === "string"){
+      data = JSON.parse(data);
     }
 
-    document.getElementById("loadingBox").style.display="none";
-    showAnalysis(data);
+    document.getElementById("summary").innerText = data.summary || "";
+    document.getElementById("translation").innerText = data.translation || "";
+    document.getElementById("keywords").innerText = (data.keywords||[]).join(" - ");
 
-  }catch{
-    document.getElementById("loadingBox").style.display="none";
-    showError("فشل التحليل");
+    document.getElementById("resultBox").style.display="block";
+
+  }catch(e){
+    alert("❌ فشل التحليل");
   }
-}
 
-/* 🔥 عرض */
-function showAnalysis(data){
-
-  let keywords = data.keywords || [];
-
-  document.getElementById("analysisBox").style.display="block";
-  document.getElementById("analysisBox").innerHTML = `
-    <div class="title">🧠 الشرح</div>
-    <div>${data.summary}</div>
-
-    <div class="title">🌍 الترجمة</div>
-    <div>${data.translation}</div>
-
-    <div class="title">📌 كلمات مهمة</div>
-    <div>${keywords.join(" - ")}</div>
-  `;
+  document.getElementById("loading").style.display="none";
 }
 
 </script>

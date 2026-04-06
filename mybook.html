@@ -88,7 +88,7 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
   z-index:9999;
 }
 
-/* كلمات */
+/* الكلمات */
 .word-row{
   display:flex;
   justify-content:space-between;
@@ -270,13 +270,17 @@ function speakWord(word){
   speechSynthesis.speak(speech);
 }
 
-async function saveWord(word,translation){
-  await client.from("saved_words").insert({
+async function saveWord(word,translation,btn){
+  btn.innerText="⏳";
+
+  await client.from("user_star_words").insert({
     user_id:userId,
     word,
     translation,
     page:currentPage
   });
+
+  btn.innerText="✅";
   showToast("⭐ تم حفظ الكلمة");
 }
 
@@ -290,10 +294,16 @@ function renderWords(arr){
       </div>
       <div class="word-actions">
         <button onclick="speakWord('${i.word || i.text}')">🔊</button>
-        <button onclick="saveWord('${i.word || i.text}','${i.translation}')">⭐</button>
+        <button onclick="saveWord('${i.word || i.text}','${i.translation}',this)">⭐</button>
       </div>
     </div>
   `).join("");
+}
+
+function formatGrammar(text){
+  if(!text) return "";
+  let lines = text.split("\n");
+  return lines.map((l,i)=> l.trim()? `<div>${i+1}- ${l}</div>`:"").join("");
 }
 
 async function analyzePage(){
@@ -322,8 +332,8 @@ async function analyzePage(){
   document.getElementById("phrases").innerHTML = renderWords(data.phrases);
 
   document.getElementById("grammar").innerHTML = `
-    <div style="background:#0f172a;padding:12px;border-radius:12px;line-height:1.8">
-      ${data.grammar || ""}
+    <div style="background:#0f172a;padding:12px;border-radius:12px;line-height:2">
+      ${formatGrammar(data.grammar)}
     </div>
   `;
 
@@ -331,14 +341,17 @@ async function analyzePage(){
   document.getElementById("analysisBox").style.display="block";
 }
 
-function saveNote(){
+async function saveNote(){
   let note=document.getElementById("noteInput");
   if(!note.value) return;
 
-  localStorage.setItem("note_"+currentPage,note.value);
+  await client.from("user_notes").insert({
+    user_id:userId,
+    page:currentPage,
+    note:note.value
+  });
 
-  note.value=""; // 🔥 تم تفريغ الصندوق
-
+  note.value="";
   showToast("تم حفظ الملاحظة ✅");
 }
 

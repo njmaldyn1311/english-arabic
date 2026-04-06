@@ -46,19 +46,6 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
   color:#38bdf8;
 }
 
-.word-box{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#0f172a;
-  padding:8px;
-  border-radius:10px;
-  margin:5px 0;
-}
-
-.en{color:#38bdf8;font-weight:bold;}
-.ar{color:#facc15;}
-
 .loader{
   display:none;
   margin-top:10px;
@@ -82,10 +69,36 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
   100%{transform:rotate(360deg)}
 }
 
-/* 📱 موبايل */
-@media(max-width:600px){
-  .word-box{flex-direction:column;gap:5px;text-align:center;}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;}
+.popup{background:#1e293b;padding:20px;border-radius:15px;width:85%;max-width:300px;text-align:right;}
+.buy{background:#f59e0b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
+.close{background:#64748b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
+
+/* 🔔 Toast */
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#22c55e;
+  color:white;
+  padding:12px 20px;
+  border-radius:12px;
+  display:none;
+  z-index:9999;
 }
+
+/* كلمات */
+.word-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#0f172a;
+  padding:10px;
+  border-radius:12px;
+  margin:6px 0;
+}
+.word-actions{display:flex;gap:5px;}
 </style>
 
 </head>
@@ -126,7 +139,6 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
     <div>جاري التحليل...</div>
   </div>
 
-  <!-- ✅ التحليل الجديد -->
   <div class="analysis-box" id="analysisBox">
 
     <h3>🧠 الأفعال</h3>
@@ -135,26 +147,33 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
     <h3>📦 الأسماء</h3>
     <div id="nouns"></div>
 
-    <h3>⭐ الظروف</h3>
+    <h3>⚡ الظروف</h3>
     <div id="adverbs"></div>
 
     <h3>🔗 حروف الجر</h3>
     <div id="prepositions"></div>
 
-    <h3>🎨 الصفات</h3>
+    <h3>✨ الصفات</h3>
     <div id="adjectives"></div>
 
-    <h3>💬 العبارات</h3>
-    <div id="expressions"></div>
+    <h3>🧩 عبارات</h3>
+    <div id="phrases"></div>
 
     <h3>📘 القاعدة</h3>
     <div id="grammar"></div>
 
-    <button class="btn green" onclick="speakAnalysis()">🔊 قراءة التحليل</button>
-    <button class="btn download" onclick="saveAnalysis()">💾 حفظ التحليل</button>
-
   </div>
 
+</div>
+
+<div id="toast" class="toast">تم</div>
+
+<div id="alert" class="overlay">
+  <div class="popup">
+    <div id="alertText">🔒 الكتاب للمشتركين فقط</div>
+    <button class="buy" onclick="buy()">📱 شراء عبر واتساب</button>
+    <button class="close" onclick="closeAlert()">إغلاق</button>
+  </div>
 </div>
 
 <script>
@@ -174,6 +193,19 @@ const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/publ
 let pdfDoc = null;
 let currentPage = 1;
 
+window.onload = ()=>{
+  if(localStorage.getItem("bookOpened")==="yes"){
+    document.getElementById("priceBox").style.display="none";
+  }
+}
+
+function showToast(msg){
+  let t=document.getElementById("toast");
+  t.innerText=msg;
+  t.style.display="block";
+  setTimeout(()=>t.style.display="none",2000);
+}
+
 async function checkUser(){
   const { data } = await client.from("users").select("name,plan").eq("id", userId).single();
   if(data){
@@ -185,18 +217,22 @@ async function checkUser(){
 function goHome(){ location.href="index.html"; }
 
 async function openBook(){
-  const btn = document.getElementById("openBtn");
-  btn.innerText="⏳ جاري التحميل...";
-  btn.disabled=true;
 
   await checkUser();
+
+  if(!isPaid){
+    document.getElementById("alert").style.display="flex";
+    return;
+  }
 
   const loadingTask = pdfjsLib.getDocument(PDF_URL);
   pdfDoc = await loadingTask.promise;
   renderPage(currentPage);
 
-  btn.innerText="📖 تم فتح الكتاب";
-  btn.disabled=false;
+  document.getElementById("priceBox").style.display="none";
+  localStorage.setItem("bookOpened","yes");
+
+  showToast("📖 تم فتح الكتاب");
 }
 
 async function renderPage(num){
@@ -216,124 +252,102 @@ function prevPage(){ if(currentPage > 1){ currentPage--; renderPage(currentPage)
 
 function savePage(){
   localStorage.setItem("savedPage", currentPage);
-  alert("تم حفظ الصفحة ⭐");
+  showToast("⭐ تم حفظ الصفحة");
 }
 
 async function readPage(){
   const page = await pdfDoc.getPage(currentPage);
   const content = await page.getTextContent();
   let text = content.items.map(i=>i.str).join(" ");
-  speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  let speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "en-US";
+  speechSynthesis.speak(speech);
 }
 
-/* 🔥 عرض الكلمات */
+function speakWord(word){
+  let speech=new SpeechSynthesisUtterance(word);
+  speech.lang="en-US";
+  speechSynthesis.speak(speech);
+}
+
+async function saveWord(word,translation){
+  await client.from("saved_words").insert({
+    user_id:userId,
+    word,
+    translation,
+    page:currentPage
+  });
+  showToast("⭐ تم حفظ الكلمة");
+}
+
 function renderWords(arr){
   if(!arr) return "";
-
   return arr.map(i=>`
-    <div class="word-box">
-      <span class="en">${i.word || i.text}</span>
-      <span class="ar">${i.translation}</span>
-      <button onclick="speakWord('${i.word || i.text}')">🔊</button>
+    <div class="word-row">
+      <div>
+        <div>${i.word || i.text}</div>
+        <div>${i.translation}</div>
+      </div>
+      <div class="word-actions">
+        <button onclick="speakWord('${i.word || i.text}')">🔊</button>
+        <button onclick="saveWord('${i.word || i.text}','${i.translation}')">⭐</button>
+      </div>
     </div>
   `).join("");
 }
 
-/* 🔥 التحليل */
 async function analyzePage(){
 
-  if(!pdfDoc){
-    alert("افتح الكتاب أولاً 📘");
-    return;
-  }
+  if(!pdfDoc){ showToast("افتح الكتاب أولاً"); return; }
 
-  const loader = document.getElementById("loader");
-  const box = document.getElementById("analysisBox");
+  document.getElementById("loader").style.display="block";
 
-  loader.style.display="block";
-  box.style.display="none";
+  const page = await pdfDoc.getPage(currentPage);
+  const content = await page.getTextContent();
+  let text = content.items.map(i=>i.str).join(" ");
 
-  try{
-
-    const page = await pdfDoc.getPage(currentPage);
-    const content = await page.getTextContent();
-    let text = content.items.map(i=>i.str).join(" ");
-
-    const res = await fetch(AI_WEBHOOK,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ text })
-    });
-
-    const data = await res.json();
-
-    document.getElementById("verbs").innerHTML = renderWords(data.verbs);
-    document.getElementById("nouns").innerHTML = renderWords(data.nouns);
-    document.getElementById("adverbs").innerHTML = renderWords(data.adverbs);
-    document.getElementById("prepositions").innerHTML = renderWords(data.prepositions);
-    document.getElementById("adjectives").innerHTML = renderWords(data.adjectives);
-
-    document.getElementById("expressions").innerHTML =
-      (data.expressions || []).map(e=>`
-        <div class="word-box">
-          <span class="en">${e.text}</span>
-          <span class="ar">${e.translation}</span>
-          <button onclick="speakWord('${e.text}')">🔊</button>
-        </div>
-      `).join("");
-
-    document.getElementById("grammar").innerText = data.grammar || "";
-
-    loader.style.display="none";
-    box.style.display="block";
-
-  }catch(e){
-    loader.style.display="none";
-    alert("❌ فشل التحليل");
-  }
-}
-
-/* 🔊 صوت */
-function speakWord(text){
-  let speech = new SpeechSynthesisUtterance(text);
-  speech.lang = "en-US";
-  speech.rate = 0.9;
-  speechSynthesis.speak(speech);
-}
-
-/* 🔊 صوت التحليل */
-function speakAnalysis(){
-  let text = document.getElementById("analysisBox").innerText;
-  let speech = new SpeechSynthesisUtterance(text);
-  speech.lang = "ar-SA";
-  speechSynthesis.speak(speech);
-}
-
-/* 💾 حفظ الملاحظات */
-async function saveNote(){
-  let note = document.getElementById("noteInput").value;
-  if(!note) return;
-
-  await client.from("notes").insert({
-    user_id:userId,
-    page:currentPage,
-    note:note
+  const res = await fetch(AI_WEBHOOK,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ text })
   });
 
-  alert("تم حفظ الملاحظة ✅");
+  const data = await res.json();
+
+  document.getElementById("verbs").innerHTML = renderWords(data.verbs);
+  document.getElementById("nouns").innerHTML = renderWords(data.nouns);
+  document.getElementById("adverbs").innerHTML = renderWords(data.adverbs);
+  document.getElementById("prepositions").innerHTML = renderWords(data.prepositions);
+  document.getElementById("adjectives").innerHTML = renderWords(data.adjectives);
+  document.getElementById("phrases").innerHTML = renderWords(data.phrases);
+
+  document.getElementById("grammar").innerHTML = `
+    <div style="background:#0f172a;padding:12px;border-radius:12px;line-height:1.8">
+      ${data.grammar || ""}
+    </div>
+  `;
+
+  document.getElementById("loader").style.display="none";
+  document.getElementById("analysisBox").style.display="block";
 }
 
-/* 💾 حفظ التحليل */
-async function saveAnalysis(){
-  let content = document.getElementById("analysisBox").innerText;
+function saveNote(){
+  let note=document.getElementById("noteInput");
+  if(!note.value) return;
 
-  await client.from("analysis").insert({
-    user_id:userId,
-    page:currentPage,
-    content:content
-  });
+  localStorage.setItem("note_"+currentPage,note.value);
 
-  alert("تم حفظ التحليل ✅");
+  note.value=""; // 🔥 تم تفريغ الصندوق
+
+  showToast("تم حفظ الملاحظة ✅");
+}
+
+function buy(){
+  window.open("https://wa.me/966509079576","_blank");
+}
+
+function closeAlert(){
+  document.getElementById("alert").style.display="none";
 }
 
 </script>

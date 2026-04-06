@@ -99,7 +99,6 @@ input:focus {
   transition:0.3s;
 }
 
-/* حالة الفتح */
 .custom-select.active {
   box-shadow:0 0 0 2px #22c55e;
   background:#f0fdf4;
@@ -121,16 +120,10 @@ input:focus {
   overflow:hidden;
   box-shadow:0 10px 25px rgba(0,0,0,0.2);
   z-index:10;
-
-  opacity:0;
-  transform: translateY(-5px);
-  transition:0.2s;
 }
 
 .options.show {
   display:block;
-  opacity:1;
-  transform: translateY(0);
 }
 
 .options div {
@@ -142,7 +135,6 @@ input:focus {
   background:#f1f5f9;
 }
 
-/* المختار */
 .options div.selected {
   background:#22c55e;
   color:white;
@@ -207,66 +199,6 @@ button {
 
 button:hover { background:#16a34a; }
 
-/* popup */
-.popup{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.5);
-  display:none;
-  justify-content:center;
-  align-items:center;
-}
-
-.popup-box{
-  background:white;
-  color:black;
-  padding:25px;
-  border-radius:20px;
-  text-align:center;
-  width:85%;
-  max-width:300px;
-}
-
-.popup button{
-  margin-top:15px;
-  background:#22c55e;
-  border:none;
-  padding:10px;
-  border-radius:10px;
-  color:white;
-}
-
-/* loading */
-#loading{
-  display:none;
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.6);
-  z-index:999;
-  justify-content:center;
-  align-items:center;
-}
-
-.spinner {
-  width:40px;
-  height:40px;
-  border:4px solid #eee;
-  border-top:4px solid #22c55e;
-  border-radius:50%;
-  animation: spin 1s linear infinite;
-  margin:auto;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 </style>
 </head>
 
@@ -284,7 +216,7 @@ button:hover { background:#16a34a; }
 <input id="district" placeholder="الحي">
 
 <!-- الجنس -->
-<div class="custom-select" onclick="toggleDropdown(event)" ontouchstart="toggleDropdown(event)">
+<div class="custom-select" onclick="toggleDropdown(event)">
   <div id="selected">اختر الجنس</div>
   <div class="options" id="dropdown">
     <div onclick="selectOption(event,'ذكر')">ذكر</div>
@@ -293,7 +225,7 @@ button:hover { background:#16a34a; }
 </div>
 
 <!-- المستوى -->
-<div class="custom-select" onclick="toggleLevelDropdown(event)" ontouchstart="toggleLevelDropdown(event)">
+<div class="custom-select" onclick="toggleLevelDropdown(event)">
   <div id="selectedLevel">المستوى</div>
   <div class="options" id="levelDropdown">
     <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
@@ -302,53 +234,17 @@ button:hover { background:#16a34a; }
   </div>
 </div>
 
-<div class="label">❗ لا أستطيع</div>
-
-<div class="skills">
-  <label class="check"><input type="checkbox" value="القراءة"><span></span> القراءة</label>
-  <label class="check"><input type="checkbox" value="الكتابة"><span></span> الكتابة</label>
-  <label class="check"><input type="checkbox" value="التحدث"><span></span> التحدث</label>
-  <label class="check"><input type="checkbox" value="كل ما ذكر صحيح"><span></span> كل ما ذكر صحيح</label>
-</div>
-
-<div class="label">🎯 اهتماماتك المهنية</div>
-
-<input id="job1" placeholder="مثال: طبيب - مهندس">
-<input id="job2" placeholder="مثال: برمجة - تجارة">
-<input id="job3" placeholder="مثال: سفر - مقابلات">
-
-<button onclick="signup()">تسجيل</button>
-
-</div>
-
-<!-- popup -->
-<div class="popup" id="popup">
-  <div class="popup-box">
-    <h3>🎉 تم التسجيل</h3>
-    <p>تم إنشاء حسابك بنجاح</p>
-    <button onclick="goHome()">ابدأ الآن</button>
-  </div>
-</div>
-
-<!-- loading -->
-<div id="loading">
-  <div style="background:white;padding:25px;border-radius:15px;text-align:center;width:200px;">
-    <div class="spinner"></div>
-    <p style="margin-top:10px;">جاري التسجيل...</p>
-  </div>
-</div>
-
 <script>
+
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 let selectedGender = "";
 let selectedLevel = "";
 
-/* إغلاق الكل */
 function closeAll(){
   document.querySelectorAll(".options").forEach(el=>{
     el.classList.remove("show");
   });
-
   document.querySelectorAll(".custom-select").forEach(el=>{
     el.classList.remove("active");
   });
@@ -363,17 +259,20 @@ function toggleDropdown(e){
 
   const isOpen = drop.classList.contains("show");
 
-  closeAll();
-
-  if(!isOpen){
-    drop.classList.add("show");
-    box.classList.add("active");
+  if(isIOS){
+    closeAll();
+    if(!isOpen){
+      drop.classList.add("show");
+      box.classList.add("active");
+    }
+  } else {
+    drop.classList.toggle("show");
+    box.classList.toggle("active");
   }
 }
 
 function selectOption(e, value){
   e.stopPropagation();
-
   selectedGender = value;
   document.getElementById("selected").innerText = value;
 
@@ -396,17 +295,20 @@ function toggleLevelDropdown(e){
 
   const isOpen = drop.classList.contains("show");
 
-  closeAll();
-
-  if(!isOpen){
-    drop.classList.add("show");
-    box.classList.add("active");
+  if(isIOS){
+    closeAll();
+    if(!isOpen){
+      drop.classList.add("show");
+      box.classList.add("active");
+    }
+  } else {
+    drop.classList.toggle("show");
+    box.classList.toggle("active");
   }
 }
 
 function selectLevel(e, value){
   e.stopPropagation();
-
   selectedLevel = value;
   document.getElementById("selectedLevel").innerText = value;
 
@@ -420,65 +322,14 @@ function selectLevel(e, value){
   closeAll();
 }
 
-/* إغلاق عند الضغط خارج */
+/* إغلاق */
 document.addEventListener("click", function(){
-  closeAll();
+  if(isIOS){
+    setTimeout(closeAll, 150);
+  } else {
+    closeAll();
+  }
 });
-
-const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
-
-async function signup(){
-
-  const loading = document.getElementById("loading");
-  loading.style.display = "flex";
-
-  const skills = [...document.querySelectorAll(".skills input:checked")]
-    .map(el => el.value);
-
-  const data = {
-    name: document.getElementById("name").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    city: document.getElementById("city").value.trim(),
-    district: document.getElementById("district").value.trim(),
-    gender: selectedGender,
-    level: selectedLevel,
-    skills: skills,
-    job1: document.getElementById("job1").value.trim(),
-    job2: document.getElementById("job2").value.trim(),
-    job3: document.getElementById("job3").value.trim()
-  };
-
-  if(!data.name || !data.phone){
-    loading.style.display = "none";
-    alert("يرجى إدخال الاسم ورقم الجوال ⚠️");
-    return;
-  }
-
-  if(!selectedGender || !selectedLevel){
-    loading.style.display = "none";
-    alert("اختر الجنس والمستوى ⚠️");
-    return;
-  }
-
-  try {
-    await fetch(WEBHOOK,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify(data)
-    });
-
-    loading.style.display = "none";
-    document.getElementById("popup").style.display = "flex";
-
-  } catch (error) {
-    loading.style.display = "none";
-    alert("خطأ في الاتصال ❌");
-  }
-}
-
-function goHome(){
-  window.location.href = "index.html";
-}
 
 </script>
 

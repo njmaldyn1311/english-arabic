@@ -56,7 +56,6 @@ body::before{
   font-size:14px;
 }
 
-/* 🧠 العنوان */
 h2 { margin-bottom:15px; }
 
 /* 📝 الحقول */
@@ -208,6 +207,34 @@ button:hover { background:#16a34a; }
   color:white;
 }
 
+/* 🔥 Loading */
+#loading{
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  z-index:999;
+  justify-content:center;
+  align-items:center;
+}
+
+.spinner {
+  width:40px;
+  height:40px;
+  border:4px solid #eee;
+  border-top:4px solid #22c55e;
+  border-radius:50%;
+  animation: spin 1s linear infinite;
+  margin:auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 </style>
 </head>
 
@@ -225,7 +252,7 @@ button:hover { background:#16a34a; }
 <input id="district" placeholder="الحي">
 
 <!-- الجنس -->
-<div class="custom-select" onclick="event.stopPropagation(); toggleDropdown()">
+<div class="custom-select" onclick="toggleDropdown()" ontouchstart="toggleDropdown()">
   <div id="selected">اختر الجنس</div>
   <div class="options" id="dropdown">
     <div onclick="selectOption(event,'ذكر')">ذكر</div>
@@ -234,7 +261,7 @@ button:hover { background:#16a34a; }
 </div>
 
 <!-- المستوى -->
-<div class="custom-select" onclick="event.stopPropagation(); toggleLevelDropdown()">
+<div class="custom-select" onclick="toggleLevelDropdown()" ontouchstart="toggleLevelDropdown()">
   <div id="selectedLevel">المستوى</div>
   <div class="options" id="levelDropdown">
     <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
@@ -246,30 +273,14 @@ button:hover { background:#16a34a; }
 <div class="label">❗ لا أستطيع</div>
 
 <div class="skills">
-  <label class="check">
-    <input type="checkbox" value="القراءة">
-    <span></span> القراءة
-  </label>
-
-  <label class="check">
-    <input type="checkbox" value="الكتابة">
-    <span></span> الكتابة
-  </label>
-
-  <label class="check">
-    <input type="checkbox" value="التحدث">
-    <span></span> التحدث
-  </label>
-
-  <label class="check">
-    <input type="checkbox" value="كل ما ذكر صحيح">
-    <span></span> كل ما ذكر صحيح
-  </label>
+  <label class="check"><input type="checkbox" value="القراءة"><span></span> القراءة</label>
+  <label class="check"><input type="checkbox" value="الكتابة"><span></span> الكتابة</label>
+  <label class="check"><input type="checkbox" value="التحدث"><span></span> التحدث</label>
+  <label class="check"><input type="checkbox" value="كل ما ذكر صحيح"><span></span> كل ما ذكر صحيح</label>
 </div>
 
 <div class="label">🎯 اهتماماتك المهنية</div>
 
-<!-- ✅ رجعنا الـ placeholder -->
 <input id="job1" placeholder="مثال: طبيب - مهندس">
 <input id="job2" placeholder="مثال: برمجة - تجارة">
 <input id="job3" placeholder="مثال: سفر - مقابلات">
@@ -284,6 +295,14 @@ button:hover { background:#16a34a; }
     <h3>🎉 تم التسجيل</h3>
     <p>تم إنشاء حسابك بنجاح</p>
     <button onclick="goHome()">ابدأ الآن</button>
+  </div>
+</div>
+
+<!-- loading -->
+<div id="loading">
+  <div style="background:white;padding:25px;border-radius:15px;text-align:center;width:200px;">
+    <div class="spinner"></div>
+    <p style="margin-top:10px;">جاري التسجيل...</p>
   </div>
 </div>
 
@@ -326,10 +345,12 @@ document.addEventListener("click", function(){
   document.getElementById("levelDropdown").style.display = "none";
 });
 
-/* إرسال */
 const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
 
 async function signup(){
+
+  const loading = document.getElementById("loading");
+  loading.style.display = "flex";
 
   const skills = [...document.querySelectorAll(".skills input:checked")]
     .map(el => el.value);
@@ -348,11 +369,13 @@ async function signup(){
   };
 
   if(!data.name || !data.phone){
+    loading.style.display = "none";
     alert("يرجى إدخال الاسم ورقم الجوال ⚠️");
     return;
   }
 
   if(!selectedGender || !selectedLevel){
+    loading.style.display = "none";
     alert("اختر الجنس والمستوى ⚠️");
     return;
   }
@@ -364,9 +387,11 @@ async function signup(){
       body:JSON.stringify(data)
     });
 
+    loading.style.display = "none";
     document.getElementById("popup").style.display = "flex";
 
   } catch (error) {
+    loading.style.display = "none";
     alert("خطأ في الاتصال ❌");
   }
 }

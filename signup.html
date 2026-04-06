@@ -46,6 +46,7 @@ body::before{
   color:white;
 }
 
+/* 🔥 عدد الطلاب */
 .stats{
   background: rgba(34,197,94,0.15);
   border:1px solid rgba(34,197,94,0.3);
@@ -55,8 +56,10 @@ body::before{
   font-size:14px;
 }
 
+/* 🧠 العنوان */
 h2 { margin-bottom:15px; }
 
+/* 📝 الحقول */
 input {
   width:100%;
   height:50px;
@@ -65,7 +68,7 @@ input {
   border-radius:12px;
   border:none;
   text-align:center;
-  font-size:15px;
+  font-size:16px; /* ✅ حل زووم الآيفون */
 }
 
 input::placeholder { color:#9ca3af; }
@@ -75,7 +78,7 @@ input:focus {
   box-shadow:0 0 0 2px #38bdf8;
 }
 
-/* dropdown */
+/* 🔽 dropdown */
 .custom-select {
   position: relative;
   background: white;
@@ -87,28 +90,9 @@ input:focus {
   justify-content:center;
   cursor:pointer;
   margin:8px 0;
+  font-size:16px; /* ✅ حل إضافي */
 }
 
-/* السهم */
-.custom-select::after {
-  content: "▼";
-  position: absolute;
-  left: 12px;
-  font-size: 12px;
-  color: #555;
-  transition:0.3s;
-}
-
-.custom-select.active {
-  box-shadow:0 0 0 2px #22c55e;
-  background:#f0fdf4;
-}
-
-.custom-select.active::after {
-  transform: rotate(180deg);
-}
-
-/* القائمة */
 .options {
   position:absolute;
   top:55px;
@@ -122,10 +106,6 @@ input:focus {
   z-index:10;
 }
 
-.options.show {
-  display:block;
-}
-
 .options div {
   padding:12px;
   cursor:pointer;
@@ -135,11 +115,7 @@ input:focus {
   background:#f1f5f9;
 }
 
-.options div.selected {
-  background:#22c55e;
-  color:white;
-}
-
+/* 🏷️ عنوان */
 .label {
   margin-top:15px;
   margin-bottom:5px;
@@ -147,6 +123,7 @@ input:focus {
   color:#cbd5f5;
 }
 
+/* ✅ checkbox */
 .skills {
   background:white;
   border-radius:12px;
@@ -185,6 +162,7 @@ input:focus {
   right:3px;
 }
 
+/* 🎯 زر */
 button {
   width:100%;
   height:50px;
@@ -198,6 +176,38 @@ button {
 }
 
 button:hover { background:#16a34a; }
+
+/* ✅ popup */
+.popup{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.popup-box{
+  background:white;
+  color:black;
+  padding:25px;
+  border-radius:20px;
+  text-align:center;
+  width:85%;
+  max-width:300px;
+}
+
+.popup button{
+  margin-top:15px;
+  background:#22c55e;
+  border:none;
+  padding:10px;
+  border-radius:10px;
+  color:white;
+}
 
 </style>
 </head>
@@ -216,7 +226,7 @@ button:hover { background:#16a34a; }
 <input id="district" placeholder="الحي">
 
 <!-- الجنس -->
-<div class="custom-select" onclick="toggleDropdown(event)">
+<div class="custom-select" onclick="event.stopPropagation(); toggleDropdown()">
   <div id="selected">اختر الجنس</div>
   <div class="options" id="dropdown">
     <div onclick="selectOption(event,'ذكر')">ذكر</div>
@@ -225,7 +235,7 @@ button:hover { background:#16a34a; }
 </div>
 
 <!-- المستوى -->
-<div class="custom-select" onclick="toggleLevelDropdown(event)">
+<div class="custom-select" onclick="event.stopPropagation(); toggleLevelDropdown()">
   <div id="selectedLevel">المستوى</div>
   <div class="options" id="levelDropdown">
     <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
@@ -234,102 +244,136 @@ button:hover { background:#16a34a; }
   </div>
 </div>
 
-<script>
+<div class="label">❗ لا أستطيع</div>
 
-const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+<div class="skills">
+  <label class="check">
+    <input type="checkbox" value="القراءة">
+    <span></span> القراءة
+  </label>
+
+  <label class="check">
+    <input type="checkbox" value="الكتابة">
+    <span></span> الكتابة
+  </label>
+
+  <label class="check">
+    <input type="checkbox" value="التحدث">
+    <span></span> التحدث
+  </label>
+
+  <label class="check">
+    <input type="checkbox" value="كل ما ذكر صحيح">
+    <span></span> كل ما ذكر صحيح
+  </label>
+</div>
+
+<div class="label">🎯 اهتماماتك المهنية</div>
+
+<input id="job1" placeholder="مثال: طبيب - مهندس">
+<input id="job2" placeholder="مثال: برمجة - تجارة">
+<input id="job3" placeholder="مثال: سفر - مقابلات">
+
+<button onclick="signup()">تسجيل</button>
+
+</div>
+
+<!-- popup -->
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <h3>🎉 تم التسجيل</h3>
+    <p>تم إنشاء حسابك بنجاح</p>
+    <button onclick="goHome()">ابدأ الآن</button>
+  </div>
+</div>
+
+<script>
 
 let selectedGender = "";
 let selectedLevel = "";
 
-function closeAll(){
-  document.querySelectorAll(".options").forEach(el=>{
-    el.classList.remove("show");
-  });
-  document.querySelectorAll(".custom-select").forEach(el=>{
-    el.classList.remove("active");
-  });
-}
-
 /* الجنس */
-function toggleDropdown(e){
-  if(e) e.stopPropagation();
-
-  const box = document.querySelectorAll(".custom-select")[0];
+function toggleDropdown(){
+  document.getElementById("levelDropdown").style.display = "none";
   const drop = document.getElementById("dropdown");
-
-  const isOpen = drop.classList.contains("show");
-
-  if(isIOS){
-    closeAll();
-    if(!isOpen){
-      drop.classList.add("show");
-      box.classList.add("active");
-    }
-  } else {
-    drop.classList.toggle("show");
-    box.classList.toggle("active");
-  }
+  drop.style.display = drop.style.display === "block" ? "none" : "block";
 }
 
 function selectOption(e, value){
   e.stopPropagation();
   selectedGender = value;
   document.getElementById("selected").innerText = value;
-
-  document.querySelectorAll("#dropdown div").forEach(el=>{
-    el.classList.remove("selected");
-    if(el.innerText === value){
-      el.classList.add("selected");
-    }
-  });
-
-  closeAll();
+  document.getElementById("dropdown").style.display = "none";
 }
 
 /* المستوى */
-function toggleLevelDropdown(e){
-  if(e) e.stopPropagation();
-
-  const box = document.querySelectorAll(".custom-select")[1];
+function toggleLevelDropdown(){
+  document.getElementById("dropdown").style.display = "none";
   const drop = document.getElementById("levelDropdown");
-
-  const isOpen = drop.classList.contains("show");
-
-  if(isIOS){
-    closeAll();
-    if(!isOpen){
-      drop.classList.add("show");
-      box.classList.add("active");
-    }
-  } else {
-    drop.classList.toggle("show");
-    box.classList.toggle("active");
-  }
+  drop.style.display = drop.style.display === "block" ? "none" : "block";
 }
 
 function selectLevel(e, value){
   e.stopPropagation();
   selectedLevel = value;
   document.getElementById("selectedLevel").innerText = value;
-
-  document.querySelectorAll("#levelDropdown div").forEach(el=>{
-    el.classList.remove("selected");
-    if(el.innerText === value){
-      el.classList.add("selected");
-    }
-  });
-
-  closeAll();
+  document.getElementById("levelDropdown").style.display = "none";
 }
 
 /* إغلاق */
 document.addEventListener("click", function(){
-  if(isIOS){
-    setTimeout(closeAll, 150);
-  } else {
-    closeAll();
-  }
+  document.getElementById("dropdown").style.display = "none";
+  document.getElementById("levelDropdown").style.display = "none";
 });
+
+/* إرسال */
+const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/signup";
+
+async function signup(){
+
+  const skills = [...document.querySelectorAll(".skills input:checked")]
+    .map(el => el.value);
+
+  const data = {
+    name: document.getElementById("name").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    city: document.getElementById("city").value.trim(),
+    district: document.getElementById("district").value.trim(),
+    gender: selectedGender,
+    level: selectedLevel,
+    skills: skills,
+    job1: document.getElementById("job1").value.trim(),
+    job2: document.getElementById("job2").value.trim(),
+    job3: document.getElementById("job3").value.trim()
+  };
+
+  if(!data.name || !data.phone){
+    alert("يرجى إدخال الاسم ورقم الجوال ⚠️");
+    return;
+  }
+
+  if(!selectedGender || !selectedLevel){
+    alert("اختر الجنس والمستوى ⚠️");
+    return;
+  }
+
+  try {
+    await fetch(WEBHOOK,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify(data)
+    });
+
+    document.getElementById("popup").style.display = "flex";
+
+  } catch (error) {
+    alert("خطأ في الاتصال ❌");
+  }
+}
+
+function goHome(){
+  window.location.href = "index.html";
+}
 
 </script>
 

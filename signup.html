@@ -89,6 +89,16 @@ input:focus {
   justify-content:center;
   cursor:pointer;
   margin:8px 0;
+  font-size:15px;
+}
+
+/* السهم */
+.custom-select::after {
+  content: "▼";
+  position: absolute;
+  left: 12px;
+  font-size: 12px;
+  color: #555;
 }
 
 .options {
@@ -175,7 +185,7 @@ button {
 
 button:hover { background:#16a34a; }
 
-/* ✅ popup */
+/* popup */
 .popup{
   position:fixed;
   top:0;
@@ -207,7 +217,7 @@ button:hover { background:#16a34a; }
   color:white;
 }
 
-/* 🔥 Loading */
+/* loading */
 #loading{
   display:none;
   position:fixed;
@@ -252,7 +262,7 @@ button:hover { background:#16a34a; }
 <input id="district" placeholder="الحي">
 
 <!-- الجنس -->
-<div class="custom-select" onclick="toggleDropdown()" ontouchstart="toggleDropdown()">
+<div class="custom-select" ontouchstart="toggleDropdown(event)" onclick="toggleDropdown(event)">
   <div id="selected">اختر الجنس</div>
   <div class="options" id="dropdown">
     <div onclick="selectOption(event,'ذكر')">ذكر</div>
@@ -261,7 +271,7 @@ button:hover { background:#16a34a; }
 </div>
 
 <!-- المستوى -->
-<div class="custom-select" onclick="toggleLevelDropdown()" ontouchstart="toggleLevelDropdown()">
+<div class="custom-select" ontouchstart="toggleLevelDropdown(event)" onclick="toggleLevelDropdown(event)">
   <div id="selectedLevel">المستوى</div>
   <div class="options" id="levelDropdown">
     <div onclick="selectLevel(event,'مبتدئ')">مبتدئ</div>
@@ -312,7 +322,8 @@ let selectedGender = "";
 let selectedLevel = "";
 
 /* الجنس */
-function toggleDropdown(){
+function toggleDropdown(e){
+  if(e) e.stopPropagation();
   document.getElementById("levelDropdown").style.display = "none";
   const drop = document.getElementById("dropdown");
   drop.style.display = drop.style.display === "block" ? "none" : "block";
@@ -326,7 +337,8 @@ function selectOption(e, value){
 }
 
 /* المستوى */
-function toggleLevelDropdown(){
+function toggleLevelDropdown(e){
+  if(e) e.stopPropagation();
   document.getElementById("dropdown").style.display = "none";
   const drop = document.getElementById("levelDropdown");
   drop.style.display = drop.style.display === "block" ? "none" : "block";

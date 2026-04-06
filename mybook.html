@@ -74,7 +74,6 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
 .buy{background:#f59e0b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
 .close{background:#64748b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
 
-/* 🔔 Toast */
 .toast{
   position:fixed;
   bottom:20px;
@@ -88,7 +87,6 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
   z-index:9999;
 }
 
-/* الكلمات */
 .word-row{
   display:flex;
   justify-content:space-between;
@@ -186,18 +184,8 @@ const client = supabase.createClient(
 );
 
 let userId = localStorage.getItem("user_id");
-let isPaid = false;
-
-const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
-
-let pdfDoc = null;
 let currentPage = 1;
-
-window.onload = ()=>{
-  if(localStorage.getItem("bookOpened")==="yes"){
-    document.getElementById("priceBox").style.display="none";
-  }
-}
+let pdfDoc = null;
 
 function showToast(msg){
   let t=document.getElementById("toast");
@@ -206,21 +194,28 @@ function showToast(msg){
   setTimeout(()=>t.style.display="none",2000);
 }
 
-async function checkUser(){
-  const { data } = await client.from("users").select("name,plan").eq("id", userId).single();
-  if(data){
-    isPaid = data.plan === "paid";
-    document.getElementById("userName").innerText = "👤 " + data.name;
-  }
-}
-
 function goHome(){ location.href="index.html"; }
 
+/* 🔥 تحقق الدفع الحقيقي */
 async function openBook(){
 
-  await checkUser();
+  if(!userId){
+    showToast("❌ سجل دخول");
+    return;
+  }
 
-  if(!isPaid){
+  const { data, error } = await client
+    .from("users")
+    .select("plan")
+    .eq("id", userId)
+    .single();
+
+  if(error || !data){
+    showToast("❌ خطأ");
+    return;
+  }
+
+  if(data.plan !== "paid"){
     document.getElementById("alert").style.display="flex";
     return;
   }
@@ -230,7 +225,6 @@ async function openBook(){
   renderPage(currentPage);
 
   document.getElementById("priceBox").style.display="none";
-  localStorage.setItem("bookOpened","yes");
 
   showToast("📖 تم فتح الكتاب");
 }
@@ -255,33 +249,37 @@ function savePage(){
   showToast("⭐ تم حفظ الصفحة");
 }
 
-async function readPage(){
-  const page = await pdfDoc.getPage(currentPage);
-  const content = await page.getTextContent();
-  let text = content.items.map(i=>i.str).join(" ");
-  let speech = new SpeechSynthesisUtterance(text);
-  speech.lang = "en-US";
-  speechSynthesis.speak(speech);
-}
-
 function speakWord(word){
   let speech=new SpeechSynthesisUtterance(word);
   speech.lang="en-US";
   speechSynthesis.speak(speech);
 }
 
+/* ⭐ */
 async function saveWord(word,translation,btn){
+
   btn.innerText="⏳";
 
-  await client.from("user_star_words").insert({
-    user_id:userId,
-    word,
-    translation,
-    page:currentPage
-  });
+  try{
+    const { error } = await client.from("user_star_words").insert({
+      user_id:userId,
+      word,
+      translation,
+      page:currentPage
+    });
 
-  btn.innerText="✅";
-  showToast("⭐ تم حفظ الكلمة");
+    if(error){
+      btn.innerText="⭐";
+      showToast("❌ فشل");
+      return;
+    }
+
+    btn.innerText="✅";
+    showToast("⭐ تم الحفظ");
+
+  }catch{
+    btn.innerText="⭐";
+  }
 }
 
 function renderWords(arr){
@@ -302,13 +300,12 @@ function renderWords(arr){
 
 function formatGrammar(text){
   if(!text) return "";
-  let lines = text.split("\n");
-  return lines.map((l,i)=> l.trim()? `<div>${i+1}- ${l}</div>`:"").join("");
+  return text.split("\n").map((l,i)=> l.trim()?`<div style="background:#1e293b;margin:5px;padding:8px;border-radius:8px">${i+1}- ${l}</div>`:"").join("");
 }
 
 async function analyzePage(){
 
-  if(!pdfDoc){ showToast("افتح الكتاب أولاً"); return; }
+  if(!pdfDoc){ showToast("افتح الكتاب"); return; }
 
   document.getElementById("loader").style.display="block";
 
@@ -329,13 +326,13 @@ async function analyzePage(){
   document.getElementById("adverbs").innerHTML = renderWords(data.adverbs);
   document.getElementById("prepositions").innerHTML = renderWords(data.prepositions);
   document.getElementById("adjectives").innerHTML = renderWords(data.adjectives);
-  document.getElementById("phrases").innerHTML = renderWords(data.phrases);
 
-  document.getElementById("grammar").innerHTML = `
-    <div style="background:#0f172a;padding:12px;border-radius:12px;line-height:2">
-      ${formatGrammar(data.grammar)}
-    </div>
-  `;
+  document.getElementById("phrases").innerHTML =
+    Array.isArray(data.phrases)
+      ? renderWords(data.phrases)
+      : `<div>${data.phrases || "لا يوجد عبارات"}</div>`;
+
+  document.getElementById("grammar").innerHTML = formatGrammar(data.grammar);
 
   document.getElementById("loader").style.display="none";
   document.getElementById("analysisBox").style.display="block";

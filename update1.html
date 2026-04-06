@@ -40,6 +40,8 @@ body{
   padding:10px;
   max-width:1000px;
   margin:auto;
+  overflow-x:auto; /* ✅ سحب أفقي */
+  -webkit-overflow-scrolling: touch;
 }
 
 .title{
@@ -50,13 +52,14 @@ body{
 
 .card{
   display:grid;
-  grid-template-columns: 40px 1fr 1fr 1fr 110px 50px;
+  grid-template-columns: 40px 120px 120px 120px 140px 60px;
   align-items:center;
   gap:8px;
   background:#1e293b;
   border-radius:14px;
   padding:10px;
   margin-bottom:8px;
+  min-width:650px; /* ✅ يمنع التكسير */
 }
 
 .index{ color:#38bdf8; text-align:center; }
@@ -90,71 +93,6 @@ button{
 .speak{ background:#22c55e; color:white; }
 .save{ background:#22c55e; color:#000; font-weight:bold; }
 .saved{ background:#22c55e; color:white; }
-
-/* 📱 تحسين الموبايل */
-@media (max-width:768px){
-
-  .card{
-    grid-template-columns: 30px 1fr 1fr;
-    gap:6px;
-    padding:8px;
-  }
-
-  .translation{
-    grid-column: span 3;
-    font-size:13px;
-  }
-
-  .save{
-    grid-column: span 3;
-    width:100%;
-    padding:6px;
-  }
-
-  .item{
-    font-size:11px;
-    padding:4px;
-  }
-
-  button{
-    font-size:10px;
-    padding:3px 5px;
-  }
-}
-
-/* 📲 آيفون */
-@media (max-width:480px){
-
-  .title{
-    font-size:18px;
-  }
-
-  .header{
-    flex-direction:row;
-    gap:5px;
-  }
-
-  .user-name{
-    font-size:13px;
-  }
-
-  .home{
-    padding:6px 10px;
-    font-size:12px;
-  }
-
-  .card{
-    grid-template-columns: 25px 1fr;
-  }
-
-  .translation{
-    grid-column: span 2;
-  }
-
-  .save{
-    grid-column: span 2;
-  }
-}
 
 </style>
 

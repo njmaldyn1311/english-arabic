@@ -349,17 +349,17 @@ async function saveWord(word,translation,btn){
 
   btn.innerText="⏳";
 
-  // 🔍 تحقق إذا الكلمة محفوظة
+  // 🔍 تحقق بدون كراش
   const { data:exist } = await client
     .from("user_star_words")
     .select("*")
     .eq("user_id",userId)
     .eq("word",word)
-    .single();
+    .maybeSingle(); // ✅ الحل هنا
 
   if(exist){
-    btn.innerText="⭐"; // ترجعها
-    showToast("⭐ الكلمة محفوظة مسبقاً");
+    btn.innerText="🌟";
+    showToast("⭐ محفوظة مسبقاً");
     return;
   }
 
@@ -376,9 +376,7 @@ async function saveWord(word,translation,btn){
     return;
   }
 
-  // ✅ شكل النجمة بعد الحفظ
   btn.innerText="🌟";
-
   showToast("⭐ تم حفظ الكلمة");
 }
 function buy(){

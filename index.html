@@ -208,10 +208,26 @@ function goUpdate1(){track("ميزة");location="update1.html";}
 function goUpdate2(){track("تحديثات");location="update2.html";}
 
 // خروج
-function logout(){
-  track("خروج");
+function logout(msg){
+
+  // 📊 تتبع (زي ما هو)
+  if(typeof track === "function"){
+    track("خروج");
+  }
+
+  // 🔴 طرد كل التبويبات
+  localStorage.setItem("force_logout", Date.now());
+
+  // 🧹 حذف البيانات
   localStorage.clear();
-  location="login.html";
+
+  if(msg){
+    alert(msg);
+  }
+
+  setTimeout(()=>{
+    location="login.html";
+  },800);
 }
 
 </script>

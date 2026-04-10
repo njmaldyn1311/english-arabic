@@ -347,16 +347,31 @@ async function saveNote(){
 }
 async function saveWord(word,translation,btn){
 
+  if(!userId){
+    showToast("❌ لازم تسجل دخول");
+    return;
+  }
+
   btn.innerText="⏳";
 
-  await client.from("user_star_words").insert({
-    user_id:userId,
-    word,
-    translation,
-    page:currentPage
-  });
+  const { error } = await client
+    .from("user_star_words")
+    .insert([{
+      user_id: userId,
+      word: word || "",
+      translation: translation || "",
+      page: currentPage || 1
+    }]);
 
-  btn.innerText="✅";
+  if(error){
+    console.log(error);
+    btn.innerText="⭐";
+    showToast("❌ خطأ في الحفظ");
+    return;
+  }
+
+  btn.innerText="⭐";
+  btn.style.color="gold";
 
   showToast("⭐ تم حفظ الكلمة");
 }

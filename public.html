@@ -1,6 +1,184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>كتابي</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- ✅ أهم تعديل (حل المشكلة) -->
+<script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
+
+<style>
+body{margin:0;background:#0f172a;font-family:Arial;color:white;text-align:center;}
+.header{display:flex;justify-content:space-between;align-items:center;padding:10px 15px;}
+.home-btn{background:#38bdf8;padding:8px 15px;border-radius:10px;border:none;color:white;}
+.username{font-size:14px;}
+
+.card{background:#e5e7eb;color:black;margin:15px;padding:15px;border-radius:20px;}
+
+.btn{width:100%;padding:12px;border:none;border-radius:12px;margin-top:10px;color:white;font-size:16px;}
+
+.download{background:#3b82f6;}
+.green{background:#22c55e;}
+.orange{background:#f59e0b;}
+
+canvas{width:100%;border-radius:15px;margin-top:10px;}
+
+.bottom-buttons{display:flex;gap:5px;margin-top:10px;}
+.bottom-buttons button{flex:1;padding:10px;border:none;border-radius:10px;color:white;font-size:13px;background:#22c55e;}
+
+.note-box{width:100%;margin-top:10px;}
+textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-sizing:border-box;}
+
+.analysis-box{
+  background:#1e293b;
+  color:white;
+  margin-top:15px;
+  padding:15px;
+  border-radius:15px;
+  text-align:right;
+  display:none;
+}
+
+.analysis-box h3{
+  margin:10px 0 5px;
+  color:#38bdf8;
+}
+
+.loader{
+  display:none;
+  margin-top:10px;
+  padding:10px;
+  border-radius:10px;
+  background:#334155;
+}
+
+.spinner{
+  border:4px solid #ccc;
+  border-top:4px solid #38bdf8;
+  border-radius:50%;
+  width:25px;
+  height:25px;
+  animation:spin 1s linear infinite;
+  margin:auto;
+}
+
+@keyframes spin{
+  0%{transform:rotate(0)}
+  100%{transform:rotate(360deg)}
+}
+
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;}
+.popup{background:#1e293b;padding:20px;border-radius:15px;width:85%;max-width:300px;text-align:right;}
+.buy{background:#f59e0b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
+.close{background:#64748b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
+
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#22c55e;
+  color:white;
+  padding:12px 20px;
+  border-radius:12px;
+  display:none;
+  z-index:9999;
+}
+
+.word-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#0f172a;
+  padding:10px;
+  border-radius:12px;
+  margin:6px 0;
+}
+.word-actions{display:flex;gap:5px;}
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <div class="username" id="userName">👤</div>
+  <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
+</div>
+
+<h2>📘 كتابي</h2>
+
+<div class="card">
+
+  <h2 id="priceBox">💰 سعر الكتاب: 250 ريال</h2>
+
+  <button id="openBtn" class="btn download" onclick="openBook()">📥 تحميل وفتح</button>
+
+  <canvas id="pdf"></canvas>
+
+  <div class="bottom-buttons">
+    <button onclick="prevPage()">⬅ السابق</button>
+    <button onclick="nextPage()">التالي ➡</button>
+    <button onclick="savePage()">⭐ حفظ</button>
+    <button onclick="readPage()">🔊 قراءة</button>
+  </div>
+
+  <div class="note-box">
+    <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
+  </div>
+
+  <button class="btn green" onclick="saveNote()">💾 حفظ</button>
+
+  <button class="btn orange" onclick="analyzePage()">🧠 تحليل الصفحة</button>
+
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <div>جاري التحليل...</div>
+  </div>
+
+  <div class="analysis-box" id="analysisBox">
+
+    <h3>🧠 الأفعال</h3>
+    <div id="verbs"></div>
+
+    <h3>📦 الأسماء</h3>
+    <div id="nouns"></div>
+
+    <h3>⚡ الظروف</h3>
+    <div id="adverbs"></div>
+
+    <h3>🔗 حروف الجر</h3>
+    <div id="prepositions"></div>
+
+    <h3>✨ الصفات</h3>
+    <div id="adjectives"></div>
+
+    <h3>🧩 عبارات</h3>
+    <div id="phrases"></div>
+
+    <h3>📘 القاعدة</h3>
+    <div id="grammar"></div>
+
+  </div>
+
+</div>
+
+<div id="toast" class="toast">تم</div>
+
+<div id="alert" class="overlay">
+  <div class="popup">
+    <div id="alertText">🔒 الكتاب للمشتركين فقط</div>
+    <button class="buy" onclick="buy()">📱 شراء عبر واتساب</button>
+    <button class="close" onclick="closeAlert()">إغلاق</button>
+  </div>
+</div>
+
 <script>
 
-const AI_WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/headway";
+window.addEventListener("load", ()=>{
 
 const client = supabase.createClient(
 "https://ofyugbhplaynjeafdrgx.supabase.co",
@@ -9,20 +187,12 @@ const client = supabase.createClient(
 
 let userId = localStorage.getItem("user_id");
 let isPaid = false;
+let isTeacher = localStorage.getItem("role")==="teacher";
 
 const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
 let pdfDoc = null;
 let currentPage = 1;
-
-/* 🔥 جديد: تحديد المعلم */
-let isTeacher = localStorage.getItem("role") === "teacher";
-
-window.onload = ()=>{
-  if(localStorage.getItem("bookOpened")==="yes"){
-    document.getElementById("priceBox").style.display="none";
-  }
-}
 
 function showToast(msg){
   let t=document.getElementById("toast");
@@ -39,10 +209,7 @@ async function checkUser(){
   }
 }
 
-function goHome(){ location.href="index.html"; }
-
 async function openBook(){
-
   await checkUser();
 
   if(!isPaid){
@@ -55,37 +222,29 @@ async function openBook(){
   renderPage(currentPage);
 
   document.getElementById("priceBox").style.display="none";
-  localStorage.setItem("bookOpened","yes");
-
   showToast("📖 تم فتح الكتاب");
 
-  listenLive(); // 🔥 تشغيل البث
+  listenLive();
 }
 
-/* 🔥 جديد: بث الصفحة */
-async function broadcastPage(){
-  await client.from("live_class")
-    .update({ current_page: currentPage })
-    .eq("id",1);
-}
-
-/* 🔥 جديد: استقبال الصفحة */
 function listenLive(){
-
   client.channel('live_class_room')
   .on('postgres_changes',{
     event:'UPDATE',
     schema:'public',
     table:'live_class'
   },payload=>{
-
     if(!isTeacher && pdfDoc){
       currentPage = payload.new.current_page;
       renderPage(currentPage);
     }
+  }).subscribe();
+}
 
-  })
-  .subscribe();
+async function broadcastPage(){
+  if(isTeacher){
+    await client.from("live_class").update({current_page:currentPage}).eq("id",1);
+  }
 }
 
 async function renderPage(num){
@@ -100,117 +259,23 @@ async function renderPage(num){
   await page.render({ canvasContext:ctx, viewport }).promise;
 }
 
-/* 🔥 تعديل بسيط (بدون تغيير الشكل) */
-function nextPage(){ 
-  if(currentPage < pdfDoc.numPages){ 
-    currentPage++; 
+window.nextPage = function(){
+  if(currentPage < pdfDoc.numPages){
+    currentPage++;
     renderPage(currentPage);
-
-    if(isTeacher) broadcastPage(); // 🔥
+    broadcastPage();
   }
 }
 
-function prevPage(){ 
-  if(currentPage > 1){ 
-    currentPage--; 
+window.prevPage = function(){
+  if(currentPage > 1){
+    currentPage--;
     renderPage(currentPage);
-
-    if(isTeacher) broadcastPage(); // 🔥
+    broadcastPage();
   }
 }
 
-function savePage(){
-  localStorage.setItem("savedPage", currentPage);
-  showToast("⭐ تم حفظ الصفحة");
-}
-
-async function readPage(){
-  const page = await pdfDoc.getPage(currentPage);
-  const content = await page.getTextContent();
-  let text = content.items.map(i=>i.str).join(" ");
-  let speech = new SpeechSynthesisUtterance(text);
-  speech.lang = "en-US";
-  speechSynthesis.speak(speech);
-}
-
-function speakWord(word){
-  let speech=new SpeechSynthesisUtterance(word);
-  speech.lang="en-US";
-  speechSynthesis.speak(speech);
-}
-
-async function saveWord(word,translation,btn){
-  btn.innerText="⏳";
-
-  await client.from("user_star_words").insert({
-    user_id:userId,
-    word,
-    translation,
-    page:currentPage
-  });
-
-  btn.innerText="✅";
-  showToast("⭐ تم حفظ الكلمة");
-}
-
-function renderWords(arr){
-  if(!arr) return "";
-  return arr.map(i=>`
-    <div class="word-row">
-      <div>
-        <div>${i.word || i.text}</div>
-        <div>${i.translation}</div>
-      </div>
-      <div class="word-actions">
-        <button onclick="speakWord('${i.word || i.text}')">🔊</button>
-        <button onclick="saveWord('${i.word || i.text}','${i.translation}',this)">⭐</button>
-      </div>
-    </div>
-  `).join("");
-}
-
-function formatGrammar(text){
-  if(!text) return "";
-  let lines = text.split("\n");
-  return lines.map((l,i)=> l.trim()? `<div>${i+1}- ${l}</div>`:"").join("");
-}
-
-async function analyzePage(){
-
-  if(!pdfDoc){ showToast("افتح الكتاب أولاً"); return; }
-
-  document.getElementById("loader").style.display="block";
-
-  const page = await pdfDoc.getPage(currentPage);
-  const content = await page.getTextContent();
-  let text = content.items.map(i=>i.str).join(" ");
-
-  const res = await fetch(AI_WEBHOOK,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ text })
-  });
-
-  const data = await res.json();
-
-  document.getElementById("verbs").innerHTML = renderWords(data.verbs);
-  document.getElementById("nouns").innerHTML = renderWords(data.nouns);
-  document.getElementById("adverbs").innerHTML = renderWords(data.adverbs);
-  document.getElementById("prepositions").innerHTML = renderWords(data.prepositions);
-  document.getElementById("adjectives").innerHTML = renderWords(data.adjectives);
-  document.getElementById("phrases").innerHTML = renderWords(data.phrases);
-
-  document.getElementById("grammar").innerHTML = `
-    <div style="background:#0f172a;padding:12px;border-radius:12px;line-height:2">
-      ${formatGrammar(data.grammar)}
-    </div>
-  `;
-
-  document.getElementById("loader").style.display="none";
-  document.getElementById("analysisBox").style.display="block";
-}
-
-async function saveNote(){
+window.saveNote = async function(){
   let note=document.getElementById("noteInput");
   if(!note.value) return;
 
@@ -224,12 +289,21 @@ async function saveNote(){
   showToast("تم حفظ الملاحظة ✅");
 }
 
-function buy(){
-  window.open("https://wa.me/966509079576","_blank");
+window.readPage = async function(){
+  const page = await pdfDoc.getPage(currentPage);
+  const content = await page.getTextContent();
+  let text = content.items.map(i=>i.str).join(" ");
+  let speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "en-US";
+  speechSynthesis.speak(speech);
 }
 
-function closeAlert(){
-  document.getElementById("alert").style.display="none";
-}
+window.buy = ()=> window.open("https://wa.me/966509079576","_blank");
+window.closeAlert = ()=> document.getElementById("alert").style.display="none";
+window.goHome = ()=> location.href="index.html";
 
+});
 </script>
+
+</body>
+</html>

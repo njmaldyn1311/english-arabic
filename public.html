@@ -276,14 +276,18 @@ async function readPage(){
 
 function renderWords(arr){
   if(!arr) return "";
+
   return arr.map(i=>`
     <div class="word-row">
       <div>
         <div>${i.word || i.text}</div>
         <div>${i.translation}</div>
       </div>
+
       <div class="word-actions">
         <button onclick="speechSynthesis.speak(new SpeechSynthesisUtterance('${i.word || i.text}'))">🔊</button>
+
+        <button onclick="saveWord('${i.word || i.text}','${i.translation}',this)">⭐</button>
       </div>
     </div>
   `).join("");
@@ -341,7 +345,21 @@ async function saveNote(){
   note.value="";
   showToast("تم حفظ الملاحظة ✅");
 }
+async function saveWord(word,translation,btn){
 
+  btn.innerText="⏳";
+
+  await client.from("user_star_words").insert({
+    user_id:userId,
+    word,
+    translation,
+    page:currentPage
+  });
+
+  btn.innerText="✅";
+
+  showToast("⭐ تم حفظ الكلمة");
+}
 function buy(){
   window.open("https://wa.me/966509079576","_blank");
 }

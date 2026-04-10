@@ -347,31 +347,37 @@ async function saveNote(){
 }
 async function saveWord(word,translation,btn){
 
-  if(!userId){
-    showToast("❌ لازم تسجل دخول");
+  btn.innerText="⏳";
+
+  // 🔍 تحقق إذا الكلمة محفوظة
+  const { data:exist } = await client
+    .from("user_star_words")
+    .select("*")
+    .eq("user_id",userId)
+    .eq("word",word)
+    .single();
+
+  if(exist){
+    btn.innerText="⭐"; // ترجعها
+    showToast("⭐ الكلمة محفوظة مسبقاً");
     return;
   }
 
-  btn.innerText="⏳";
-
-  const { error } = await client
-    .from("user_star_words")
-    .insert([{
-      user_id: userId,
-      word: word || "",
-      translation: translation || "",
-      page: currentPage || 1
-    }]);
+  const { error } = await client.from("user_star_words").insert([{
+    user_id:userId,
+    word,
+    translation,
+    page:currentPage
+  }]);
 
   if(error){
-    console.log(error);
     btn.innerText="⭐";
     showToast("❌ خطأ في الحفظ");
     return;
   }
 
-  btn.innerText="⭐";
-  btn.style.color="gold";
+  // ✅ شكل النجمة بعد الحفظ
+  btn.innerText="🌟";
 
   showToast("⭐ تم حفظ الكلمة");
 }

@@ -7,8 +7,6 @@
 <title>كتابي</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
-<!-- ✅ أهم تعديل (حل المشكلة) -->
 <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
 
 <style>
@@ -16,92 +14,31 @@ body{margin:0;background:#0f172a;font-family:Arial;color:white;text-align:center
 .header{display:flex;justify-content:space-between;align-items:center;padding:10px 15px;}
 .home-btn{background:#38bdf8;padding:8px 15px;border-radius:10px;border:none;color:white;}
 .username{font-size:14px;}
-
 .card{background:#e5e7eb;color:black;margin:15px;padding:15px;border-radius:20px;}
-
 .btn{width:100%;padding:12px;border:none;border-radius:12px;margin-top:10px;color:white;font-size:16px;}
-
 .download{background:#3b82f6;}
 .green{background:#22c55e;}
 .orange{background:#f59e0b;}
-
 canvas{width:100%;border-radius:15px;margin-top:10px;}
-
 .bottom-buttons{display:flex;gap:5px;margin-top:10px;}
 .bottom-buttons button{flex:1;padding:10px;border:none;border-radius:10px;color:white;font-size:13px;background:#22c55e;}
-
 .note-box{width:100%;margin-top:10px;}
 textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-sizing:border-box;}
-
-.analysis-box{
-  background:#1e293b;
-  color:white;
-  margin-top:15px;
-  padding:15px;
-  border-radius:15px;
-  text-align:right;
-  display:none;
-}
-
-.analysis-box h3{
-  margin:10px 0 5px;
-  color:#38bdf8;
-}
-
-.loader{
-  display:none;
-  margin-top:10px;
-  padding:10px;
-  border-radius:10px;
-  background:#334155;
-}
-
-.spinner{
-  border:4px solid #ccc;
-  border-top:4px solid #38bdf8;
-  border-radius:50%;
-  width:25px;
-  height:25px;
-  animation:spin 1s linear infinite;
-  margin:auto;
-}
-
-@keyframes spin{
-  0%{transform:rotate(0)}
-  100%{transform:rotate(360deg)}
-}
-
+.analysis-box{background:#1e293b;color:white;margin-top:15px;padding:15px;border-radius:15px;text-align:right;display:none;}
+.analysis-box h3{margin:10px 0 5px;color:#38bdf8;}
+.loader{display:none;margin-top:10px;padding:10px;border-radius:10px;background:#334155;}
+.spinner{border:4px solid #ccc;border-top:4px solid #38bdf8;border-radius:50%;width:25px;height:25px;animation:spin 1s linear infinite;margin:auto;}
+@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
 .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;}
 .popup{background:#1e293b;padding:20px;border-radius:15px;width:85%;max-width:300px;text-align:right;}
 .buy{background:#f59e0b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
 .close{background:#64748b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
-
-.toast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#22c55e;
-  color:white;
-  padding:12px 20px;
-  border-radius:12px;
-  display:none;
-  z-index:9999;
-}
-
-.word-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#0f172a;
-  padding:10px;
-  border-radius:12px;
-  margin:6px 0;
-}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#22c55e;color:white;padding:12px 20px;border-radius:12px;display:none;z-index:9999;}
+.word-row{display:flex;justify-content:space-between;align-items:center;background:#0f172a;padding:10px;border-radius:12px;margin:6px 0;}
 .word-actions{display:flex;gap:5px;}
 </style>
-
 </head>
+
 <body>
 
 <div class="header">
@@ -112,11 +49,8 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
 <h2>📘 كتابي</h2>
 
 <div class="card">
-
   <h2 id="priceBox">💰 سعر الكتاب: 250 ريال</h2>
-
   <button id="openBtn" class="btn download" onclick="openBook()">📥 تحميل وفتح</button>
-
   <canvas id="pdf"></canvas>
 
   <div class="bottom-buttons">
@@ -131,7 +65,6 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
   </div>
 
   <button class="btn green" onclick="saveNote()">💾 حفظ</button>
-
   <button class="btn orange" onclick="analyzePage()">🧠 تحليل الصفحة</button>
 
   <div class="loader" id="loader">
@@ -140,44 +73,27 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
   </div>
 
   <div class="analysis-box" id="analysisBox">
-
-    <h3>🧠 الأفعال</h3>
-    <div id="verbs"></div>
-
-    <h3>📦 الأسماء</h3>
-    <div id="nouns"></div>
-
-    <h3>⚡ الظروف</h3>
-    <div id="adverbs"></div>
-
-    <h3>🔗 حروف الجر</h3>
-    <div id="prepositions"></div>
-
-    <h3>✨ الصفات</h3>
-    <div id="adjectives"></div>
-
-    <h3>🧩 عبارات</h3>
-    <div id="phrases"></div>
-
-    <h3>📘 القاعدة</h3>
-    <div id="grammar"></div>
-
+    <h3>🧠 الأفعال</h3><div id="verbs"></div>
+    <h3>📦 الأسماء</h3><div id="nouns"></div>
+    <h3>⚡ الظروف</h3><div id="adverbs"></div>
+    <h3>🔗 حروف الجر</h3><div id="prepositions"></div>
+    <h3>✨ الصفات</h3><div id="adjectives"></div>
+    <h3>🧩 عبارات</h3><div id="phrases"></div>
+    <h3>📘 القاعدة</h3><div id="grammar"></div>
   </div>
-
 </div>
 
-<div id="toast" class="toast">تم</div>
+<div id="toast" class="toast"></div>
 
 <div id="alert" class="overlay">
   <div class="popup">
-    <div id="alertText">🔒 الكتاب للمشتركين فقط</div>
+    <div>🔒 الكتاب للمشتركين فقط</div>
     <button class="buy" onclick="buy()">📱 شراء عبر واتساب</button>
     <button class="close" onclick="closeAlert()">إغلاق</button>
   </div>
 </div>
 
 <script>
-
 window.addEventListener("load", ()=>{
 
 const client = supabase.createClient(
@@ -186,13 +102,13 @@ const client = supabase.createClient(
 );
 
 let userId = localStorage.getItem("user_id");
-let isPaid = false;
+let isPaid=false;
 let isTeacher = localStorage.getItem("role")==="teacher";
 
-const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
+const PDF_URL="https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
-let pdfDoc = null;
-let currentPage = 1;
+let pdfDoc=null;
+let currentPage=1;
 
 function showToast(msg){
   let t=document.getElementById("toast");
@@ -201,24 +117,20 @@ function showToast(msg){
   setTimeout(()=>t.style.display="none",2000);
 }
 
-async function checkUser(){
+window.openBook = async function(){
   const { data } = await client.from("users").select("name,plan").eq("id", userId).single();
   if(data){
-    isPaid = data.plan === "paid";
-    document.getElementById("userName").innerText = "👤 " + data.name;
+    isPaid=data.plan==="paid";
+    document.getElementById("userName").innerText="👤 "+data.name;
   }
-}
-
-async function openBook(){
-  await checkUser();
 
   if(!isPaid){
     document.getElementById("alert").style.display="flex";
     return;
   }
 
-  const loadingTask = pdfjsLib.getDocument(PDF_URL);
-  pdfDoc = await loadingTask.promise;
+  const pdf=await pdfjsLib.getDocument(PDF_URL).promise;
+  pdfDoc=pdf;
   renderPage(currentPage);
 
   document.getElementById("priceBox").style.display="none";
@@ -228,54 +140,60 @@ async function openBook(){
 }
 
 function listenLive(){
-  client.channel('live_class_room')
-  .on('postgres_changes',{
-    event:'UPDATE',
-    schema:'public',
-    table:'live_class'
-  },payload=>{
+  client.channel("live")
+  .on("postgres_changes",{event:"UPDATE",schema:"public",table:"live_class"},payload=>{
     if(!isTeacher && pdfDoc){
-      currentPage = payload.new.current_page;
+      currentPage=payload.new.current_page;
       renderPage(currentPage);
     }
   }).subscribe();
 }
 
-async function broadcastPage(){
+async function broadcast(){
   if(isTeacher){
     await client.from("live_class").update({current_page:currentPage}).eq("id",1);
   }
 }
 
-async function renderPage(num){
-  const page = await pdfDoc.getPage(num);
-  const canvas = document.getElementById("pdf");
-  const ctx = canvas.getContext("2d");
-  const viewport = page.getViewport({ scale:1.5 });
-
-  canvas.height = viewport.height;
-  canvas.width = viewport.width;
-
-  await page.render({ canvasContext:ctx, viewport }).promise;
+async function renderPage(n){
+  const page=await pdfDoc.getPage(n);
+  const canvas=document.getElementById("pdf");
+  const ctx=canvas.getContext("2d");
+  const viewport=page.getViewport({scale:1.5});
+  canvas.height=viewport.height;
+  canvas.width=viewport.width;
+  await page.render({canvasContext:ctx,viewport}).promise;
 }
 
-window.nextPage = function(){
-  if(currentPage < pdfDoc.numPages){
+window.nextPage=function(){
+  if(currentPage<pdfDoc.numPages){
     currentPage++;
     renderPage(currentPage);
-    broadcastPage();
+    broadcast();
   }
 }
 
-window.prevPage = function(){
-  if(currentPage > 1){
+window.prevPage=function(){
+  if(currentPage>1){
     currentPage--;
     renderPage(currentPage);
-    broadcastPage();
+    broadcast();
   }
 }
 
-window.saveNote = async function(){
+window.savePage=function(){
+  localStorage.setItem("savedPage",currentPage);
+  showToast("⭐ تم حفظ الصفحة");
+}
+
+window.readPage=async function(){
+  const page=await pdfDoc.getPage(currentPage);
+  const content=await page.getTextContent();
+  let text=content.items.map(i=>i.str).join(" ");
+  speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+}
+
+window.saveNote=async function(){
   let note=document.getElementById("noteInput");
   if(!note.value) return;
 
@@ -286,21 +204,12 @@ window.saveNote = async function(){
   });
 
   note.value="";
-  showToast("تم حفظ الملاحظة ✅");
+  showToast("تم حفظ الملاحظة");
 }
 
-window.readPage = async function(){
-  const page = await pdfDoc.getPage(currentPage);
-  const content = await page.getTextContent();
-  let text = content.items.map(i=>i.str).join(" ");
-  let speech = new SpeechSynthesisUtterance(text);
-  speech.lang = "en-US";
-  speechSynthesis.speak(speech);
-}
-
-window.buy = ()=> window.open("https://wa.me/966509079576","_blank");
-window.closeAlert = ()=> document.getElementById("alert").style.display="none";
-window.goHome = ()=> location.href="index.html";
+window.buy=()=>window.open("https://wa.me/966509079576","_blank");
+window.closeAlert=()=>document.getElementById("alert").style.display="none";
+window.goHome=()=>location.href="index.html";
 
 });
 </script>

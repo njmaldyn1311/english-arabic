@@ -1,225 +1,234 @@
-<!DOCTYPE html><html lang="ar" dir="rtl">
+<!DOCTYPE html>
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إنجلش بالعربي</title><style>
-body {
-  margin: 0;
-  font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+
+<title>الرئيسية</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
 }
 
-/* الحاوية */
-.container {
-  width: 90%;
-  max-width: 400px;
-  background: #111827;
-  border-radius: 30px;
-  overflow: hidden;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+/* 👤 زر صغير */
+#miniAccount{
+  position:fixed;
+  bottom:15px;
+  right:15px;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(10px);
+  border-radius:50px;
+  padding:8px 12px;
+  font-size:12px;
+  color:white;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  z-index:9999;
+  cursor:pointer;
 }
 
-/* الهيدر */
-.header {
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  height: 140px;
-  position: relative;
+/* ⚙️ قائمة */
+#miniMenu{
+  position:fixed;
+  bottom:55px;
+  right:15px;
+  background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(12px);
+  border-radius:12px;
+  padding:10px;
+  display:none;
+  z-index:9999;
+  min-width:120px;
+  text-align:center;
 }
+</style>
+</head>
 
-/* صورة */
-.profile-img {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  border: 5px solid #1e293b;
-  position: absolute;
-  bottom: -55px;
-  left: 50%;
-  transform: translateX(-50%);
-}
+<body>
 
-/* المحتوى */
-.content {
-  padding: 70px 20px 20px;
-}
-
-h1 {
-  margin: 10px 0;
-  color: white;
-}
-
-.subtitle {
-  color: #cbd5e1;
-}
-
-/* الطلاب */
-.students {
-  color: #22c55e;
-  font-weight: bold;
-  margin: 10px 0;
-}
-
-/* الكروت */
-.card {
-  background: #1e293b;
-  border-radius: 20px;
-  padding: 15px;
-  margin: 10px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: white;
-}
-
-/* الأزرار */
-button {
-  background: #22c55e;
-  border: none;
-  color: white;
-  padding: 10px 15px;
-  border-radius: 20px;
-  cursor: pointer;
-}
-
-/* تسجيل خروج */
-.logout {
-  background: #ef4444;
-  margin-top: 10px;
-}
-
-/* واتساب */
-.whatsapp {
-  display: block;
-  margin-top: 15px;
-  background: #25D366;
-  color: white;
-  padding: 12px;
-  border-radius: 15px;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-/* زر عائم */
-.whatsapp-float {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: #25D366;
-  color: white;
-  font-size: 20px;
-  padding: 15px;
-  border-radius: 50%;
-  text-decoration: none;
-}
-</style></head><body><div class="container">  <div class="header">
-    <img src="me.jpeg" class="profile-img">
-  </div>  <div class="content"><h1>إنجلش بالعربي</h1>
-<div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
-
-<div class="students" id="students">
-  👨‍🎓 أكثر من 120 طالب
+<!-- 👤 زر حساب -->
+<div id="miniAccount">
+  👤 <span id="miniName">...</span>
 </div>
 
-<div class="card">
-  <span>📚 الفصل الذكي</span>
-  <button onclick="goClass()">ابدأ</button>
+<!-- ⚙️ القائمة -->
+<div id="miniMenu">
+  <button onclick="logout()" style="
+    width:100%;
+    background:#ef4444;
+    border:none;
+    padding:6px;
+    border-radius:8px;
+    color:white;
+    font-size:12px;
+    cursor:pointer;
+  ">
+    تسجيل خروج
+  </button>
 </div>
 
-<div class="card">
-  <span>📺 تحليل فيديو</span>
-  <button onclick="goYoutube()">ابدأ</button>
-</div>
+<script>
 
-<div class="card">
-  <span>📄 تحليل PDF</span>
-  <button onclick="goPDF()">ابدأ</button>
-</div>
-
-<div class="card">
-  <span>🔍 البحث</span>
-  <button onclick="goSearch()">ابدأ</button>
-</div>
-
-<div class="card">
-  <span>📝 اختبار</span>
-  <button onclick="goTest()">ابدأ</button>
-</div>
-
-<div class="card">
-  <span>📊 مراجعة</span>
-  <button onclick="goReview()">فتح</button>
-</div>
-
-<div class="card">
-  <span>👤 حسابي</span>
-  <button onclick="goProfile()">فتح</button>
-</div>
-
-<!-- واتساب -->
-<a id="whatsappLink" target="_blank" class="whatsapp">
-  💬 تواصل معي على واتساب
-</a>
-
-<button class="logout" onclick="logout()">تسجيل خروج</button>
-
-  </div>
-</div><!-- زر واتساب عائم --><a id="whatsappFloat" target="_blank" class="whatsapp-float">
-  💬
-</a><script>
-
-// تحقق تسجيل الدخول
-const userId = localStorage.getItem("user_id");
-if(!userId){
-  window.location.href = "login.html";
+// 🔥 user_id موحد
+let user_id = localStorage.getItem("user_id");
+if(!user_id){
+  user_id = "user_" + Math.random().toString(36).substr(2,9);
+  localStorage.setItem("user_id", user_id);
 }
 
-// اسم الطالب
-let userName = localStorage.getItem("user_name") || "طالب";
-
-// رسالة واتساب
-let message = `السلام عليكم، أنا ${userName} وأحتاج مساعدة 🙏`;
-let encoded = encodeURIComponent(message);
-let whatsappURL = `https://wa.me/message/735SJORMFI74H1?text=${encoded}`;
-
-// ربط الأزرار
-document.getElementById("whatsappLink").href = whatsappURL;
-document.getElementById("whatsappFloat").href = whatsappURL;
-
-// عداد الطلاب
-let count = localStorage.getItem("studentsCount");
-if (!count) count = 120;
-
-function updateStudents() {
-  count = parseInt(count) + Math.floor(Math.random() * 2);
-  document.getElementById("students").innerText =
-    "👨‍🎓 أكثر من " + count + " طالب";
-  localStorage.setItem("studentsCount", count);
+// 🔐 session_id (منع تعدد الأجهزة)
+if(!localStorage.getItem("session_id")){
+  localStorage.setItem("session_id", Date.now());
 }
 
-updateStudents();
-setInterval(updateStudents, 8000);
+// 🔥 Supabase
+const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-// التنقل
-function goClass(){ window.location.href = "myclass.html"; }
-function goYoutube(){ window.location.href = "youtube.html"; }
-function goPDF(){ window.location.href = "pdf.html"; }
-function goSearch(){ window.location.href = "search.html"; }
-function goProfile(){ window.location.href = "student.html"; }
-function goTest(){ window.location.href = "test.html"; }
-function goReview(){ window.location.href = "review.html"; }
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// تسجيل خروج
-function logout(){
-  const studentsCount = localStorage.getItem("studentsCount");
+// 🔥 تحقق من الوصول
+async function checkAccess(){
+
+  const localSession = localStorage.getItem("session_id");
+
+  const { data } = await client
+    .from("users")
+    .select("*")
+    .eq("id", user_id)
+    .single();
+
+  // 🔥 مستخدم جديد → تسجيل
+  if(!data){
+    alert("👋 حساب جديد\nيرجى التسجيل");
+    location.href="signup.html";
+    return;
+  }
+
+  if(data.status === "banned"){
+    logout("🚫 تم حظرك");
+    return;
+  }
+
+  // 🔐 جهاز ثاني
+  if(data.session_id !== localSession){
+    logout("🚫 تم تسجيل الدخول من جهاز آخر");
+    return;
+  }
+
+  // ⏳ تجربة 3 أيام
+  if(data.plan === "free"){
+    let created = new Date(data.created_at);
+    let now = new Date();
+    let days = Math.floor((now - created)/(1000*60*60*24));
+
+    if(days >= 3){
+      logout("⏳ انتهت الفترة التجريبية");
+    }
+  }
+}
+
+// 🔁 كل 5 ثواني
+setInterval(checkAccess, 5000);
+
+// 🔥 طرد من كل التبويبات
+window.addEventListener("storage",(e)=>{
+  if(e.key === "force_logout"){
+    localStorage.clear();
+    location="login.html";
+  }
+});
+
+// 🔥 تشغيل أول ما يدخل
+window.onload = ()=>{
+  checkAccess();
+
+  // عرض الاسم
+  let name=localStorage.getItem("user")||"طالب";
+  document.getElementById("miniName").innerText=name;
+}
+
+// 🔥 تتبع
+async function track(action){
+  fetch(SUPABASE_URL+"/rest/v1/user_activity",{
+    method:"POST",
+    headers:{
+      "apikey":SUPABASE_KEY,
+      "Authorization":"Bearer "+SUPABASE_KEY,
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      user_id:user_id,
+      page:"home",
+      action:action
+    })
+  });
+}
+
+track("دخول الرئيسية");
+
+// واتساب
+let name=localStorage.getItem("user_name")||"طالب";
+let msg=encodeURIComponent("السلام عليكم أنا "+name);
+let link=`https://wa.me/message/735SJORMFI74H1?text=${msg}`;
+
+if(typeof whatsappLink !== "undefined") whatsappLink.href=link;
+if(typeof whatsappFloat !== "undefined") whatsappFloat.href=link;
+
+// تنقل + تتبع
+function goClass(){track("الفصل");location="myclass.html";}
+function goYoutube(){track("فيديو");location="youtube.html";}
+function goPDF(){track("PDF");location="pdf.html";}
+function goSearch(){track("بحث");location="search.html";}
+function goProfile(){track("حساب");location="student.html";}
+function goTest(){track("اختبار");location="test.html";}
+function goReview(){track("مراجعة");location="review.html";}
+function goHeadway(){track("كتاب");location="headwaybook.html";}
+function goUpdate1(){track("ميزة");location="update1.html";}
+function goUpdate2(){track("تحديثات");location="update2.html";}
+
+// خروج
+function logout(msg){
+
+  if(typeof track === "function"){
+    track("خروج");
+  }
+
+  localStorage.setItem("force_logout", Date.now());
+
   localStorage.clear();
-  localStorage.setItem("studentsCount", studentsCount);
-  window.location.href = "login.html";
+
+  if(msg){
+    alert(msg);
+  }
+
+  setTimeout(()=>{
+    location="login.html";
+  },800);
 }
 
-</script></body>
+/* 👇 فتح القائمة */
+document.getElementById("miniAccount").onclick = ()=>{
+  let menu = document.getElementById("miniMenu");
+  menu.style.display = (menu.style.display === "block") ? "none" : "block";
+};
+
+/* 👇 إغلاق عند الضغط خارج */
+document.addEventListener("click",(e)=>{
+  let box = document.getElementById("miniAccount");
+  let menu = document.getElementById("miniMenu");
+
+  if(!box.contains(e.target) && !menu.contains(e.target)){
+    menu.style.display="none";
+  }
+});
+
+</script>
+
+</body>
 </html>

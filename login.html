@@ -234,6 +234,10 @@ async function login(){
     localStorage.setItem("user",data.name);
     localStorage.setItem("phone",data.phone);
 
+    // ✅ إنشاء session (تم نقلها هنا)
+    const sessionId = Date.now() + "_" + Math.random();
+    localStorage.setItem("session_id", sessionId);
+
     showToast("✅ تم تسجيل الدخول");
 
     setTimeout(()=>{
@@ -245,17 +249,7 @@ async function login(){
     setLoading(false);
   }
 }
-// 🔐 إنشاء session
-const sessionId = Date.now() + "_" + Math.random();
 
-// حفظ في قاعدة البيانات
-await client
-  .from("users")
-  .update({ session_id: sessionId })
-  .eq("id", user.id);
-
-// حفظ في الجهاز
-localStorage.setItem("session_id", sessionId);
 function goSignup(){
   location.href="signup.html";
 }

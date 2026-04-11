@@ -1,158 +1,161 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>الرئيسية</title>
+<title>إنجلش بالعربي</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
+body {
+  margin: 0;
+  font-family: "Cairo", sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
-/* 👤 زر صغير */
-#miniAccount{
-  position:fixed;
-  bottom:15px;
-  right:15px;
-  background:rgba(0,0,0,0.6);
-  backdrop-filter:blur(10px);
-  border-radius:50px;
-  padding:8px 12px;
-  font-size:12px;
-  color:white;
-  display:flex;
-  align-items:center;
-  gap:6px;
-  z-index:9999;
-  cursor:pointer;
+.container {
+  width: 90%;
+  max-width: 400px;
+  background: #111827;
+  border-radius: 30px;
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* ⚙️ قائمة */
-#miniMenu{
-  position:fixed;
-  bottom:55px;
-  right:15px;
-  background:rgba(0,0,0,0.85);
-  backdrop-filter:blur(12px);
-  border-radius:12px;
-  padding:10px;
-  display:none;
-  z-index:9999;
-  min-width:120px;
-  text-align:center;
+.header {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  height: 140px;
+  position: relative;
 }
 
-/* 🔥 Toast */
-#miniToast{
-  position:fixed;
-  top:15px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#22c55e;
-  color:white;
-  padding:8px 14px;
-  border-radius:20px;
-  font-size:13px;
-  display:none;
-  z-index:9999;
+.profile-img {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 5px solid #1e293b;
+  position: absolute;
+  bottom: -55px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-/* ✅ الأزرار الجديدة */
-.menu{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
-  padding:80px 20px 20px;
+.content {
+  padding: 70px 20px 20px;
 }
 
-.menu button{
-  padding:14px;
-  border:none;
-  border-radius:14px;
-  background:#1e3a8a;
-  color:white;
-  font-size:14px;
-  cursor:pointer;
+h1 { margin: 10px 0; color: white; }
+.subtitle { color: #cbd5e1; }
+
+.students {
+  color: #22c55e;
+  font-weight: bold;
+  margin: 10px 0;
 }
+
+.card {
+  background: #1e293b;
+  border-radius: 20px;
+  padding: 15px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+button {
+  background: #22c55e;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.logout { background: #ef4444; margin-top: 10px; }
+
+.whatsapp {
+  display: block;
+  margin-top: 15px;
+  background: #25D366;
+  color: white;
+  padding: 12px;
+  border-radius: 15px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.whatsapp-float {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: #25D366;
+  color: white;
+  font-size: 20px;
+  padding: 15px;
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 50%;
+  transform: translateX(50%);
+  background: #1e293b;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 15px;
+  display: none;
+}
+
+.success { border-left: 5px solid #22c55e; }
+.error { border-left: 5px solid #ef4444; }
+.info { border-left: 5px solid #3b82f6; }
 </style>
 </head>
 
 <body>
 
-<!-- 👤 -->
-<div id="miniAccount">
-  👤 <span id="miniName">...</span>
+<div id="notification" class="notification"></div>
+
+<div class="container">
+
+  <div class="header">
+    <img src="me.jpeg" class="profile-img">
+  </div>
+
+  <div class="content">
+
+    <h1>إنجلش بالعربي</h1>
+    <div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
+
+    <div class="students" id="students">👨‍🎓 أكثر من 120 طالب</div>
+
+    <div class="card"><span>📚 الفصل الذكي</span><button onclick="goClass()">ابدأ</button></div>
+    <div class="card"><span>📺 تحليل فيديو</span><button onclick="goYoutube()">ابدأ</button></div>
+    <div class="card"><span>📄 تحليل PDF</span><button onclick="goPDF()">ابدأ</button></div>
+    <div class="card"><span>🔍 البحث</span><button onclick="goSearch()">ابدأ</button></div>
+    <div class="card"><span>📝 اختبار</span><button onclick="goTest()">ابدأ</button></div>
+    <div class="card"><span>📊 مراجعة</span><button onclick="goReview()">ابدأ</button></div>
+    <div class="card"><span>📘 كتابي</span><button onclick="goHeadway()">ابدأ</button></div>
+    <div class="card"><span>✨ الأفعال </span><button onclick="goUpdate1()">عرض</button></div>
+    <div class="card"><span>🆕 الأسماء</span><button onclick="goUpdate2()">عرض</button></div>
+    <div class="card"><span>👤 حسابي</span><button onclick="goProfile()">فتح</button></div>
+
+    <a id="whatsappLink" target="_blank" class="whatsapp">💬 تواصل معي</a>
+    <button class="logout" onclick="logout()">تسجيل خروج</button>
+
+  </div>
 </div>
 
-<!-- ⚙️ -->
-<div id="miniMenu">
-  <button onclick="logout()" style="
-    width:100%;
-    background:#ef4444;
-    border:none;
-    padding:6px;
-    border-radius:8px;
-    color:white;
-    font-size:12px;
-    cursor:pointer;
-  ">
-    تسجيل خروج
-  </button>
-</div>
-
-<!-- 🔥 Toast -->
-<div id="miniToast"></div>
-
-<!-- ⏳ الاشتراك -->
-<div id="planBox" style="
-  position:fixed;
-  top:15px;
-  right:15px;
-  background:rgba(0,0,0,0.6);
-  backdrop-filter:blur(10px);
-  border-radius:12px;
-  padding:8px 12px;
-  font-size:12px;
-  color:white;
-  z-index:9999;
-">
-  ⏳ جاري الحساب...
-</div>
-
-<!-- 📈 التقدم -->
-<div id="progressBox" style="
-  position:fixed;
-  bottom:15px;
-  left:15px;
-  background:rgba(0,0,0,0.6);
-  backdrop-filter:blur(10px);
-  border-radius:12px;
-  padding:8px 12px;
-  font-size:12px;
-  color:white;
-  z-index:9999;
-">
-  📈 0%
-</div>
-
-<!-- ✅ الأزرار (إضافة فقط) -->
-<div class="menu">
-  <button onclick="goClass()">📖 الفصل</button>
-  <button onclick="goYoutube()">🎥 فيديو</button>
-  <button onclick="goPDF()">📄 PDF</button>
-  <button onclick="goSearch()">🔍 بحث</button>
-  <button onclick="goProfile()">👤 حسابي</button>
-  <button onclick="goTest()">📝 اختبار</button>
-  <button onclick="goReview()">🔁 مراجعة</button>
-  <button onclick="goHeadway()">📘 كتابي</button>
-  <button onclick="goUpdate1()">✨ ميزة</button>
-  <button onclick="goUpdate2()">🆕 تحديثات</button>
-</div>
+<a id="whatsappFloat" target="_blank" class="whatsapp-float">💬</a>
 
 <script>
 
@@ -174,109 +177,58 @@ const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🔥 تحقق
-async function checkAccess(){
+// 🔥 تحقق (بدون await)
+function checkAccess(){
 
   const localSession = localStorage.getItem("session_id");
 
-  const { data } = await client
+  client
     .from("users")
     .select("*")
     .eq("id", user_id)
-    .single();
+    .single()
+    .then(({ data }) => {
 
-  if(!data){
-    showMiniToast("👋 حساب جديد");
-    location.href="signup.html";
-    return;
-  }
+      if(!data){
+        location="signup.html";
+        return;
+      }
 
-  updatePlan(data);
+      if(data.status === "banned"){
+        logout("🚫 تم حظرك");
+        return;
+      }
 
-  if(data.status === "banned"){
-    logout("🚫 تم حظرك");
-    return;
-  }
+      if(data.session_id !== localSession){
+        logout("🚫 تم تسجيل الدخول من جهاز آخر");
+        return;
+      }
 
-  if(data.session_id !== localSession){
-    logout("🚫 تم تسجيل الدخول من جهاز آخر");
-    return;
-  }
+      if(data.plan === "free"){
+        let created = new Date(data.created_at);
+        let now = new Date();
+        let days = Math.floor((now - created)/(1000*60*60*24));
 
-  if(data.plan === "free"){
-    let created = new Date(data.created_at);
-    let now = new Date();
-    let days = Math.floor((now - created)/(1000*60*60*24));
+        if(days >= 3){
+          logout("⏳ انتهت الفترة التجريبية");
+        }
+      }
 
-    if(days >= 3){
-      logout("⏳ انتهت الفترة التجريبية");
-    }
-  }
+    })
+    .catch(err=>{
+      console.log(err);
+    });
 }
 
 // 🔁
 setInterval(checkAccess, 5000);
 
-// 🔥 تشغيل
 window.onload = ()=>{
   checkAccess();
-
-  let name=localStorage.getItem("user")||"طالب";
-  document.getElementById("miniName").innerText=name;
-
-  startProgress();
-}
-
-// 🔥 Toast
-function showMiniToast(msg){
-  let t = document.getElementById("miniToast");
-  t.innerText = msg;
-  t.style.display = "block";
-
-  setTimeout(()=>{ t.style.display = "none"; },1500);
-}
-
-// 🔥 الاشتراك
-function updatePlan(data){
-  if(data.plan === "free"){
-    let created = new Date(data.created_at);
-    let now = new Date();
-    let days = Math.floor((now - created)/(1000*60*60*24));
-    let left = 3 - days;
-    if(left < 0) left = 0;
-
-    document.getElementById("planBox").innerText =
-      "⏳ باقي " + left + " يوم 🔥";
-  }else{
-    document.getElementById("planBox").innerText =
-      "✅ اشتراك مفعل";
-  }
-}
-
-// 🔥 تقدم
-function startProgress(){
-  let progress = localStorage.getItem("progress");
-
-  if(!progress){
-    progress = 1;
-  }else{
-    progress = parseFloat(progress);
-  }
-
-  setInterval(()=>{
-    progress += 0.02;
-    if(progress > 100) progress = 100;
-
-    localStorage.setItem("progress", progress);
-
-    document.getElementById("progressBox").innerText =
-      "📈 " + progress.toFixed(1) + "%";
-
-  }, 5000);
 }
 
 // 🔥 تتبع
-async function track(action){
+function track(action){
   fetch(SUPABASE_URL+"/rest/v1/user_activity",{
     method:"POST",
     headers:{
@@ -294,19 +246,27 @@ async function track(action){
 
 track("دخول الرئيسية");
 
-// 🔥 التنقل (إضافة فقط)
-function goClass(){location="myclass.html";}
-function goYoutube(){location="youtube.html";}
-function goPDF(){location="pdf.html";}
-function goSearch(){location="search.html";}
-function goProfile(){location="student.html";}
-function goTest(){location="test.html";}
-function goReview(){location="review.html";}
-function goHeadway(){location="headwaybook.html";}
-function goUpdate1(){location="update1.html";}
-function goUpdate2(){location="update2.html";}
+// واتساب
+let name=localStorage.getItem("user_name")||"طالب";
+let msg=encodeURIComponent("السلام عليكم أنا "+name);
+let link=`https://wa.me/message/735SJORMFI74H1?text=${msg}`;
 
-// خروج
+whatsappLink.href=link;
+whatsappFloat.href=link;
+
+// تنقل
+function goClass(){track("الفصل");location="myclass.html";}
+function goYoutube(){track("فيديو");location="youtube.html";}
+function goPDF(){track("PDF");location="pdf.html";}
+function goSearch(){track("بحث");location="search.html";}
+function goProfile(){track("حساب");location="student.html";}
+function goTest(){track("اختبار");location="test.html";}
+function goReview(){track("مراجعة");location="review.html";}
+function goHeadway(){track("كتاب");location="headwaybook.html";}
+function goUpdate1(){track("ميزة");location="update1.html";}
+function goUpdate2(){track("تحديثات");location="update2.html";}
+
+// خروج (بدون alert)
 function logout(msg){
 
   if(typeof track === "function"){
@@ -318,28 +278,13 @@ function logout(msg){
   localStorage.clear();
 
   if(msg){
-    alert(msg);
+    console.log(msg);
   }
 
   setTimeout(()=>{
     location="login.html";
   },800);
 }
-
-/* 👇 القائمة */
-document.getElementById("miniAccount").onclick = ()=>{
-  let menu = document.getElementById("miniMenu");
-  menu.style.display = (menu.style.display === "block") ? "none" : "block";
-};
-
-document.addEventListener("click",(e)=>{
-  let box = document.getElementById("miniAccount");
-  let menu = document.getElementById("miniMenu");
-
-  if(!box.contains(e.target) && !menu.contains(e.target)){
-    menu.style.display="none";
-  }
-});
 
 </script>
 

@@ -114,10 +114,6 @@ button {
   border-radius: 15px;
   display: none;
 }
-
-.success { border-left: 5px solid #22c55e; }
-.error { border-left: 5px solid #ef4444; }
-.info { border-left: 5px solid #3b82f6; }
 </style>
 </head>
 
@@ -126,7 +122,6 @@ button {
 <div id="notification" class="notification"></div>
 
 <div class="container">
-
   <div class="header">
     <img src="me.jpeg" class="profile-img">
   </div>
@@ -136,7 +131,7 @@ button {
     <h1>إنجلش بالعربي</h1>
     <div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
 
-    <div class="students" id="students">👨‍🎓 أكثر من 120 طالب</div>
+    <div class="students">👨‍🎓 أكثر من 120 طالب</div>
 
     <div class="card"><span>📚 الفصل الذكي</span><button onclick="goClass()">ابدأ</button></div>
     <div class="card"><span>📺 تحليل فيديو</span><button onclick="goYoutube()">ابدأ</button></div>
@@ -177,7 +172,7 @@ const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🔥 تحقق (بدون await)
+// 🔥 تحقق (معدل فقط)
 function checkAccess(){
 
   const localSession = localStorage.getItem("session_id");
@@ -190,6 +185,9 @@ function checkAccess(){
     .then(({ data }) => {
 
       if(!data){
+
+        // ✅ إضافة فقط (جديد → signup → login)
+        localStorage.setItem("is_new_user","1");
         location="signup.html";
         return;
       }
@@ -266,7 +264,7 @@ function goHeadway(){track("كتاب");location="headwaybook.html";}
 function goUpdate1(){track("ميزة");location="update1.html";}
 function goUpdate2(){track("تحديثات");location="update2.html";}
 
-// خروج (بدون alert)
+// خروج
 function logout(msg){
 
   if(typeof track === "function"){

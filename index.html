@@ -1,4 +1,76 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>الرئيسية</title>
+
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+}
+
+/* 👤 زر صغير */
+#miniAccount{
+  position:fixed;
+  bottom:15px;
+  right:15px;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(10px);
+  border-radius:50px;
+  padding:8px 12px;
+  font-size:12px;
+  color:white;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  z-index:9999;
+  cursor:pointer;
+}
+
+/* ⚙️ قائمة */
+#miniMenu{
+  position:fixed;
+  bottom:55px;
+  right:15px;
+  background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(12px);
+  border-radius:12px;
+  padding:10px;
+  display:none;
+  z-index:9999;
+  min-width:120px;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<!-- 👤 زر حساب -->
+<div id="miniAccount">
+  👤 <span id="miniName">...</span>
+</div>
+
+<!-- ⚙️ القائمة -->
+<div id="miniMenu">
+  <button onclick="logout()" style="
+    width:100%;
+    background:#ef4444;
+    border:none;
+    padding:6px;
+    border-radius:8px;
+    color:white;
+    font-size:12px;
+    cursor:pointer;
+  ">
+    تسجيل خروج
+  </button>
+</div>
 
 <script>
 
@@ -28,11 +100,13 @@ async function checkAccess(){
   const { data } = await client
     .from("users")
     .select("*")
-    .eq("id", user_id) // ✅ تم التصحيح
+    .eq("id", user_id)
     .single();
 
+  // 🔥 مستخدم جديد → تسجيل
   if(!data){
-    logout("❌ الحساب غير موجود");
+    alert("👋 حساب جديد\nيرجى التسجيل");
+    location.href="signup.html";
     return;
   }
 
@@ -73,6 +147,10 @@ window.addEventListener("storage",(e)=>{
 // 🔥 تشغيل أول ما يدخل
 window.onload = ()=>{
   checkAccess();
+
+  // عرض الاسم
+  let name=localStorage.getItem("user")||"طالب";
+  document.getElementById("miniName").innerText=name;
 }
 
 // 🔥 تتبع
@@ -99,8 +177,8 @@ let name=localStorage.getItem("user_name")||"طالب";
 let msg=encodeURIComponent("السلام عليكم أنا "+name);
 let link=`https://wa.me/message/735SJORMFI74H1?text=${msg}`;
 
-whatsappLink.href=link;
-whatsappFloat.href=link;
+if(typeof whatsappLink !== "undefined") whatsappLink.href=link;
+if(typeof whatsappFloat !== "undefined") whatsappFloat.href=link;
 
 // تنقل + تتبع
 function goClass(){track("الفصل");location="myclass.html";}
@@ -134,4 +212,23 @@ function logout(msg){
   },800);
 }
 
+/* 👇 فتح القائمة */
+document.getElementById("miniAccount").onclick = ()=>{
+  let menu = document.getElementById("miniMenu");
+  menu.style.display = (menu.style.display === "block") ? "none" : "block";
+};
+
+/* 👇 إغلاق عند الضغط خارج */
+document.addEventListener("click",(e)=>{
+  let box = document.getElementById("miniAccount");
+  let menu = document.getElementById("miniMenu");
+
+  if(!box.contains(e.target) && !menu.contains(e.target)){
+    menu.style.display="none";
+  }
+});
+
 </script>
+
+</body>
+</html>

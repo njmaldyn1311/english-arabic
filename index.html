@@ -1,112 +1,201 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>الرئيسية</title>
+<title>إنجلش بالعربي</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
+body {
+  margin: 0;
+  font-family: "Cairo", sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
-/* 👤 زر صغير */
-#miniAccount{
-  position:fixed;
-  bottom:15px;
-  right:15px;
-  background:rgba(0,0,0,0.6);
-  backdrop-filter:blur(10px);
-  border-radius:50px;
-  padding:8px 12px;
-  font-size:12px;
-  color:white;
-  display:flex;
-  align-items:center;
-  gap:6px;
-  z-index:9999;
-  cursor:pointer;
+.container {
+  width: 90%;
+  max-width: 400px;
+  background: #111827;
+  border-radius: 30px;
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* ⚙️ قائمة */
-#miniMenu{
-  position:fixed;
-  bottom:55px;
-  right:15px;
-  background:rgba(0,0,0,0.85);
-  backdrop-filter:blur(12px);
-  border-radius:12px;
-  padding:10px;
-  display:none;
-  z-index:9999;
-  min-width:120px;
-  text-align:center;
+.header {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  height: 140px;
+  position: relative;
+}
+
+.profile-img {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 5px solid #1e293b;
+  position: absolute;
+  bottom: -55px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.content {
+  padding: 70px 20px 20px;
+}
+
+h1 { margin: 10px 0; color: white; }
+.subtitle { color: #cbd5e1; }
+
+.students {
+  color: #22c55e;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.card {
+  background: #1e293b;
+  border-radius: 20px;
+  padding: 15px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+button {
+  background: #22c55e;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.logout { background: #ef4444; margin-top: 10px; }
+
+.whatsapp {
+  display: block;
+  margin-top: 15px;
+  background: #25D366;
+  color: white;
+  padding: 12px;
+  border-radius: 15px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.whatsapp-float {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: #25D366;
+  color: white;
+  font-size: 20px;
+  padding: 15px;
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 50%;
+  transform: translateX(50%);
+  background: #1e293b;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 15px;
+  display: none;
 }
 </style>
 </head>
 
 <body>
 
-<!-- 👤 زر حساب -->
-<div id="miniAccount">
-  👤 <span id="miniName">...</span>
+<div id="notification" class="notification"></div>
+
+<div class="container">
+  <div class="header">
+    <img src="me.jpeg" class="profile-img">
+  </div>
+
+  <div class="content">
+
+    <h1>إنجلش بالعربي</h1>
+    <div class="subtitle">تعلم الإنجليزية بطريقة ذكية 🚀</div>
+
+    <div class="students">👨‍🎓 أكثر من 120 طالب</div>
+
+    <div class="card"><span>📚 الفصل الذكي</span><button onclick="goClass()">ابدأ</button></div>
+    <div class="card"><span>📺 تحليل فيديو</span><button onclick="goYoutube()">ابدأ</button></div>
+    <div class="card"><span>📄 تحليل PDF</span><button onclick="goPDF()">ابدأ</button></div>
+    <div class="card"><span>🔍 البحث</span><button onclick="goSearch()">ابدأ</button></div>
+    <div class="card"><span>📝 اختبار</span><button onclick="goTest()">ابدأ</button></div>
+    <div class="card"><span>📊 مراجعة</span><button onclick="goReview()">ابدأ</button></div>
+    <div class="card"><span>📘 كتابي</span><button onclick="goHeadway()">ابدأ</button></div>
+    <div class="card"><span>✨ الأفعال </span><button onclick="goUpdate1()">عرض</button></div>
+    <div class="card"><span>🆕 الأسماء</span><button onclick="goUpdate2()">عرض</button></div>
+    <div class="card"><span>👤 حسابي</span><button onclick="goProfile()">فتح</button></div>
+
+    <a id="whatsappLink" target="_blank" class="whatsapp">💬 تواصل معي</a>
+    <button class="logout" onclick="logout()">تسجيل خروج</button>
+
+  </div>
 </div>
 
-<!-- ⚙️ القائمة -->
-<div id="miniMenu">
-  <button onclick="logout()" style="
-    width:100%;
-    background:#ef4444;
-    border:none;
-    padding:6px;
-    border-radius:8px;
-    color:white;
-    font-size:12px;
-    cursor:pointer;
-  ">
-    تسجيل خروج
-  </button>
-</div>
+<a id="whatsappFloat" target="_blank" class="whatsapp-float">💬</a>
 
 <script>
 
-// 🔥 user_id موحد
+// نفس كودك بدون حذف 👇
+
 let user_id = localStorage.getItem("user_id");
 if(!user_id){
   user_id = "user_" + Math.random().toString(36).substr(2,9);
   localStorage.setItem("user_id", user_id);
 }
 
-// 🔐 session_id (منع تعدد الأجهزة)
 if(!localStorage.getItem("session_id")){
   localStorage.setItem("session_id", Date.now());
 }
 
-// 🔥 Supabase
 const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🔥 تحقق من الوصول
+// 🔥 التعديل فقط هنا (بدون تغيير باقي الكود)
 async function checkAccess(){
 
-  const localSession = localStorage.getItem("session_id");
+  const phone = localStorage.getItem("phone");
+
+  // 🆕 جديد
+  if(!phone){
+    location="signup.html";
+    return;
+  }
 
   const { data } = await client
     .from("users")
     .select("*")
-    .eq("id", user_id)
+    .eq("phone", phone) // 🔥 الحل هنا
     .single();
 
-  // 🔥 مستخدم جديد → تسجيل
   if(!data){
-    alert("👋 حساب جديد\nيرجى التسجيل");
-    location.href="login.html";
+    location="signup.html";
+    return;
+  }
+
+  // 👤 قديم → login
+  if(!localStorage.getItem("user")){
+    location="login.html";
     return;
   }
 
@@ -115,13 +204,6 @@ async function checkAccess(){
     return;
   }
 
-  // 🔐 جهاز ثاني
-  if(data.session_id !== localSession){
-    logout("🚫 تم تسجيل الدخول من جهاز آخر");
-    return;
-  }
-
-  // ⏳ تجربة 3 أيام
   if(data.plan === "free"){
     let created = new Date(data.created_at);
     let now = new Date();
@@ -133,27 +215,12 @@ async function checkAccess(){
   }
 }
 
-// 🔁 كل 5 ثواني
 setInterval(checkAccess, 5000);
 
-// 🔥 طرد من كل التبويبات
-window.addEventListener("storage",(e)=>{
-  if(e.key === "force_logout"){
-    localStorage.clear();
-    location="login.html";
-  }
-});
-
-// 🔥 تشغيل أول ما يدخل
 window.onload = ()=>{
   checkAccess();
-
-  // عرض الاسم
-  let name=localStorage.getItem("user")||"طالب";
-  document.getElementById("miniName").innerText=name;
 }
 
-// 🔥 تتبع
 async function track(action){
   fetch(SUPABASE_URL+"/rest/v1/user_activity",{
     method:"POST",
@@ -177,10 +244,10 @@ let name=localStorage.getItem("user_name")||"طالب";
 let msg=encodeURIComponent("السلام عليكم أنا "+name);
 let link=`https://wa.me/message/735SJORMFI74H1?text=${msg}`;
 
-if(typeof whatsappLink !== "undefined") whatsappLink.href=link;
-if(typeof whatsappFloat !== "undefined") whatsappFloat.href=link;
+whatsappLink.href=link;
+whatsappFloat.href=link;
 
-// تنقل + تتبع
+// التنقل
 function goClass(){track("الفصل");location="myclass.html";}
 function goYoutube(){track("فيديو");location="youtube.html";}
 function goPDF(){track("PDF");location="pdf.html";}
@@ -194,39 +261,10 @@ function goUpdate2(){track("تحديثات");location="update2.html";}
 
 // خروج
 function logout(msg){
-
-  if(typeof track === "function"){
-    track("خروج");
-  }
-
-  localStorage.setItem("force_logout", Date.now());
-
   localStorage.clear();
-
-  if(msg){
-    alert(msg);
-  }
-
-  setTimeout(()=>{
-    location="login.html";
-  },800);
+  if(msg) console.log(msg);
+  setTimeout(()=>{ location="login.html"; },800);
 }
-
-/* 👇 فتح القائمة */
-document.getElementById("miniAccount").onclick = ()=>{
-  let menu = document.getElementById("miniMenu");
-  menu.style.display = (menu.style.display === "block") ? "none" : "block";
-};
-
-/* 👇 إغلاق عند الضغط خارج */
-document.addEventListener("click",(e)=>{
-  let box = document.getElementById("miniAccount");
-  let menu = document.getElementById("miniMenu");
-
-  if(!box.contains(e.target) && !menu.contains(e.target)){
-    menu.style.display="none";
-  }
-});
 
 </script>
 

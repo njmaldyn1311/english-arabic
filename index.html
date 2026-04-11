@@ -61,6 +61,24 @@ body{
   display:none;
   z-index:9999;
 }
+
+/* ✅ الأزرار الجديدة */
+.menu{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  padding:80px 20px 20px;
+}
+
+.menu button{
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:#1e3a8a;
+  color:white;
+  font-size:14px;
+  cursor:pointer;
+}
 </style>
 </head>
 
@@ -120,6 +138,20 @@ body{
   z-index:9999;
 ">
   📈 0%
+</div>
+
+<!-- ✅ الأزرار (إضافة فقط) -->
+<div class="menu">
+  <button onclick="goClass()">📖 الفصل</button>
+  <button onclick="goYoutube()">🎥 فيديو</button>
+  <button onclick="goPDF()">📄 PDF</button>
+  <button onclick="goSearch()">🔍 بحث</button>
+  <button onclick="goProfile()">👤 حسابي</button>
+  <button onclick="goTest()">📝 اختبار</button>
+  <button onclick="goReview()">🔁 مراجعة</button>
+  <button onclick="goHeadway()">📘 كتابي</button>
+  <button onclick="goUpdate1()">✨ ميزة</button>
+  <button onclick="goUpdate2()">🆕 تحديثات</button>
 </div>
 
 <script>
@@ -206,7 +238,6 @@ function showMiniToast(msg){
 
 // 🔥 الاشتراك
 function updatePlan(data){
-
   if(data.plan === "free"){
     let created = new Date(data.created_at);
     let now = new Date();
@@ -224,7 +255,6 @@ function updatePlan(data){
 
 // 🔥 تقدم
 function startProgress(){
-
   let progress = localStorage.getItem("progress");
 
   if(!progress){
@@ -234,9 +264,7 @@ function startProgress(){
   }
 
   setInterval(()=>{
-
     progress += 0.02;
-
     if(progress > 100) progress = 100;
 
     localStorage.setItem("progress", progress);
@@ -265,6 +293,18 @@ async function track(action){
 }
 
 track("دخول الرئيسية");
+
+// 🔥 التنقل (إضافة فقط)
+function goClass(){location="myclass.html";}
+function goYoutube(){location="youtube.html";}
+function goPDF(){location="pdf.html";}
+function goSearch(){location="search.html";}
+function goProfile(){location="student.html";}
+function goTest(){location="test.html";}
+function goReview(){location="review.html";}
+function goHeadway(){location="headwaybook.html";}
+function goUpdate1(){location="update1.html";}
+function goUpdate2(){location="update2.html";}
 
 // خروج
 function logout(msg){

@@ -47,7 +47,7 @@ body{
   text-align:center;
 }
 
-/* 🔥 Toast صغير احترافي */
+/* 🔥 Toast */
 #miniToast{
   position:fixed;
   top:15px;
@@ -66,12 +66,12 @@ body{
 
 <body>
 
-<!-- 👤 زر حساب -->
+<!-- 👤 -->
 <div id="miniAccount">
   👤 <span id="miniName">...</span>
 </div>
 
-<!-- ⚙️ القائمة -->
+<!-- ⚙️ -->
 <div id="miniMenu">
   <button onclick="logout()" style="
     width:100%;
@@ -90,6 +90,38 @@ body{
 <!-- 🔥 Toast -->
 <div id="miniToast"></div>
 
+<!-- ⏳ الاشتراك -->
+<div id="planBox" style="
+  position:fixed;
+  top:15px;
+  right:15px;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(10px);
+  border-radius:12px;
+  padding:8px 12px;
+  font-size:12px;
+  color:white;
+  z-index:9999;
+">
+  ⏳ جاري الحساب...
+</div>
+
+<!-- 📈 التقدم -->
+<div id="progressBox" style="
+  position:fixed;
+  bottom:15px;
+  left:15px;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(10px);
+  border-radius:12px;
+  padding:8px 12px;
+  font-size:12px;
+  color:white;
+  z-index:9999;
+">
+  📈 0%
+</div>
+
 <script>
 
 // 🔥 user_id موحد
@@ -99,7 +131,7 @@ if(!user_id){
   localStorage.setItem("user_id", user_id);
 }
 
-// 🔐 session_id (منع تعدد الأجهزة)
+// 🔐 session_id
 if(!localStorage.getItem("session_id")){
   localStorage.setItem("session_id", Date.now());
 }
@@ -110,7 +142,7 @@ const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🔥 تحقق من الوصول
+// 🔥 تحقق
 async function checkAccess(){
 
   const localSession = localStorage.getItem("session_id");
@@ -127,18 +159,18 @@ async function checkAccess(){
     return;
   }
 
+  updatePlan(data);
+
   if(data.status === "banned"){
     logout("🚫 تم حظرك");
     return;
   }
 
-  // 🔐 جهاز ثاني
   if(data.session_id !== localSession){
     logout("🚫 تم تسجيل الدخول من جهاز آخر");
     return;
   }
 
-  // ⏳ تجربة 3 أيام
   if(data.plan === "free"){
     let created = new Date(data.created_at);
     let now = new Date();
@@ -150,34 +182,69 @@ async function checkAccess(){
   }
 }
 
-// 🔁 كل 5 ثواني
+// 🔁
 setInterval(checkAccess, 5000);
 
-// 🔥 طرد من كل التبويبات
-window.addEventListener("storage",(e)=>{
-  if(e.key === "force_logout"){
-    localStorage.clear();
-    location="login.html";
-  }
-});
-
-// 🔥 تشغيل أول ما يدخل
+// 🔥 تشغيل
 window.onload = ()=>{
   checkAccess();
 
   let name=localStorage.getItem("user")||"طالب";
   document.getElementById("miniName").innerText=name;
+
+  startProgress();
 }
 
-// 🔥 Toast احترافي
+// 🔥 Toast
 function showMiniToast(msg){
   let t = document.getElementById("miniToast");
   t.innerText = msg;
   t.style.display = "block";
 
-  setTimeout(()=>{
-    t.style.display = "none";
-  },1500);
+  setTimeout(()=>{ t.style.display = "none"; },1500);
+}
+
+// 🔥 الاشتراك
+function updatePlan(data){
+
+  if(data.plan === "free"){
+    let created = new Date(data.created_at);
+    let now = new Date();
+    let days = Math.floor((now - created)/(1000*60*60*24));
+    let left = 3 - days;
+    if(left < 0) left = 0;
+
+    document.getElementById("planBox").innerText =
+      "⏳ باقي " + left + " يوم 🔥";
+  }else{
+    document.getElementById("planBox").innerText =
+      "✅ اشتراك مفعل";
+  }
+}
+
+// 🔥 تقدم
+function startProgress(){
+
+  let progress = localStorage.getItem("progress");
+
+  if(!progress){
+    progress = 1;
+  }else{
+    progress = parseFloat(progress);
+  }
+
+  setInterval(()=>{
+
+    progress += 0.02;
+
+    if(progress > 100) progress = 100;
+
+    localStorage.setItem("progress", progress);
+
+    document.getElementById("progressBox").innerText =
+      "📈 " + progress.toFixed(1) + "%";
+
+  }, 5000);
 }
 
 // 🔥 تتبع
@@ -199,26 +266,6 @@ async function track(action){
 
 track("دخول الرئيسية");
 
-// واتساب
-let name=localStorage.getItem("user_name")||"طالب";
-let msg=encodeURIComponent("السلام عليكم أنا "+name);
-let link=`https://wa.me/message/735SJORMFI74H1?text=${msg}`;
-
-if(typeof whatsappLink !== "undefined") whatsappLink.href=link;
-if(typeof whatsappFloat !== "undefined") whatsappFloat.href=link;
-
-// تنقل + تتبع
-function goClass(){track("الفصل");location="myclass.html";}
-function goYoutube(){track("فيديو");location="youtube.html";}
-function goPDF(){track("PDF");location="pdf.html";}
-function goSearch(){track("بحث");location="search.html";}
-function goProfile(){track("حساب");location="student.html";}
-function goTest(){track("اختبار");location="test.html";}
-function goReview(){track("مراجعة");location="review.html";}
-function goHeadway(){track("كتاب");location="headwaybook.html";}
-function goUpdate1(){track("ميزة");location="update1.html";}
-function goUpdate2(){track("تحديثات");location="update2.html";}
-
 // خروج
 function logout(msg){
 
@@ -239,13 +286,12 @@ function logout(msg){
   },800);
 }
 
-/* 👇 فتح القائمة */
+/* 👇 القائمة */
 document.getElementById("miniAccount").onclick = ()=>{
   let menu = document.getElementById("miniMenu");
   menu.style.display = (menu.style.display === "block") ? "none" : "block";
 };
 
-/* 👇 إغلاق عند الضغط خارج */
 document.addEventListener("click",(e)=>{
   let box = document.getElementById("miniAccount");
   let menu = document.getElementById("miniMenu");

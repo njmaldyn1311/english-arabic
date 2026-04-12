@@ -157,11 +157,14 @@ button {
 // نفس كودك بدون حذف 👇
 
 let user_id = localStorage.getItem("user_id");
-if(!user_id){
-  user_id = "user_" + Math.random().toString(36).substr(2,9);
-  localStorage.setItem("user_id", user_id);
-}
+let user_id = localStorage.getItem("user_id");
 
+if(!user_id){
+  location="login.html";
+}
+if(!localStorage.getItem("phone")){
+  location = "login.html";
+}
 if(!localStorage.getItem("session_id")){
   localStorage.setItem("session_id", Date.now());
 }

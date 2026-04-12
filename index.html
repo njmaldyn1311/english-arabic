@@ -102,24 +102,10 @@ button {
   border-radius: 50%;
   text-decoration: none;
 }
-
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 50%;
-  transform: translateX(50%);
-  background: #1e293b;
-  color: white;
-  padding: 15px 20px;
-  border-radius: 15px;
-  display: none;
-}
 </style>
 </head>
 
 <body>
-
-<div id="notification" class="notification"></div>
 
 <div class="container">
   <div class="header">
@@ -154,17 +140,17 @@ button {
 
 <script>
 
-// نفس كودك بدون حذف 👇
-
-
+// 🔐 تحقق المستخدم
 let user_id = localStorage.getItem("user_id");
 
 if(!user_id){
   location="login.html";
 }
+
 if(!localStorage.getItem("phone")){
-  location = "login.html";
+  location="login.html";
 }
+
 if(!localStorage.getItem("session_id")){
   localStorage.setItem("session_id", Date.now());
 }
@@ -174,21 +160,80 @@ const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🔥 التعديل فقط هنا (بدون تغيير باقي الكود)
+// 🔔 Toast احترافي
+function showToast(msg,type="info",withBtn=false){
+
+  let t = document.createElement("div");
+
+  t.style.position="fixed";
+  t.style.top="20px";
+  t.style.left="50%";
+  t.style.transform="translateX(-50%) scale(0.9)";
+  t.style.background =
+    type==="error" ? "#ef4444" :
+    type==="warn" ? "#f59e0b" :
+    "#22c55e";
+  t.style.color="white";
+  t.style.padding="14px 18px";
+  t.style.borderRadius="14px";
+  t.style.zIndex="9999";
+  t.style.fontSize="14px";
+  t.style.textAlign="center";
+  t.style.minWidth="220px";
+  t.style.boxShadow="0 10px 30px rgba(0,0,0,0.3)";
+  t.style.transition="0.3s";
+
+  let button = "";
+
+  if(withBtn){
+    button = `
+      <div style="margin-top:10px;">
+        <button onclick="goWhatsApp()" style="
+          background:#25D366;
+          border:none;
+          padding:8px 12px;
+          border-radius:8px;
+          color:white;
+          font-size:13px;
+          cursor:pointer;
+        ">
+          💬 اشترك الآن
+        </button>
+      </div>
+    `;
+  }
+
+  t.innerHTML = msg.replace(/\n/g,"<br>") + button;
+
+  document.body.appendChild(t);
+
+  setTimeout(()=>{
+    t.style.transform="translateX(-50%) scale(1)";
+  },100);
+
+  setTimeout(()=>{
+    t.style.opacity="0";
+    setTimeout(()=>t.remove(),300);
+  },4000);
+}
+
+// واتساب
+function goWhatsApp(){
+  let phone = localStorage.getItem("phone") || "";
+  let msg = `السلام عليكم، أريد الاشتراك 🙏\nرقمي: ${phone}`;
+  let url = "https://wa.me/message/735SJORMFI74H1?text=" + encodeURIComponent(msg);
+  window.open(url,"_blank");
+}
+
+// 🔥 التحقق من الاشتراك
 async function checkAccess(){
 
   const phone = localStorage.getItem("phone");
 
-  // 🆕 جديد
-  if(!phone){
-    location="signup.html";
-    return;
-  }
-
   const { data } = await client
     .from("users")
     .select("*")
-    .eq("phone", phone) // 🔥 الحل هنا
+    .eq("phone", phone)
     .single();
 
   if(!data){
@@ -196,14 +241,9 @@ async function checkAccess(){
     return;
   }
 
-  // 👤 قديم → login
-  if(!localStorage.getItem("user")){
-    location="login.html";
-    return;
-  }
-
   if(data.status === "banned"){
-    logout("🚫 تم حظرك");
+    showToast("🚫 تم حظرك\nتواصل معنا", "error", true);
+    setTimeout(()=> logout(), 2500);
     return;
   }
 
@@ -212,18 +252,30 @@ async function checkAccess(){
     let now = new Date();
     let days = Math.floor((now - created)/(1000*60*60*24));
 
-    if(days >= 3){
-      logout("⏳ انتهت الفترة التجريبية");
+    let left = 3 - days;
+
+    if(left <= 0){
+      showToast("⏳ انتهت الفترة التجريبية\nاشترك الآن", "error", true);
+      setTimeout(()=> logout(), 2500);
+      return;
+    }
+
+    if(left === 1 && !localStorage.getItem("warn1")){
+      showToast("⚠️ باقي يوم واحد فقط\nلا تفوّت الاشتراك", "warn", true);
+      localStorage.setItem("warn1","yes");
+    }
+
+    if(left === 2 && !localStorage.getItem("warn2")){
+      showToast("✨ باقي يومين من التجربة", "info");
+      localStorage.setItem("warn2","yes");
     }
   }
 }
 
 setInterval(checkAccess, 5000);
+window.onload = ()=>{ checkAccess(); }
 
-window.onload = ()=>{
-  checkAccess();
-}
-
+// تتبع
 async function track(action){
   fetch(SUPABASE_URL+"/rest/v1/user_activity",{
     method:"POST",
@@ -243,7 +295,7 @@ async function track(action){
 track("دخول الرئيسية");
 
 // واتساب
-let name=localStorage.getItem("user_name")||"طالب";
+let name=localStorage.getItem("user")||"طالب";
 let msg=encodeURIComponent("السلام عليكم أنا "+name);
 let link=`https://wa.me/message/735SJORMFI74H1?text=${msg}`;
 
@@ -263,9 +315,8 @@ function goUpdate1(){track("ميزة");location="update1.html";}
 function goUpdate2(){track("تحديثات");location="update2.html";}
 
 // خروج
-function logout(msg){
+function logout(){
   localStorage.clear();
-  if(msg) console.log(msg);
   setTimeout(()=>{ location="login.html"; },800);
 }
 

@@ -242,28 +242,39 @@ function goHome(){ location.href="index.html"; }
 
 async function analyzePage(){
 
-  const loader = document.getElementById("loader");
-  const box = document.getElementById("analysisBox");
+  if(!pdfDoc){ showToast("افتح الكتاب أولاً"); return; }
 
-  loader.style.display = "block";
-  box.style.display = "none";
+  document.getElementById("loader").style.display="block";
 
-  setTimeout(() => {
+  const page = await pdfDoc.getPage(currentPage);
+  const content = await page.getTextContent();
+  let text = content.items.map(i=>i.str).join(" ");
 
-    document.getElementById("verbs").innerText = "go, eat, study";
-    document.getElementById("nouns").innerText = "book, student, teacher";
-    document.getElementById("adverbs").innerText = "quickly, slowly";
-    document.getElementById("prepositions").innerText = "in, on, at";
-    document.getElementById("adjectives").innerText = "big, small";
-    document.getElementById("phrases").innerText = "How are you?";
-    document.getElementById("grammar").innerText = "Present Simple";
+  const res = await fetch(AI_WEBHOOK,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ text })
+  });
 
-    loader.style.display = "none";
-    box.style.display = "block";
+  const data = await res.json();
 
-  }, 1500);
+  document.getElementById("verbs").innerHTML = renderWords(data.verbs);
+  document.getElementById("nouns").innerHTML = renderWords(data.nouns);
+  document.getElementById("adverbs").innerHTML = renderWords(data.adverbs);
+  document.getElementById("prepositions").innerHTML = renderWords(data.prepositions);
+  document.getElementById("adjectives").innerHTML = renderWords(data.adjectives);
+  document.getElementById("phrases").innerHTML = renderWords(data.phrases);
 
+  document.getElementById("grammar").innerHTML = `
+    <div style="background:#0f172a;padding:12px;border-radius:12px;line-height:2">
+      ${formatGrammar(data.grammar)}
+    </div>
+  `;
+
+  document.getElementById("loader").style.display="none";
+  document.getElementById("analysisBox").style.display="block";
 }
+
 </script>
 
 </body>

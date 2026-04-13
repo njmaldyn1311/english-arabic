@@ -223,11 +223,11 @@ async function saveNote(){
 async function loadNote(){
 
   const { data } = await client
-  .from("user_notes")
-  .select("*")
-  .eq("user_id", userId)
-  .eq("page", currentPage)
-  .single();
+.from("user_notes")
+.select("*")
+.eq("user_id", userId)
+.eq("page", currentPage)
+.maybeSingle(); // ✅ هذا الحل
 
   if(data){
     document.getElementById("noteInput").value = data.note;

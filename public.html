@@ -240,6 +240,30 @@ async function loadNote(){
 function savePage(){ localStorage.setItem("savedPage", currentPage); showToast("⭐ تم حفظ الصفحة"); }
 function goHome(){ location.href="index.html"; }
 
+async function analyzePage(){
+
+  const loader = document.getElementById("loader");
+  const box = document.getElementById("analysisBox");
+
+  loader.style.display = "block";
+  box.style.display = "none";
+
+  setTimeout(() => {
+
+    document.getElementById("verbs").innerText = "go, eat, study";
+    document.getElementById("nouns").innerText = "book, student, teacher";
+    document.getElementById("adverbs").innerText = "quickly, slowly";
+    document.getElementById("prepositions").innerText = "in, on, at";
+    document.getElementById("adjectives").innerText = "big, small";
+    document.getElementById("phrases").innerText = "How are you?";
+    document.getElementById("grammar").innerText = "Present Simple";
+
+    loader.style.display = "none";
+    box.style.display = "block";
+
+  }, 1500);
+
+}
 </script>
 
 </body>

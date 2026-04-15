@@ -26,6 +26,18 @@ setTimeout(()=>{
     localStorage.setItem("session_id", Date.now());
   }
 
+  let session_id = localStorage.getItem("session_id");
+
+  // 🔥🔥🔥 هذا هو التعديل المهم (حفظ الجلسة في Supabase)
+  async function saveSession(){
+    await client.from("users").upsert({
+      id: user_id,
+      session_id: session_id
+    });
+  }
+
+  saveSession();
+
   // 🚫 طرد كل التبويبات
   window.addEventListener("storage",(e)=>{
     if(e.key === "force_logout"){

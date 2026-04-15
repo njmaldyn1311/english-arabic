@@ -30,8 +30,8 @@ setTimeout(()=>{
 
   // 🔥🔥🔥 هذا هو التعديل المهم (حفظ الجلسة في Supabase)
   async function saveSession(){
-    await client.from("ser_session").upsert({
-      id: user_id,
+    await client.from("user_session").upsert({
+      user_id: user_id,
       session_id: session_id
     });
   }
@@ -68,9 +68,9 @@ setTimeout(()=>{
     const localSession = localStorage.getItem("session_id");
 
     const { data } = await client
-      .from("users")
+      .from("user_session")
       .select("*")
-      .eq("id", user_id)
+      .eq("user_id", user_id)
       .single();
 
     if(!data){

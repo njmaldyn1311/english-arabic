@@ -14,21 +14,21 @@ setTimeout(()=>{
 
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // 🔥 user_id
+  // 👤 user_id
   let user_id = localStorage.getItem("user_id");
   if(!user_id){
     user_id = "user_" + Math.random().toString(36).substr(2,9);
     localStorage.setItem("user_id", user_id);
   }
 
-  // 🔐 session
+  // 🔐 session_id
   if(!localStorage.getItem("session_id")){
-    localStorage.setItem("session_id", Date.now());
+    localStorage.setItem("session_id", "session_" + Math.random().toString(36).substr(2,9));
   }
 
   let session_id = localStorage.getItem("session_id");
 
-  // 🔥🔥🔥 هذا هو التعديل المهم (حفظ الجلسة في Supabase)
+  // 🔥 حفظ الجلسة في Supabase
   async function saveSession(){
     await client.from("user_session").upsert({
       user_id: user_id,
@@ -38,7 +38,7 @@ setTimeout(()=>{
 
   saveSession();
 
-  // 🚫 طرد كل التبويبات
+  // 🚫 طرد كل التبويبات داخل نفس الجهاز
   window.addEventListener("storage",(e)=>{
     if(e.key === "force_logout"){
       localStorage.clear();
@@ -62,47 +62,38 @@ setTimeout(()=>{
     },800);
   }
 
-  // 🔍 التحقق
-  async function checkAccess(){
+  // 🔍 التحقق من الجلسة (إذا جهاز ثاني دخل)
+  async function checkSession(){
 
     const localSession = localStorage.getItem("session_id");
 
-    const { data } = await client
+    const { data, error } = await client
       .from("user_session")
       .select("*")
       .eq("user_id", user_id)
-      .single();
+      .maybeSingle();
 
-    if(!data){
-      logout("❌ الحساب غير موجود");
+    if(error){
+      console.log("Session error:", error);
       return;
     }
 
-    if(data.status === "banned"){
-      logout("🚫 تم حظرك");
+    if(!data){
+      // أول مرة → خزّن
+      saveSession();
       return;
     }
 
     if(data.session_id !== localSession){
       logout("🚫 تم تسجيل الدخول من جهاز آخر");
-      return;
     }
 
-    if(data.plan === "free"){
-      let created = new Date(data.created_at);
-      let now = new Date();
-      let days = Math.floor((now - created)/(1000*60*60*24));
-
-      if(days >= 3){
-        logout("⏳ انتهت الفترة التجريبية");
-      }
-    }
   }
 
-  // 🔁 كل 5 ثواني
-  setInterval(checkAccess, 5000);
+  // 🔁 كل 3 ثواني
+  setInterval(checkSession, 3000);
 
-  // 🚀 أول دخول
-  checkAccess();
+  // 🚀 أول تشغيل
+  checkSession();
 
 },1000);

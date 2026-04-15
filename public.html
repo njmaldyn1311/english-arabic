@@ -6,10 +6,11 @@
 
 <title>كتابي</title>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
+/* ✅ نفس تصميمك بدون تغيير */
 body{margin:0;background:#0f172a;font-family:Arial;color:white;text-align:center;}
 .header{display:flex;justify-content:space-between;align-items:center;padding:10px 15px;}
 .home-btn{background:#38bdf8;padding:8px 15px;border-radius:10px;border:none;color:white;}
@@ -38,7 +39,6 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
 </style>
 
 </head>
-
 <body>
 
 <div class="header">
@@ -91,20 +91,18 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
 
 <script>
 
-// ✅ Supabase
+// 🔥 إعدادات
+const AI_WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/headway";
+
 const client = supabase.createClient(
 "https://ofyugbhplaynjeafdrgx.supabase.co",
 "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
 );
 
-// 👤 user_id
-let userId = localStorage.getItem("user_id");
-if(!userId){
-  userId = "user_" + Math.random().toString(36).substr(2,9);
-  localStorage.setItem("user_id", userId);
-}
+let userId = localStorage.getItem("user_id") || "user_" + Math.random();
+localStorage.setItem("user_id", userId);
 
-let role = "teacher"; // 👈 غيرها إلى teacher للمعلم
+let role = "student"; // 👈 غيّرها teacher في جهاز المعلم
 
 let pdfDoc = null;
 let currentPage = 1;
@@ -120,37 +118,14 @@ function showToast(msg){
 }
 
 // 📥 فتح الكتاب
-window.openBook = async function(){
-
-  const btn = document.getElementById("openBtn");
-
-  btn.innerText="⏳ جاري التحميل...";
-  btn.disabled=true;
-
-  try{
-    const loadingTask = pdfjsLib.getDocument(PDF_URL);
-    pdfDoc = await loadingTask.promise;
-
-    renderPage(currentPage);
-
-    document.getElementById("priceBox").style.display="none";
-
-    btn.innerText="📖 تم فتح الكتاب";
-    btn.disabled=false;
-
-    showToast("تم فتح الكتاب ✅");
-
-  }catch(e){
-    btn.innerText="📥 تحميل وفتح";
-    btn.disabled=false;
-    showToast("❌ فشل التحميل");
-  }
-};
+async function openBook(){
+  const loadingTask = pdfjsLib.getDocument(PDF_URL);
+  pdfDoc = await loadingTask.promise;
+  renderPage(currentPage);
+}
 
 // 📄 عرض الصفحة
 async function renderPage(num){
-  if(!pdfDoc) return;
-
   const page = await pdfDoc.getPage(num);
   const canvas = document.getElementById("pdf");
   const ctx = canvas.getContext("2d");
@@ -161,12 +136,42 @@ async function renderPage(num){
 
   await page.render({ canvasContext:ctx, viewport }).promise;
 
-  loadNote(); // 🔥
+  loadNote();
 }
 
-// ➡ التالي
+// 🔄 مزامنة
+client.channel('room')
+.on('postgres_changes',{
+  event:'UPDATE',
+  schema:'public',
+  table:'room_state'
+},payload=>{
+  if(role==="student"){
+    currentPage = payload.new.page;
+    renderPage(currentPage);
+  }
+}).subscribe();
+
+// 🔁 fallback
+setInterval(async ()=>{
+  if(role!=="student") return;
+
+  const { data } = await client
+    .from("room_state")
+    .select("page")
+    .eq("id",1)
+    .single();
+
+  if(data && data.page !== currentPage){
+    currentPage = data.page;
+    renderPage(currentPage);
+  }
+
+},2000);
+
+// ➡
 async function nextPage(){
-  if(pdfDoc && currentPage < pdfDoc.numPages){
+  if(currentPage < pdfDoc.numPages){
     currentPage++;
     renderPage(currentPage);
 
@@ -176,9 +181,9 @@ async function nextPage(){
   }
 }
 
-// ⬅ السابق
+// ⬅
 async function prevPage(){
-  if(pdfDoc && currentPage > 1){
+  if(currentPage > 1){
     currentPage--;
     renderPage(currentPage);
 
@@ -188,91 +193,28 @@ async function prevPage(){
   }
 }
 
-// 🔄 مزامنة الطلاب
-client
-.channel('room')
-.on('postgres_changes',{
-  event:'UPDATE',
-  schema:'public',
-  table:'room_state'
-},payload=>{
-
-  if(role==="student"){
-    currentPage = payload.new.page;
-    renderPage(currentPage);
-  }
-
-})
-.subscribe();
-
-// 💾 حفظ ملاحظة
+// 💾 ملاحظات
 async function saveNote(){
-
-  const note = document.getElementById("noteInput").value;
+  let note=document.getElementById("noteInput").value;
 
   await client.from("user_notes").upsert({
-    user_id: userId,
-    page: currentPage,
-    note: note
+    user_id:userId,
+    page:currentPage,
+    note
   });
 
-  showToast("تم حفظ ملاحظتك ✍️");
+  showToast("تم الحفظ");
 }
 
-// 📥 تحميل ملاحظة
 async function loadNote(){
-
   const { data } = await client
-.from("user_notes")
-.select("*")
-.eq("user_id", userId)
-.eq("page", currentPage)
-.maybeSingle(); // ✅ هذا الحل
+    .from("user_notes")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("page", currentPage)
+    .maybeSingle();
 
-  if(data){
-    document.getElementById("noteInput").value = data.note;
-  }else{
-    document.getElementById("noteInput").value = "";
-  }
-}
-
-// باقي دوالك كما هي
-function savePage(){ localStorage.setItem("savedPage", currentPage); showToast("⭐ تم حفظ الصفحة"); }
-function goHome(){ location.href="index.html"; }
-
-async function analyzePage(){
-
-  if(!pdfDoc){ showToast("افتح الكتاب أولاً"); return; }
-
-  document.getElementById("loader").style.display="block";
-
-  const page = await pdfDoc.getPage(currentPage);
-  const content = await page.getTextContent();
-  let text = content.items.map(i=>i.str).join(" ");
-
-  const res = await fetch(AI_WEBHOOK,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ text })
-  });
-
-  const data = await res.json();
-
-  document.getElementById("verbs").innerHTML = renderWords(data.verbs);
-  document.getElementById("nouns").innerHTML = renderWords(data.nouns);
-  document.getElementById("adverbs").innerHTML = renderWords(data.adverbs);
-  document.getElementById("prepositions").innerHTML = renderWords(data.prepositions);
-  document.getElementById("adjectives").innerHTML = renderWords(data.adjectives);
-  document.getElementById("phrases").innerHTML = renderWords(data.phrases);
-
-  document.getElementById("grammar").innerHTML = `
-    <div style="background:#0f172a;padding:12px;border-radius:12px;line-height:2">
-      ${formatGrammar(data.grammar)}
-    </div>
-  `;
-
-  document.getElementById("loader").style.display="none";
-  document.getElementById("analysisBox").style.display="block";
+  document.getElementById("noteInput").value = data?.note || "";
 }
 
 </script>

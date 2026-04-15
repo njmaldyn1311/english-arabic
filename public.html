@@ -78,7 +78,7 @@ const client = supabase.createClient(
 "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
 );
 
-let role = "student"; // 🔥 غيرها teacher للمعلم
+let role = "teacher"; // 🔥 غيرها teacher للمعلم
 
 let pdfDoc = null;
 let currentPage = 1;
@@ -224,7 +224,7 @@ async function saveNote(){
   const note = document.getElementById("noteInput").value;
 
   await client.from("user_notes").upsert({
-    user_id: "user1",
+    user_id: "userId",
     page: currentPage,
     note
   });

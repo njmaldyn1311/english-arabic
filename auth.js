@@ -29,24 +29,21 @@ setTimeout(()=>{
   let session_id = localStorage.getItem("session_id");
 
   // 🔥 حفظ الجلسة في Supabase
-  // 🔥 حفظ الجلسة في Supabase
-async function saveSession(){
-  await client
-  .from("user_session")
-  .upsert(
-    {
-      user_id: user_id,
-      session_id: session_id
-    },
-    {
-      onConflict: "user_id"
-    }
-  );
-} // ✅ هذا القوس كان ناقص
+  async function saveSession(){
+    await client
+    .from("user_session")
+    .upsert(
+      {
+        user_id: user_id,
+        session_id: session_id
+      },
+      {
+        onConflict: "user_id"
+      }
+    );
+  }
 
-// 🚀 استدعاء الدالة
-saveSession();
-
+  // 🚀 تنفيذ الحفظ
   saveSession();
 
   // 🚫 طرد كل التبويبات داخل نفس الجهاز
@@ -57,9 +54,16 @@ saveSession();
     }
   });
 
-  // 🚪 تسجيل خروج عام
-  window.logout = function(msg){
+  // 🚪 تسجيل خروج عام (🔥 تم التعديل المهم)
+  window.logout = async function(msg){
 
+    // 🔥 حذف الجلسة من Supabase
+    await client
+      .from("user_session")
+      .delete()
+      .eq("user_id", user_id);
+
+    // 🔄 طرد باقي التبويبات
     localStorage.setItem("force_logout", Date.now());
 
     localStorage.clear();
@@ -101,7 +105,7 @@ saveSession();
 
   }
 
-  // 🔁 كل 3 ثواني
+  // 🔁 كل 3 ثواني (backup)
   setInterval(checkSession, 3000);
 
   // 🚀 أول تشغيل

@@ -29,18 +29,23 @@ setTimeout(()=>{
   let session_id = localStorage.getItem("session_id");
 
   // 🔥 حفظ الجلسة في Supabase
-  async function saveSession(){
-    await client
-.from("user_session")
-.upsert(
-  {
-    user_id: user_id,
-    session_id: session_id
-  },
-  {
-    onConflict: "user_id"
-  }
-);
+  // 🔥 حفظ الجلسة في Supabase
+async function saveSession(){
+  await client
+  .from("user_session")
+  .upsert(
+    {
+      user_id: user_id,
+      session_id: session_id
+    },
+    {
+      onConflict: "user_id"
+    }
+  );
+} // ✅ هذا القوس كان ناقص
+
+// 🚀 استدعاء الدالة
+saveSession();
 
   saveSession();
 

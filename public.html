@@ -13,22 +13,15 @@
 body{margin:0;background:#0f172a;font-family:Arial;color:white;text-align:center;}
 .header{display:flex;justify-content:space-between;align-items:center;padding:10px 15px;}
 .home-btn{background:#38bdf8;padding:8px 15px;border-radius:10px;border:none;color:white;}
-.username{font-size:14px;}
 .card{background:#e5e7eb;color:black;margin:15px;padding:15px;border-radius:20px;}
 .btn{width:100%;padding:12px;border:none;border-radius:12px;margin-top:10px;color:white;font-size:16px;}
 .download{background:#3b82f6;}
 .green{background:#22c55e;}
-.orange{background:#f59e0b;}
 canvas{width:100%;border-radius:15px;margin-top:10px;}
 .bottom-buttons{display:flex;gap:5px;margin-top:10px;}
 .bottom-buttons button{flex:1;padding:10px;border:none;border-radius:10px;color:white;font-size:13px;background:#22c55e;}
-.note-box{width:100%;margin-top:10px;}
-textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-sizing:border-box;}
-.analysis-box{background:#1e293b;color:white;margin-top:15px;padding:15px;border-radius:15px;text-align:right;display:none;}
-.loader{display:none;margin-top:10px;padding:10px;border-radius:10px;background:#334155;}
-.spinner{border:4px solid #ccc;border-top:4px solid #38bdf8;border-radius:50%;width:25px;height:25px;animation:spin 1s linear infinite;margin:auto;}
-@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#22c55e;color:white;padding:12px 20px;border-radius:12px;display:none;z-index:9999;}
+textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#22c55e;color:white;padding:12px 20px;border-radius:12px;display:none;}
 </style>
 
 </head>
@@ -36,7 +29,7 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
 <body>
 
 <div class="header">
-  <div class="username">👤</div>
+  <div>👤</div>
   <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
 </div>
 
@@ -51,14 +44,12 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
   <canvas id="pdf"></canvas>
 
   <div class="bottom-buttons">
-    <button onclick="prevPage()">⬅ السابق</button>
-    <button onclick="nextPage()">التالي ➡</button>
-    <button onclick="savePage()">⭐ حفظ</button>
+    <button onclick="prevPage()">⬅</button>
+    <button onclick="nextPage()">➡</button>
+    <button onclick="savePage()">⭐</button>
   </div>
 
-  <div class="note-box">
-    <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
-  </div>
+  <textarea id="noteInput" placeholder="✍️ ملاحظة..."></textarea>
 
   <button class="btn green" onclick="saveNote()">💾 حفظ</button>
 
@@ -81,11 +72,12 @@ if(!userId){
   localStorage.setItem("user_id", userId);
 }
 
-// ⚠️ غيرها للمعلم فقط
+// ⚠️ غيرها للمعلم
 let role = "student"; // teacher
 
 let pdfDoc = null;
 let currentPage = 1;
+let isOpened = false; // 🔥 حل المشكلة
 
 const PDF_URL = "https://ofyugbhplaynjeafdrgx.supabase.co/storage/v1/object/public/books/newHEADWAYbeginnerstudentbook.pdf";
 
@@ -109,6 +101,8 @@ async function openBook(){
     const loadingTask = pdfjsLib.getDocument(PDF_URL);
     pdfDoc = await loadingTask.promise;
 
+    isOpened = true;
+
     renderPage(currentPage);
 
     document.getElementById("priceBox").style.display="none";
@@ -116,7 +110,7 @@ async function openBook(){
     btn.innerText="📖 تم فتح الكتاب";
     btn.disabled=false;
 
-    showToast("تم فتح الكتاب ✅");
+    showToast("تم فتح الكتاب");
 
   }catch(e){
     btn.innerText="📥 تحميل وفتح";
@@ -125,14 +119,10 @@ async function openBook(){
   }
 }
 
-// 📄 عرض الصفحة (🔥 تم إصلاح المشكلة هنا)
+// 📄 عرض الصفحة
 async function renderPage(num){
 
-  // 🔥 يفتح الكتاب تلقائي للطلاب
-  if(!pdfDoc){
-    const loadingTask = pdfjsLib.getDocument(PDF_URL);
-    pdfDoc = await loadingTask.promise;
-  }
+  if(!isOpened) return; // 🔥 يمنع الفتح التلقائي
 
   const page = await pdfDoc.getPage(num);
   const canvas = document.getElementById("pdf");
@@ -171,9 +161,8 @@ async function prevPage(){
   }
 }
 
-// 🔄 مزامنة مباشرة
-client
-.channel('room')
+// 🔄 مزامنة
+client.channel('room')
 .on('postgres_changes',{
   event:'UPDATE',
   schema:'public',
@@ -183,16 +172,20 @@ client
   if(role==="student"){
 
     if(payload.new.page !== currentPage){
+
       currentPage = payload.new.page;
-      renderPage(currentPage);
+
+      if(isOpened){
+        renderPage(currentPage);
+      }
+
     }
 
   }
 
-})
-.subscribe();
+}).subscribe();
 
-// 🔁 fallback قوي
+// 🔁 fallback
 setInterval(async ()=>{
 
   if(role !== "student") return;
@@ -204,34 +197,37 @@ setInterval(async ()=>{
     .single();
 
   if(data && data.page !== currentPage){
+
     currentPage = data.page;
-    renderPage(currentPage);
+
+    if(isOpened){
+      renderPage(currentPage);
+    }
+
   }
 
 },2000);
 
 // 💾 ملاحظات
 async function saveNote(){
-
   const note = document.getElementById("noteInput").value;
 
   await client.from("user_notes").upsert({
     user_id: userId,
     page: currentPage,
-    note: note
+    note
   });
 
-  showToast("تم الحفظ ✍️");
+  showToast("تم الحفظ");
 }
 
 async function loadNote(){
-
   const { data } = await client
-  .from("user_notes")
-  .select("*")
-  .eq("user_id", userId)
-  .eq("page", currentPage)
-  .maybeSingle();
+    .from("user_notes")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("page", currentPage)
+    .maybeSingle();
 
   document.getElementById("noteInput").value = data?.note || "";
 }

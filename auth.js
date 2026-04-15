@@ -30,11 +30,17 @@ setTimeout(()=>{
 
   // 🔥 حفظ الجلسة في Supabase
   async function saveSession(){
-    await client.from("user_session").upsert({
-      user_id: user_id,
-      session_id: session_id
-    });
+    await client
+.from("user_session")
+.upsert(
+  {
+    user_id: user_id,
+    session_id: session_id
+  },
+  {
+    onConflict: "user_id"
   }
+);
 
   saveSession();
 

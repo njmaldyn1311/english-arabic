@@ -6,11 +6,10 @@
 
 <title>كتابي</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <style>
-/* ✅ نفس تصميمك بدون تغيير */
 body{margin:0;background:#0f172a;font-family:Arial;color:white;text-align:center;}
 .header{display:flex;justify-content:space-between;align-items:center;padding:10px 15px;}
 .home-btn{background:#38bdf8;padding:8px 15px;border-radius:10px;border:none;color:white;}
@@ -29,20 +28,15 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
 .loader{display:none;margin-top:10px;padding:10px;border-radius:10px;background:#334155;}
 .spinner{border:4px solid #ccc;border-top:4px solid #38bdf8;border-radius:50%;width:25px;height:25px;animation:spin 1s linear infinite;margin:auto;}
 @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
-.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;}
-.popup{background:#1e293b;padding:20px;border-radius:15px;width:85%;max-width:300px;text-align:right;}
-.buy{background:#f59e0b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
-.close{background:#64748b;width:100%;padding:10px;border:none;border-radius:10px;color:white;margin-top:10px;}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#22c55e;color:white;padding:12px 20px;border-radius:12px;display:none;z-index:9999;}
-.word-row{display:flex;justify-content:space-between;align-items:center;background:#0f172a;padding:10px;border-radius:12px;margin:6px 0;}
-.word-actions{display:flex;gap:5px;}
 </style>
 
 </head>
+
 <body>
 
 <div class="header">
-  <div class="username" id="userName">👤</div>
+  <div class="username">👤</div>
   <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
 </div>
 
@@ -60,7 +54,6 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
     <button onclick="prevPage()">⬅ السابق</button>
     <button onclick="nextPage()">التالي ➡</button>
     <button onclick="savePage()">⭐ حفظ</button>
-    <button onclick="readPage()">🔊 قراءة</button>
   </div>
 
   <div class="note-box">
@@ -68,22 +61,6 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
   </div>
 
   <button class="btn green" onclick="saveNote()">💾 حفظ</button>
-  <button class="btn orange" onclick="analyzePage()">🧠 تحليل الصفحة</button>
-
-  <div class="loader" id="loader">
-    <div class="spinner"></div>
-    <div>جاري التحليل...</div>
-  </div>
-
-  <div class="analysis-box" id="analysisBox">
-    <h3>🧠 الأفعال</h3><div id="verbs"></div>
-    <h3>📦 الأسماء</h3><div id="nouns"></div>
-    <h3>⚡ الظروف</h3><div id="adverbs"></div>
-    <h3>🔗 حروف الجر</h3><div id="prepositions"></div>
-    <h3>✨ الصفات</h3><div id="adjectives"></div>
-    <h3>🧩 عبارات</h3><div id="phrases"></div>
-    <h3>📘 القاعدة</h3><div id="grammar"></div>
-  </div>
 
 </div>
 
@@ -91,18 +68,21 @@ textarea{width:100%;height:70px;padding:10px;border-radius:10px;border:none;box-
 
 <script>
 
-// 🔥 إعدادات
-const AI_WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/headway";
-
+// 🔥 Supabase
 const client = supabase.createClient(
 "https://ofyugbhplaynjeafdrgx.supabase.co",
 "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
 );
 
-let userId = localStorage.getItem("user_id") || "user_" + Math.random();
-localStorage.setItem("user_id", userId);
+// 👤 user
+let userId = localStorage.getItem("user_id");
+if(!userId){
+  userId = "user_" + Math.random().toString(36).substr(2,9);
+  localStorage.setItem("user_id", userId);
+}
 
-let role = "student"; // 👈 غيّرها teacher في جهاز المعلم
+// ⚠️ غيرها للمعلم فقط
+let role = "student"; // teacher
 
 let pdfDoc = null;
 let currentPage = 1;
@@ -119,13 +99,41 @@ function showToast(msg){
 
 // 📥 فتح الكتاب
 async function openBook(){
-  const loadingTask = pdfjsLib.getDocument(PDF_URL);
-  pdfDoc = await loadingTask.promise;
-  renderPage(currentPage);
+
+  const btn = document.getElementById("openBtn");
+
+  btn.innerText="⏳ جاري التحميل...";
+  btn.disabled=true;
+
+  try{
+    const loadingTask = pdfjsLib.getDocument(PDF_URL);
+    pdfDoc = await loadingTask.promise;
+
+    renderPage(currentPage);
+
+    document.getElementById("priceBox").style.display="none";
+
+    btn.innerText="📖 تم فتح الكتاب";
+    btn.disabled=false;
+
+    showToast("تم فتح الكتاب ✅");
+
+  }catch(e){
+    btn.innerText="📥 تحميل وفتح";
+    btn.disabled=false;
+    showToast("❌ فشل التحميل");
+  }
 }
 
-// 📄 عرض الصفحة
+// 📄 عرض الصفحة (🔥 تم إصلاح المشكلة هنا)
 async function renderPage(num){
+
+  // 🔥 يفتح الكتاب تلقائي للطلاب
+  if(!pdfDoc){
+    const loadingTask = pdfjsLib.getDocument(PDF_URL);
+    pdfDoc = await loadingTask.promise;
+  }
+
   const page = await pdfDoc.getPage(num);
   const canvas = document.getElementById("pdf");
   const ctx = canvas.getContext("2d");
@@ -139,22 +147,55 @@ async function renderPage(num){
   loadNote();
 }
 
-// 🔄 مزامنة
-client.channel('room')
+// ➡
+async function nextPage(){
+  if(pdfDoc && currentPage < pdfDoc.numPages){
+    currentPage++;
+    renderPage(currentPage);
+
+    if(role==="teacher"){
+      await client.from("room_state").update({ page: currentPage }).eq("id",1);
+    }
+  }
+}
+
+// ⬅
+async function prevPage(){
+  if(pdfDoc && currentPage > 1){
+    currentPage--;
+    renderPage(currentPage);
+
+    if(role==="teacher"){
+      await client.from("room_state").update({ page: currentPage }).eq("id",1);
+    }
+  }
+}
+
+// 🔄 مزامنة مباشرة
+client
+.channel('room')
 .on('postgres_changes',{
   event:'UPDATE',
   schema:'public',
   table:'room_state'
 },payload=>{
-  if(role==="student"){
-    currentPage = payload.new.page;
-    renderPage(currentPage);
-  }
-}).subscribe();
 
-// 🔁 fallback
+  if(role==="student"){
+
+    if(payload.new.page !== currentPage){
+      currentPage = payload.new.page;
+      renderPage(currentPage);
+    }
+
+  }
+
+})
+.subscribe();
+
+// 🔁 fallback قوي
 setInterval(async ()=>{
-  if(role!=="student") return;
+
+  if(role !== "student") return;
 
   const { data } = await client
     .from("room_state")
@@ -169,52 +210,40 @@ setInterval(async ()=>{
 
 },2000);
 
-// ➡
-async function nextPage(){
-  if(currentPage < pdfDoc.numPages){
-    currentPage++;
-    renderPage(currentPage);
-
-    if(role==="teacher"){
-      await client.from("room_state").update({ page: currentPage }).eq("id",1);
-    }
-  }
-}
-
-// ⬅
-async function prevPage(){
-  if(currentPage > 1){
-    currentPage--;
-    renderPage(currentPage);
-
-    if(role==="teacher"){
-      await client.from("room_state").update({ page: currentPage }).eq("id",1);
-    }
-  }
-}
-
 // 💾 ملاحظات
 async function saveNote(){
-  let note=document.getElementById("noteInput").value;
+
+  const note = document.getElementById("noteInput").value;
 
   await client.from("user_notes").upsert({
-    user_id:userId,
-    page:currentPage,
-    note
+    user_id: userId,
+    page: currentPage,
+    note: note
   });
 
-  showToast("تم الحفظ");
+  showToast("تم الحفظ ✍️");
 }
 
 async function loadNote(){
+
   const { data } = await client
-    .from("user_notes")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("page", currentPage)
-    .maybeSingle();
+  .from("user_notes")
+  .select("*")
+  .eq("user_id", userId)
+  .eq("page", currentPage)
+  .maybeSingle();
 
   document.getElementById("noteInput").value = data?.note || "";
+}
+
+// إضافي
+function savePage(){
+  localStorage.setItem("savedPage", currentPage);
+  showToast("⭐ تم حفظ الصفحة");
+}
+
+function goHome(){
+  location.href="index.html";
 }
 
 </script>

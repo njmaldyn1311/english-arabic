@@ -14,39 +14,14 @@ setTimeout(()=>{
 
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // 👤 user_id
+  // 🔥 user_id
   let user_id = localStorage.getItem("user_id");
   if(!user_id){
     user_id = "user_" + Math.random().toString(36).substr(2,9);
     localStorage.setItem("user_id", user_id);
   }
 
-  // 🔐 session_id
-  if(!localStorage.getItem("session_id")){
-    localStorage.setItem("session_id", "session_" + Math.random().toString(36).substr(2,9));
-  }
-
-  let session_id = localStorage.getItem("session_id");
-
-  // 🔥 حفظ الجلسة في Supabase
-  async function saveSession(){
-    await client
-    .from("user_session")
-    .upsert(
-      {
-        user_id: user_id,
-        session_id: session_id
-      },
-      {
-        onConflict: "user_id"
-      }
-    );
-  }
-
-  // 🚀 تنفيذ الحفظ
-  saveSession();
-
-  // 🚫 طرد كل التبويبات داخل نفس الجهاز
+  // 🚫 طرد كل التبويبات (نفس الجهاز فقط)
   window.addEventListener("storage",(e)=>{
     if(e.key === "force_logout"){
       localStorage.clear();
@@ -54,16 +29,9 @@ setTimeout(()=>{
     }
   });
 
-  // 🚪 تسجيل خروج عام (🔥 تم التعديل المهم)
-  window.logout = async function(msg){
+  // 🚪 تسجيل خروج عام
+  window.logout = function(msg){
 
-    // 🔥 حذف الجلسة من Supabase
-    await client
-      .from("user_session")
-      .delete()
-      .eq("user_id", user_id);
-
-    // 🔄 طرد باقي التبويبات
     localStorage.setItem("force_logout", Date.now());
 
     localStorage.clear();
@@ -77,38 +45,41 @@ setTimeout(()=>{
     },800);
   }
 
-  // 🔍 التحقق من الجلسة (إذا جهاز ثاني دخل)
-  async function checkSession(){
+  // 🔍 التحقق (بدون session)
+  async function checkAccess(){
 
-    const localSession = localStorage.getItem("session_id");
-
-    const { data, error } = await client
-      .from("user_session")
+    const { data } = await client
+      .from("users")
       .select("*")
-      .eq("user_id", user_id)
-      .maybeSingle();
-
-    if(error){
-      console.log("Session error:", error);
-      return;
-    }
+      .eq("id", user_id)
+      .single();
 
     if(!data){
-      // أول مرة → خزّن
-      saveSession();
+      logout("❌ الحساب غير موجود");
       return;
     }
 
-    if(data.session_id !== localSession){
-      logout("🚫 تم تسجيل الدخول من جهاز آخر");
+    if(data.status === "banned"){
+      logout("🚫 تم حظرك");
+      return;
     }
 
+    // ⏳ نظام التجربة
+    if(data.plan === "free"){
+      let created = new Date(data.created_at);
+      let now = new Date();
+      let days = Math.floor((now - created)/(1000*60*60*24));
+
+      if(days >= 3){
+        logout("⏳ انتهت الفترة التجريبية");
+      }
+    }
   }
 
-  // 🔁 كل 3 ثواني (backup)
-  setInterval(checkSession, 3000);
+  // 🔁 كل 5 ثواني
+  setInterval(checkAccess, 5000);
 
-  // 🚀 أول تشغيل
-  checkSession();
+  // 🚀 أول دخول
+  checkAccess();
 
 },1000);

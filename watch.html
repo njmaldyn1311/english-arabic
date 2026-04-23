@@ -3,25 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>🎥 فصل مباشر</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 
+<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/732/732200.png">
+
 <style>
-body{
-  margin:0;
-  background:linear-gradient(135deg,#0f172a,#1e293b);
-  color:white;
-  font-family:Arial;
-  text-align:center;
+
+:root{
+  --bg:#0f172a;
+  --card:#1e293b;
+  --main:#22c55e;
 }
 
-.container{max-width:900px;margin:auto;padding:15px;}
+body{
+  margin:0;
+  font-family:Arial;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+}
 
-#player{width:100%;height:220px;border-radius:15px;}
+/* 🔥 الفيديو */
+.video-box{
+  width:100%;
+  aspect-ratio:16/9;
+  border-radius:20px;
+  overflow:hidden;
+  background:black;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
 
+/* 🎮 الأزرار */
 .controls{
   display:flex;
   justify-content:center;
@@ -31,41 +45,51 @@ body{
 }
 
 button{
-  background:#22c55e;
+  background:var(--main);
   border:none;
-  padding:10px 15px;
+  padding:10px 18px;
   border-radius:12px;
   color:white;
   cursor:pointer;
 }
 
-.sub-en{color:#38bdf8;font-weight:bold;margin-top:20px;}
-.sub-ar{color:#facc15;font-size:18px;font-weight:bold;margin-bottom:25px;}
-
-.card{
-  background:#1e293b;
-  margin-top:15px;
-  padding:15px;
-  border-radius:15px;
+/* 🌍 الترجمة */
+.sub-en{
+  margin-top:25px;
+  font-size:20px;
+  color:#38bdf8;
+  font-weight:bold;
 }
 
-.word-box{
+.sub-ar{
+  font-size:22px;
+  color:#facc15;
+  font-weight:bold;
+  margin-bottom:25px;
+}
+
+/* 📚 الكلمات */
+.word{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:10px;
-  margin-bottom:8px;
-  background:#0f172a;
-  border-radius:12px;
+  padding:12px;
+  border-bottom:1px solid #334155;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
 }
 
 .icon{
-  cursor:pointer;
-  background:#1e293b;
+  background:#020617;
   padding:8px;
   border-radius:10px;
+  cursor:pointer;
 }
 
+/* 🔔 toast */
 .toast{
   position:fixed;
   bottom:20px;
@@ -73,198 +97,232 @@ button{
   transform:translateX(-50%);
   background:#22c55e;
   padding:10px 20px;
-  border-radius:12px;
-  opacity:0;
-  transition:0.3s;
+  border-radius:10px;
+  display:none;
 }
-.toast.show{opacity:1;}
+
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div style="max-width:900px;margin:auto;padding:15px">
 
-<h2>🎥 تعلم من الفيديو</h2>
+<h2>🎥 فصل مباشر</h2>
 
-<div id="player"></div>
+<select id="role">
+  <option value="teacher">👨‍🏫 معلم</option>
+  <option value="student">🎓 طالب</option>
+</select>
+
+<div class="video-box">
+  <div id="player"></div>
+</div>
 
 <div class="controls">
-  <button onclick="prev()">⏮ السابق</button>
   <button onclick="play()">▶️ تشغيل</button>
   <button onclick="pause()">⏸️ إيقاف</button>
-  <button onclick="restart()">🔄 إعادة</button>
-  <button onclick="next()">⏭ التالي</button>
+  <button onclick="restart()">🔁 إعادة</button>
+  <button onclick="prev()">⏮️ السابق</button>
+  <button onclick="next()">⏭️ التالي</button>
 </div>
 
-<div id="subEn" class="sub-en"></div>
-<div id="subAr" class="sub-ar"></div>
+<div class="sub-en" id="subEn"></div>
+<div class="sub-ar" id="subAr"></div>
 
-<div id="result"></div>
+<div id="words"></div>
 
 </div>
 
-<div id="toast" class="toast"></div>
+<div id="toast" class="toast">✔️ تم الحفظ</div>
 
 <script>
 
+const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 const WEBHOOK="https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
+
+const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let player;
 let subtitles=[];
-let offset=0;
-let lastVideoId="";
+let lastText="";
+let offset=2; // 🔥 حل مشكلة البداية (موسيقى)
 
-/* إنشاء الفيديو */
+const params = new URLSearchParams(location.search);
+const listId = params.get("list");
+
+let isTeacher=false;
+let channel;
+
+/* ✅ إنشاء الفيديو */
 function onYouTubeIframeAPIReady(){
   player = new YT.Player('player',{
     playerVars:{
       listType:'playlist',
-      list:new URLSearchParams(location.search).get("list")
+      list:listId
     },
-    events:{ onReady:init }
+    events:{
+      onReady: init,
+      onStateChange: onChange
+    }
   });
 }
 
-/* التحكم */
-function play(){ player.playVideo(); }
-function pause(){ player.pauseVideo(); }
-function restart(){ player.seekTo(0,true); }
+/* 🔄 تغيير فيديو */
+function onChange(e){
 
-function next(){
-  player.nextVideo();
+  if(e.data === YT.PlayerState.PLAYING){
+
+    let vid = player.getVideoData().video_id;
+
+    if(!vid) return;
+
+    loadAI(vid);
+  }
+
 }
 
-function prev(){
-  player.previousVideo();
+/* 🤖 تحميل AI */
+async function loadAI(videoId){
+
+  subtitles=[];
+  lastText="";
+
+  let url="https://www.youtube.com/watch?v="+videoId;
+
+  let res = await fetch(WEBHOOK,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({url})
+  });
+
+  let data = await res.json();
+
+  renderWords(data);
 }
 
-/* toast */
-function toast(msg){
-  let t=document.getElementById("toast");
-  t.innerText=msg;
-  t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"),2000);
+/* 📚 عرض الكلمات */
+function renderWords(data){
+
+  let html="";
+
+  for(let cat in data){
+
+    html+=`<h3>${cat}</h3>`;
+
+    data[cat].forEach(w=>{
+
+      subtitles.push({
+        time:w.time||0,
+        en:w.example||"",
+        ar:w.example_ar||""
+      });
+
+      html+=`
+      <div class="word">
+        <div>
+          <div style="color:#38bdf8">${w.en}</div>
+          <div style="color:#facc15">${w.ar}</div>
+        </div>
+
+        <div class="actions">
+          <div class="icon" onclick="save(this)">⭐</div>
+          <div class="icon" onclick="speak('${w.en}')">🔊</div>
+        </div>
+      </div>
+      `;
+    });
+  }
+
+  words.innerHTML=html;
 }
 
-/* صوت */
+/* 🔊 صوت */
 function speak(t){
   let u=new SpeechSynthesisUtterance(t);
   u.lang="en-US";
   speechSynthesis.speak(u);
 }
 
-/* حفظ */
-function save(el,word,ar){
-  el.innerText="✅";
-  toast("تم الحفظ");
+/* ⭐ حفظ */
+function save(el){
+  el.innerHTML="✔️";
+  el.style.background="#22c55e";
+
+  toast.style.display="block";
+  setTimeout(()=>toast.style.display="none",1500);
 }
 
-/* AI */
-async function loadAI(){
+/* 🎮 تحكم */
+function play(){ player?.playVideo(); }
+function pause(){ player?.pauseVideo(); }
+function restart(){ player?.seekTo(0); }
 
-  let vid = player.getVideoData().video_id;
+function next(){ player?.nextVideo(); }
+function prev(){ player?.previousVideo(); }
 
-  let res=await fetch(WEBHOOK,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      url:"https://www.youtube.com/watch?v="+vid
-    })
-  });
-
-  let data=await res.json();
-
-  subtitles=[];
-  offset=0;
-
-  let html="";
-
-  for(let cat in data){
-
-    html+=`<div class="card"><h3>${cat}</h3>`;
-
-    data[cat].forEach(w=>{
-
-      if(!w.example) return;
-
-      subtitles.push({
-        time:w.time||0,
-        en:w.example,
-        ar:w.example_ar
-      });
-
-      html+=`
-      <div class="word-box">
-        <div>
-          <div class="sub-en">${w.en}</div>
-          <div class="sub-ar">${w.ar}</div>
-        </div>
-
-        <div style="display:flex;gap:5px">
-          <div class="icon" onclick="speak('${w.en}')">🔊</div>
-          <div class="icon" onclick="save(this,'${w.en}','${w.ar}')">⭐</div>
-        </div>
-      </div>`;
-    });
-
-    html+="</div>";
-  }
-
-  result.innerHTML=html;
-
-  // 🔥 offset ذكي
-  let first=subtitles.find(s=>s.en && s.en.length>8);
-  if(first){
-    offset = player.getCurrentTime() - first.time;
-  }
-}
-
-/* 🔥 مراقبة تغيير الفيديو */
-setInterval(()=>{
-
-  if(!player || !player.getVideoData) return;
-
-  let current = player.getVideoData().video_id;
-
-  if(!current) return;
-
-  if(current !== lastVideoId){
-
-    lastVideoId = current;
-
-    console.log("🎬 فيديو جديد:", current);
-
-    loadAI();
-
-  }
-
-},1000);
-
-/* ترجمة */
+/* 🎯 الترجمة الذكية */
 setInterval(()=>{
 
   if(!player || !player.getCurrentTime) return;
 
-  let state;
-  try{ state=player.getPlayerState(); }catch{ return; }
+  let t = player.getCurrentTime();
 
-  if(state !== 1) return;
+  let current = subtitles.find(s =>
+    t >= (s.time + offset) && t < (s.time + offset + 3)
+  );
 
-  let t = player.getCurrentTime() - offset;
+  if(!current) return;
 
-  let c=subtitles.find(s=>t>=s.time && t<s.time+4);
+  // 🔥 منع التكرار
+  if(current.en === lastText) return;
 
-  if(c){
-    subEn.innerHTML=c.en;
-    subAr.innerText=c.ar;
-  }
+  lastText = current.en;
 
-},500);
+  subEn.innerHTML = current.en;
+  subAr.innerText = current.ar;
 
-/* init */
+},400);
+
+/* 🔥 مزامنة */
 function init(){
-  setTimeout(loadAI,2000);
+
+  isTeacher = document.getElementById("role").value==="teacher";
+
+  channel = supa.channel("room1");
+
+  channel.on('broadcast',{event:'sync'},(msg)=>{
+
+    if(isTeacher) return;
+
+    let {time,state} = msg.payload;
+
+    if(Math.abs(player.getCurrentTime()-time)>1){
+      player.seekTo(time,true);
+    }
+
+    if(state===1) player.playVideo();
+    else player.pauseVideo();
+
+  }).subscribe();
+
+  // المعلم يرسل
+  setInterval(()=>{
+
+    if(!isTeacher || !player) return;
+
+    channel.send({
+      type:'broadcast',
+      event:'sync',
+      payload:{
+        time:player.getCurrentTime(),
+        state:player.getPlayerState()
+      }
+    });
+
+  },1000);
+
 }
 
 </script>

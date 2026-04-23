@@ -4,12 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>قوائم الدروس</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>القوائم</title>
 
 <style>
-
 body{
   margin:0;
   font-family:Arial;
@@ -17,54 +14,62 @@ body{
   color:white;
 }
 
+/* HEADER */
 .header{
   display:flex;
   justify-content:space-between;
+  align-items:center;
   padding:15px;
   background:#020617;
 }
 
+/* CONTAINER */
 .container{
-  max-width:1000px;
+  max-width:900px;
   margin:auto;
   padding:20px;
 }
 
-.video{
-  display:flex;
-  gap:10px;
-  padding:10px;
-  border-radius:12px;
+/* CARD */
+.card{
+  position:relative;
+  margin-bottom:15px;
+  border-radius:15px;
+  overflow:hidden;
   cursor:pointer;
+  transition:0.3s;
 }
 
-.video:hover{
-  background:#1e293b;
+.card:hover{
+  transform:scale(1.02);
 }
 
-.thumb{
-  width:140px;
-  height:80px;
-  border-radius:10px;
+/* IMAGE */
+.card img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
 }
 
-.progress{
-  height:4px;
-  background:#334155;
-  margin-top:5px;
+/* OVERLAY */
+.overlay{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  padding:15px;
+  background:linear-gradient(to top, rgba(0,0,0,0.9), transparent);
 }
 
-.progress span{
-  display:block;
-  height:100%;
-  background:#22c55e;
+/* TEXT */
+.title{
+  font-size:20px;
+  font-weight:bold;
 }
 
-.lock{
-  color:#f87171;
-  font-size:12px;
+.sub{
+  font-size:14px;
+  color:#ccc;
 }
-
 </style>
 </head>
 
@@ -72,68 +77,56 @@ body{
 
 <div class="header">
   <div>📚 القوائم</div>
-
-  <select id="role">
-    <option value="teacher">👨‍🏫 معلم</option>
-    <option value="student">🎓 طالب</option>
-  </select>
 </div>
 
 <div class="container" id="list"></div>
 
 <script>
 
-const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
-
-const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let lessons=[];
-let user;
-let role;
-
-/* 🔥 روابطك هنا */
+/* 🔥 روابطك */
 const DATA = [
-  {id:"https://www.youtube.com/watch?v=Ls47b0lFP7o&list=PLTDDyGdXPtkI9OdEki1HpORrQOClWQnpC",title:"مبتدئ"},
-  {id:"https://www.youtube.com/watch?v=O9ARUuYqUkI&list=PLlcQE71Tw-F3bKWJtsNGhHKXfjIFvo4g1",title:"متوسط"},
-  {id:"https://www.youtube.com/watch?v=m85MeUJCYac&list=PLOCvbe7RB9fZtcG_9TaB6CHogFpIDYRgK",title:"متقدم"}
+  {
+    url:"https://www.youtube.com/watch?v=Ls47b0lFP7o&list=PLTDDyGdXPtkI9OdEki1HpORrQOClWQnpC",
+    title:"🟢 مبتدئ"
+  },
+  {
+    url:"https://www.youtube.com/watch?v=O9ARUuYqUkI&list=PLlcQE71Tw-F3bKWJtsNGhHKXfjIFvo4g1",
+    title:"🟡 متوسط"
+  },
+  {
+    url:"https://www.youtube.com/watch?v=m85MeUJCYac&list=PLOCvbe7RB9fZtcG_9TaB6CHogFpIDYRgK",
+    title:"🔴 متقدم"
+  }
 ];
 
-/* تحميل */
-async function init(){
+/* استخراج playlist id */
+function getListId(url){
+  return new URL(url).searchParams.get("list");
+}
 
-  role = document.getElementById("role").value;
-
-  user = (await supa.auth.getUser()).data.user;
-
-  render([]);
-
+/* استخراج أول فيديو (لصورة الغلاف) */
+function getVideoId(url){
+  return new URL(url).searchParams.get("v");
 }
 
 /* عرض */
-function render(progressData){
+function render(){
 
   let html="";
 
-  DATA.forEach((v,i)=>{
+  DATA.forEach((item)=>{
 
-    let percent=0;
+    let listId = getListId(item.url);
+    let videoId = getVideoId(item.url);
 
     html+=`
-    <div class="video"
-      onclick="openVideo('${v.id}',${i})">
+    <div class="card" onclick="openList('${listId}')">
 
-      <img class="thumb"
-      src="https://img.youtube.com/vi/${v.id}/hqdefault.jpg">
+      <img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg">
 
-      <div style="flex:1">
-
-        <div>${i+1}. ${v.title}</div>
-
-        <div class="progress">
-          <span style="width:${percent}%"></span>
-        </div>
-
+      <div class="overlay">
+        <div class="title">${item.title}</div>
+        <div class="sub">اضغط لفتح القائمة</div>
       </div>
 
     </div>
@@ -143,40 +136,15 @@ function render(progressData){
   list.innerHTML=html;
 }
 
-/* 🔥 فتح الفيديو (هنا السر) */
-async function openVideo(videoId,index){
+/* فتح القائمة */
+function openList(listId){
 
-  let room = "room_main";
-
-  // 👨‍🏫 المعلم يحدد الفيديو للجميع
-  if(role === "teacher"){
-
-    const channel = supa.channel(room);
-
-    await channel.send({
-      type:'broadcast',
-      event:'start',
-      payload:{
-        video:videoId
-      }
-    });
-
-    window.location.href =
-      `watch.html?room=${room}&video=${videoId}&role=teacher`;
-
-  }
-
-  // 🎓 الطالب ينتظر الأمر
-  else{
-
-    window.location.href =
-      `watch.html?room=${room}&role=student`;
-
-  }
+  window.location.href =
+  `watch.html?list=${listId}`;
 
 }
 
-init();
+render();
 
 </script>
 

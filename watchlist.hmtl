@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>المستويات</title>
+
+<style>
+
+body{
+  margin:0;
+  font-family:Arial;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+}
+
+/* 🔥 HEADER */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px;
+  background:#020617;
+}
+
+.logo{
+  font-weight:bold;
+  font-size:20px;
+}
+
+.home{
+  background:#22c55e;
+  padding:8px 15px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+/* المحتوى */
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+/* كرت المستوى */
+.level{
+  background:#1e293b;
+  padding:15px;
+  border-radius:15px;
+  margin-bottom:20px;
+}
+
+.level h2{
+  margin-bottom:10px;
+  color:#38bdf8;
+}
+
+/* فيديو */
+.video{
+  background:#0f172a;
+  padding:12px;
+  border-radius:10px;
+  margin:8px 0;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.video:hover{
+  background:#334155;
+  transform:scale(1.02);
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">🎓 منصة التعلم</div>
+  <div class="home" onclick="goHome()">🏠 الرئيسية</div>
+</div>
+
+<div class="container">
+
+  <!-- Beginner -->
+  <div class="level">
+    <h2>🟢 Beginner</h2>
+
+    <div class="video" onclick="openVideo('abc123','room1')">
+      🎥 Lesson 1 - Family
+    </div>
+
+    <div class="video" onclick="openVideo('def456','room1')">
+      🎥 Lesson 2 - Daily Life
+    </div>
+
+  </div>
+
+  <!-- Intermediate -->
+  <div class="level">
+    <h2>🟡 Intermediate</h2>
+
+    <div class="video" onclick="openVideo('ghi789','room2')">
+      🎥 Lesson 1 - Work
+    </div>
+
+  </div>
+
+  <!-- Advanced -->
+  <div class="level">
+    <h2>🔴 Advanced</h2>
+
+    <div class="video" onclick="openVideo('xyz111','room3')">
+      🎥 Lesson 1 - Business
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+/* 🔗 فتح الفيديو */
+function openVideo(videoId,room){
+
+  window.location.href =
+    `watch.html?room=${room}&video=${videoId}`;
+
+}
+
+/* 🏠 رجوع */
+function goHome(){
+  window.location.href="index.html";
+}
+
+</script>
+
+</body>
+</html>

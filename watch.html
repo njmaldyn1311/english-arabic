@@ -4,100 +4,93 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>🎥 تعلم بذكاء</title>
+<title>🎥 فصل مباشر</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
 
 <style>
 
 body{
   margin:0;
-  font-family:Arial;
   background:linear-gradient(135deg,#0f172a,#1e293b);
   color:white;
-}
-
-/* HEADER */
-.header{
+  font-family:Arial;
   text-align:center;
-  padding:20px;
-  font-size:22px;
-  font-weight:bold;
 }
 
-/* VIDEO */
-.video-box{
-  width:90%;
-  max-width:700px;
+.container{
+  max-width:900px;
   margin:auto;
-  border-radius:20px;
-  overflow:hidden;
+  padding:15px;
 }
 
-iframe{
+#player{
   width:100%;
   height:220px;
-  border:none;
+  border-radius:15px;
 }
 
-/* BUTTONS */
+/* أزرار */
 .controls{
   display:flex;
   justify-content:center;
   gap:10px;
-  margin:15px;
+  margin-top:10px;
 }
 
-.btn{
+button{
   background:#22c55e;
-  padding:10px 20px;
-  border-radius:12px;
+  border:none;
+  padding:10px 15px;
+  border-radius:10px;
+  color:white;
   cursor:pointer;
 }
 
-/* CARD */
+/* ترجمة */
+.sub-en{color:#38bdf8;font-weight:bold;}
+.sub-ar{color:#facc15;font-size:18px;font-weight:bold;}
+
+/* كروت */
 .card{
-  width:90%;
-  max-width:700px;
-  margin:15px auto;
-  background:linear-gradient(135deg,#1e293b,#334155);
-  border-radius:20px;
+  background:#1e293b;
+  margin-top:15px;
   padding:15px;
+  border-radius:15px;
 }
 
-/* WORD ROW */
-.word{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 5px;
+.word-box{
   border-bottom:1px solid #334155;
-}
-
-.en{
-  color:#38bdf8;
-  font-weight:bold;
-}
-
-.ar{
-  color:#facc15;
-}
-
-.actions{
-  display:flex;
-  gap:10px;
+  padding:10px;
+  text-align:right;
 }
 
 .icon{
+  cursor:pointer;
   background:#0f172a;
   padding:8px;
   border-radius:10px;
-  cursor:pointer;
 }
 
-/* MOBILE */
+/* toast */
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#22c55e;
+  color:white;
+  padding:10px 20px;
+  border-radius:12px;
+  font-size:14px;
+  opacity:0;
+  transition:0.3s;
+}
+.toast.show{opacity:1;}
+
 @media(min-width:768px){
-  iframe{height:350px;}
+  #player{height:360px;}
 }
 
 </style>
@@ -105,17 +98,26 @@ iframe{
 
 <body>
 
-<div class="header">🎥 تعلم من الفيديو</div>
+<div class="container">
 
-<div class="video-box">
-  <iframe id="player"></iframe>
-</div>
+<h2>🎥 تعلم من الفيديو</h2>
+
+<div id="player"></div>
 
 <div class="controls">
-  <div class="btn" onclick="reloadVideo()">🔄 إعادة</div>
+  <button onclick="play()">▶️ تشغيل</button>
+  <button onclick="pause()">⏸️ إيقاف</button>
+  <button onclick="restart()">🔄 إعادة</button>
 </div>
 
+<div id="subEn" class="sub-en"></div>
+<div id="subAr" class="sub-ar"></div>
+
 <div id="result"></div>
+
+</div>
+
+<div id="toast" class="toast">تم الحفظ</div>
 
 <script>
 
@@ -126,31 +128,54 @@ const WEBHOOK="https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* 🎯 playlist */
+let player;
+let subtitles=[];
+
+/* قراءة الرابط */
 const params = new URLSearchParams(location.search);
 const listId = params.get("list");
 
-/* تشغيل الفيديو */
-function loadVideo(){
+/* تحميل الفيديو */
+function onYouTubeIframeAPIReady(){
 
-  document.getElementById("player").src =
-  `https://www.youtube.com/embed/videoseries?list=${listId}`;
+  player = new YT.Player('player',{
+    playerVars:{
+      listType:'playlist',
+      list:listId
+    },
+    events:{
+      onReady:()=>{
+        setTimeout(loadAI,2000);
+      }
+    }
+  });
 
 }
 
-/* إعادة */
-function reloadVideo(){
-  loadVideo();
+/* تحكم */
+function play(){ player.playVideo(); }
+function pause(){ player.pauseVideo(); }
+function restart(){ player.seekTo(0,true); }
+
+/* Toast */
+function showToast(msg){
+  let t=document.getElementById("toast");
+  t.innerText=msg;
+  t.classList.add("show");
+
+  setTimeout(()=>{
+    t.classList.remove("show");
+  },2000);
 }
 
-/* 🔊 صوت */
+/* صوت */
 function speak(text){
-  let u = new SpeechSynthesisUtterance(text);
+  let u=new SpeechSynthesisUtterance(text);
   u.lang="en-US";
   speechSynthesis.speak(u);
 }
 
-/* ⭐ حفظ */
+/* حفظ */
 async function saveWord(word,ar){
 
   try{
@@ -160,28 +185,32 @@ async function saveWord(word,ar){
       translation:ar
     });
 
-    alert("✅ تم الحفظ");
+    showToast("⭐ تم الحفظ");
 
-  }catch(e){
-    alert("❌ فشل الحفظ");
+  }catch{
+    showToast("❌ فشل الحفظ");
   }
 
 }
 
-/* 🤖 AI */
-async function analyze(){
+/* AI */
+async function loadAI(){
 
-  let url = "https://www.youtube.com/watch?v=Ls47b0lFP7o";
+  let video = player.getVideoData().video_id;
+  if(!video) return;
 
-  let res = await fetch(WEBHOOK,{
+  let res=await fetch(WEBHOOK,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({url})
+    body:JSON.stringify({
+      url:"https://www.youtube.com/watch?v="+video
+    })
   });
 
-  let data = await res.json();
+  let data=await res.json();
 
   let html="";
+  subtitles=[];
 
   for(let cat in data){
 
@@ -189,17 +218,27 @@ async function analyze(){
 
     data[cat].forEach(w=>{
 
+      subtitles.push({
+        time:w.time||0,
+        en:w.example||"",
+        ar:w.example_ar||""
+      });
+
       html+=`
-      <div class="word">
+      <div class="word-box">
 
-        <div>
-          <div class="en">${w.en}</div>
-          <div class="ar">${w.ar}</div>
-        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
 
-        <div class="actions">
-          <div class="icon" onclick="speak('${w.en}')">🔊</div>
-          <div class="icon" onclick="saveWord('${w.en}','${w.ar}')">⭐</div>
+          <div>
+            <div class="sub-en">${w.en}</div>
+            <div class="sub-ar">${w.ar}</div>
+          </div>
+
+          <div style="display:flex;gap:8px">
+            <div class="icon" onclick="speak('${w.en}')">🔊</div>
+            <div class="icon" onclick="saveWord('${w.en}','${w.ar}')">⭐</div>
+          </div>
+
         </div>
 
       </div>
@@ -212,9 +251,26 @@ async function analyze(){
   result.innerHTML=html;
 }
 
-/* تشغيل */
-loadVideo();
-analyze();
+/* ترجمة متزامنة */
+setInterval(()=>{
+
+  if(!player) return;
+
+  let state = player.getPlayerState();
+
+  // ⛔ تجاهل الإعلان والإيقاف
+  if(state !== 1) return;
+
+  let t = player.getCurrentTime();
+
+  let current = subtitles.find(s=>t>=s.time && t<s.time+4);
+
+  if(current){
+    subEn.innerHTML=current.en;
+    subAr.innerText=current.ar;
+  }
+
+},500);
 
 </script>
 

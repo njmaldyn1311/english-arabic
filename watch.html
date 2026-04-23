@@ -4,152 +4,35 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>قائمة الفيديوهات</title>
+<title>مشاهدة</title>
 
 <style>
-
 body{
   margin:0;
-  font-family:Arial;
   background:#0f172a;
-  color:white;
-}
-
-/* HEADER */
-.header{
-  padding:15px;
-  background:#020617;
-  font-size:18px;
-}
-
-/* PLAYER */
-.player-box{
-  width:100%;
-  height:220px;
 }
 
 iframe{
   width:100%;
-  height:100%;
+  height:100vh;
   border:none;
 }
-
-/* LIST */
-.container{
-  padding:10px;
-}
-
-.video{
-  display:flex;
-  gap:10px;
-  padding:10px;
-  border-radius:12px;
-  cursor:pointer;
-}
-
-.video:hover{
-  background:#1e293b;
-}
-
-.thumb{
-  width:140px;
-  height:80px;
-  border-radius:10px;
-}
-
-.title{
-  font-size:14px;
-}
-
-/* Desktop */
-@media(min-width:768px){
-  .layout{
-    display:flex;
-  }
-
-  .player-box{
-    height:400px;
-  }
-
-  .left{
-    flex:2;
-  }
-
-  .right{
-    flex:1;
-    max-height:400px;
-    overflow:auto;
-  }
-}
-
 </style>
 </head>
 
 <body>
 
-<div class="header">🎬 قائمة الدروس</div>
-
-<div class="layout">
-
-  <!-- الفيديو -->
-  <div class="left">
-    <div class="player-box">
-      <iframe id="player"></iframe>
-    </div>
-  </div>
-
-  <!-- القائمة -->
-  <div class="right container" id="list"></div>
-
-</div>
+<iframe id="player"></iframe>
 
 <script>
 
-/* 🔥 روابطك */
-const DATA = [
-  {url:"https://www.youtube.com/watch?v=Ls47b0lFP7o&list=PLTDDyGdXPtkI9OdEki1HpORrQOClWQnpC"},
-  {url:"https://www.youtube.com/watch?v=O9ARUuYqUkI&list=PLlcQE71Tw-F3bKWJtsNGhHKXfjIFvo4g1"},
-  {url:"https://www.youtube.com/watch?v=m85MeUJCYac&list=PLOCvbe7RB9fZtcG_9TaB6CHogFpIDYRgK"}
-];
+const params = new URLSearchParams(location.search);
+const listId = params.get("list");
 
-/* استخراج ID */
-function getId(url){
-  return new URL(url).searchParams.get("v");
+if(listId){
+  player.src =
+  `https://www.youtube.com/embed/videoseries?list=${listId}`;
 }
-
-/* تشغيل */
-function play(id){
-  player.src = `https://www.youtube.com/embed/${id}?autoplay=1`;
-}
-
-/* عرض القائمة */
-function render(){
-
-  let html="";
-
-  DATA.forEach((v,i)=>{
-
-    let id = getId(v.url);
-
-    html+=`
-    <div class="video" onclick="play('${id}')">
-
-      <img class="thumb"
-      src="https://img.youtube.com/vi/${id}/hqdefault.jpg">
-
-      <div class="title">🎥 فيديو ${i+1}</div>
-
-    </div>
-    `;
-  });
-
-  list.innerHTML=html;
-
-  // تشغيل أول فيديو
-  play(getId(DATA[0].url));
-}
-
-render();
 
 </script>
 

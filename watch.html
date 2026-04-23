@@ -10,7 +10,6 @@
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <style>
-
 body{
   margin:0;
   background:linear-gradient(135deg,#0f172a,#1e293b);
@@ -19,24 +18,15 @@ body{
   text-align:center;
 }
 
-.container{
-  max-width:900px;
-  margin:auto;
-  padding:15px;
-}
+.container{max-width:900px;margin:auto;padding:15px;}
 
-#player{
-  width:100%;
-  height:220px;
-  border-radius:15px;
-}
+#player{width:100%;height:220px;border-radius:15px;}
 
-/* أزرار */
 .controls{
   display:flex;
   justify-content:center;
   gap:10px;
-  margin-top:10px;
+  margin-top:20px;
 }
 
 button{
@@ -48,11 +38,10 @@ button{
   cursor:pointer;
 }
 
-/* ترجمة */
-.sub-en{color:#38bdf8;font-weight:bold;}
-.sub-ar{color:#facc15;font-size:18px;font-weight:bold;}
+/* مسافة أكبر */
+.sub-en{color:#38bdf8;font-weight:bold;margin-top:20px;}
+.sub-ar{color:#facc15;font-size:18px;font-weight:bold;margin-bottom:25px;}
 
-/* كروت */
 .card{
   background:#1e293b;
   margin-top:15px;
@@ -63,7 +52,6 @@ button{
 .word-box{
   border-bottom:1px solid #334155;
   padding:10px;
-  text-align:right;
 }
 
 .icon{
@@ -80,19 +68,15 @@ button{
   left:50%;
   transform:translateX(-50%);
   background:#22c55e;
-  color:white;
   padding:10px 20px;
   border-radius:12px;
-  font-size:14px;
   opacity:0;
-  transition:0.3s;
 }
 .toast.show{opacity:1;}
 
 @media(min-width:768px){
   #player{height:360px;}
 }
-
 </style>
 </head>
 
@@ -105,9 +89,11 @@ button{
 <div id="player"></div>
 
 <div class="controls">
+  <button onclick="prev()">⏮ السابق</button>
   <button onclick="play()">▶️ تشغيل</button>
   <button onclick="pause()">⏸️ إيقاف</button>
   <button onclick="restart()">🔄 إعادة</button>
+  <button onclick="next()">⏭ التالي</button>
 </div>
 
 <div id="subEn" class="sub-en"></div>
@@ -117,11 +103,10 @@ button{
 
 </div>
 
-<div id="toast" class="toast">تم الحفظ</div>
+<div id="toast" class="toast"></div>
 
 <script>
 
-/* 🔥 بياناتك */
 const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 const WEBHOOK="https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
@@ -130,80 +115,61 @@ const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let player;
 let subtitles=[];
+let offset = 3; // 🔥 تأخير الترجمة
 
-/* قراءة الرابط */
-const params = new URLSearchParams(location.search);
-const listId = params.get("list");
+let room="room1";
+let channel;
 
-/* تحميل الفيديو */
+/* YT */
 function onYouTubeIframeAPIReady(){
 
   player = new YT.Player('player',{
     playerVars:{
       listType:'playlist',
-      list:listId
+      list:new URLSearchParams(location.search).get("list")
     },
-    events:{
-      onReady:()=>{
-        setTimeout(loadAI,2000);
-      }
-    }
+    events:{ onReady: init }
   });
 
 }
 
 /* تحكم */
-function play(){ player.playVideo(); }
-function pause(){ player.pauseVideo(); }
-function restart(){ player.seekTo(0,true); }
+function play(){ player.playVideo(); sync(); }
+function pause(){ player.pauseVideo(); sync(); }
+function restart(){ player.seekTo(0,true); sync(); }
+function next(){ player.nextVideo(); }
+function prev(){ player.previousVideo(); }
 
-/* Toast */
-function showToast(msg){
+/* toast */
+function toast(msg){
   let t=document.getElementById("toast");
   t.innerText=msg;
   t.classList.add("show");
-
-  setTimeout(()=>{
-    t.classList.remove("show");
-  },2000);
-}
-
-/* صوت */
-function speak(text){
-  let u=new SpeechSynthesisUtterance(text);
-  u.lang="en-US";
-  speechSynthesis.speak(u);
+  setTimeout(()=>t.classList.remove("show"),2000);
 }
 
 /* حفظ */
-async function saveWord(word,ar){
+async function save(el,word,ar){
 
-  try{
-    await supa.from("user_star_words").insert({
-      user_id:"user_test",
-      word:word,
-      translation:ar
-    });
+  await supa.from("user_star_words").insert({
+    user_id:"user_test",
+    word,translation:ar
+  });
 
-    showToast("⭐ تم الحفظ");
-
-  }catch{
-    showToast("❌ فشل الحفظ");
-  }
-
+  el.innerText="✅";
+  toast("تم الحفظ");
 }
 
 /* AI */
 async function loadAI(){
 
-  let video = player.getVideoData().video_id;
-  if(!video) return;
+  let vid = player.getVideoData().video_id;
 
   let res=await fetch(WEBHOOK,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
-      url:"https://www.youtube.com/watch?v="+video
+      url:"https://www.youtube.com/watch?v="+vid
     })
   });
 
@@ -218,31 +184,29 @@ async function loadAI(){
 
     data[cat].forEach(w=>{
 
+      // 🔥 فلترة الجمل القصيرة
+      if(!w.example || w.example.length < 5) return;
+
       subtitles.push({
-        time:w.time||0,
-        en:w.example||"",
-        ar:w.example_ar||""
+        time:(w.time||0)+offset,
+        en:w.example,
+        ar:w.example_ar
       });
 
       html+=`
       <div class="word-box">
-
-        <div style="display:flex;justify-content:space-between;align-items:center">
-
+        <div style="display:flex;justify-content:space-between">
           <div>
             <div class="sub-en">${w.en}</div>
             <div class="sub-ar">${w.ar}</div>
           </div>
 
           <div style="display:flex;gap:8px">
-            <div class="icon" onclick="speak('${w.en}')">🔊</div>
-            <div class="icon" onclick="saveWord('${w.en}','${w.ar}')">⭐</div>
+            <div class="icon" onclick="speech('${w.en}')">🔊</div>
+            <div class="icon" onclick="save(this,'${w.en}','${w.ar}')">⭐</div>
           </div>
-
         </div>
-
-      </div>
-      `;
+      </div>`;
     });
 
     html+="</div>";
@@ -251,26 +215,79 @@ async function loadAI(){
   result.innerHTML=html;
 }
 
-/* ترجمة متزامنة */
+/* ترجمة */
 setInterval(()=>{
 
   if(!player) return;
 
-  let state = player.getPlayerState();
-
-  // ⛔ تجاهل الإعلان والإيقاف
-  if(state !== 1) return;
+  if(player.getPlayerState() !== 1) return;
 
   let t = player.getCurrentTime();
 
-  let current = subtitles.find(s=>t>=s.time && t<s.time+4);
+  let c = subtitles.find(s=>t>=s.time && t<s.time+4);
 
-  if(current){
-    subEn.innerHTML=current.en;
-    subAr.innerText=current.ar;
+  if(c){
+    subEn.innerHTML=c.en;
+    subAr.innerText=c.ar;
   }
 
 },500);
+
+/* صوت */
+function speech(t){
+  let u=new SpeechSynthesisUtterance(t);
+  u.lang="en-US";
+  speechSynthesis.speak(u);
+}
+
+/* 👨‍🏫 مزامنة */
+function sync(){
+
+  if(!channel) return;
+
+  channel.send({
+    type:'broadcast',
+    event:'sync',
+    payload:{
+      time:player.getCurrentTime(),
+      video:player.getVideoData().video_id
+    }
+  });
+
+}
+
+/* استقبال */
+function listen(){
+
+  channel = supa.channel(room);
+
+  channel.on('broadcast',{event:'sync'},msg=>{
+
+    let {time,video}=msg.payload;
+
+    if(player.getVideoData().video_id !== video){
+      player.loadVideoById(video);
+    }
+
+    player.seekTo(time,true);
+
+  }).subscribe();
+
+}
+
+/* 🎙 صوت */
+async function startVoice(){
+  await navigator.mediaDevices.getUserMedia({audio:true});
+  console.log("mic on");
+}
+
+/* init */
+function init(){
+  listen();
+  startVoice();
+
+  setTimeout(loadAI,2000);
+}
 
 </script>
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎥 فصل مباشر ذكي</title>
+<title>🎥 مشاهدة الفيديو</title>
 
 <script src="https://www.youtube.com/iframe_api"></script>
 
@@ -16,8 +16,13 @@ body{
   text-align:center;
 }
 
-.container{max-width:900px;margin:auto;padding:15px;}
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:15px;
+}
 
+/* 🎬 فيديو احترافي */
 .video-box{
   position:relative;
   width:100%;
@@ -35,11 +40,12 @@ body{
   height:100%;
 }
 
+/* 🎮 أزرار */
 .controls{
-  margin-top:20px;
   display:flex;
   justify-content:center;
   gap:10px;
+  margin-top:20px;
   flex-wrap:wrap;
 }
 
@@ -50,17 +56,22 @@ button{
   border-radius:12px;
   color:white;
   cursor:pointer;
+  font-weight:bold;
 }
 
-.sub-en{color:#38bdf8;font-weight:bold;margin-top:20px;}
-.sub-ar{color:#facc15;font-size:20px;font-weight:bold;margin-top:10px;}
+/* 🧾 ترجمة */
+.sub-en{
+  color:#38bdf8;
+  font-weight:bold;
+  margin-top:20px;
+}
 
-.mic-status{
+.sub-ar{
+  color:#facc15;
+  font-size:20px;
+  font-weight:bold;
   margin-top:10px;
-  font-size:14px;
-  color:#94a3b8;
 }
-
 </style>
 </head>
 
@@ -68,80 +79,83 @@ button{
 
 <div class="container">
 
-<h2>🎥 فصل مباشر + ترجمة صوتية</h2>
+<h2>🎥 مشاهدة الفيديو</h2>
 
 <div class="video-box">
   <div id="player"></div>
 </div>
 
 <div class="controls">
+  <button onclick="prev()">⏮ السابق</button>
   <button onclick="play()">▶️ تشغيل</button>
   <button onclick="pause()">⏸️ إيقاف</button>
   <button onclick="restart()">🔄 إعادة</button>
-  <button onclick="startMic()">🎙 تشغيل الترجمة الصوتية</button>
+  <button onclick="next()">⏭ التالي</button>
 </div>
 
-<div class="mic-status" id="micStatus">🎤 المايك متوقف</div>
-
-<div class="sub-en" id="subEn"></div>
-<div class="sub-ar" id="subAr"></div>
+<div id="subEn" class="sub-en"></div>
+<div id="subAr" class="sub-ar"></div>
 
 </div>
 
 <script>
 
-/* ================= الفيديو ================= */
+/* ================== إعداد الفيديو ================== */
 
 let player;
 
 function onYouTubeIframeAPIReady(){
-  player = new YT.Player('player',{
-    videoId: new URLSearchParams(location.search).get("video"),
-  });
+
+  const params = new URLSearchParams(location.search);
+
+  let list = params.get("list");
+  let video = params.get("video");
+
+  if(!list && !video){
+    alert("❌ الرابط غير صحيح (لا يوجد فيديو)");
+    return;
+  }
+
+  // 🎬 playlist
+  if(list){
+    player = new YT.Player('player',{
+      playerVars:{
+        listType:'playlist',
+        list:list
+      },
+      events:{ onReady:()=>console.log("✅ playlist جاهز") }
+    });
+  }
+
+  // 🎬 فيديو واحد
+  else{
+    player = new YT.Player('player',{
+      videoId:video,
+      events:{ onReady:()=>console.log("✅ video جاهز") }
+    });
+  }
 }
 
-function play(){ player.playVideo(); }
-function pause(){ player.pauseVideo(); }
-function restart(){ player.seekTo(0,true); }
+/* ================== التحكم ================== */
 
-/* ================= الترجمة بالصوت ================= */
+function play(){
+  if(player && player.playVideo) player.playVideo();
+}
 
-let ws;
-let mediaRecorder;
+function pause(){
+  if(player && player.pauseVideo) player.pauseVideo();
+}
 
-/* 🔥 تشغيل المايك */
-async function startMic(){
+function restart(){
+  if(player && player.seekTo) player.seekTo(0,true);
+}
 
-  document.getElementById("micStatus").innerText = "🎤 جاري التشغيل...";
+function next(){
+  if(player && player.nextVideo) player.nextVideo();
+}
 
-  const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-
-  // 🔥 WebSocket (غير الرابط حسب سيرفرك)
-  ws = new WebSocket("wss://your-server.com/stt");
-
-  ws.onopen = () => {
-    document.getElementById("micStatus").innerText = "🎙 الترجمة تعمل";
-  };
-
-  ws.onmessage = (msg) => {
-
-    let data = JSON.parse(msg.data);
-
-    // 🔥 ترجمة مباشرة
-    subEn.innerText = data.en || "";
-    subAr.innerText = data.ar || "";
-
-  };
-
-  mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-
-  mediaRecorder.ondataavailable = e => {
-    if(ws.readyState === 1){
-      ws.send(e.data);
-    }
-  };
-
-  mediaRecorder.start(500); // إرسال كل 0.5 ثانية
+function prev(){
+  if(player && player.previousVideo) player.previousVideo();
 }
 
 </script>

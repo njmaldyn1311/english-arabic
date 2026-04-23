@@ -4,70 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Live AI Classroom</title>
+<title>مشاهدة الدرس</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <style>
+
 body{
   background:#0f172a;
   color:white;
   font-family:Arial;
-  text-align:center;
+  margin:0;
 }
 
-.container{max-width:900px;margin:auto;padding:20px;}
+/* 🔥 HEADER */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px;
+  background:#020617;
+  border-bottom:1px solid #1e293b;
+}
 
-input,button{
-  padding:10px;
+.user{
+  font-weight:bold;
+  color:#38bdf8;
+}
+
+.home-btn{
+  background:#22c55e;
+  padding:8px 15px;
   border-radius:10px;
-  border:none;
-  margin:5px;
+  cursor:pointer;
 }
 
-button{background:#22c55e;color:white;cursor:pointer;}
+/* محتوى */
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
 
 .card{
   background:#1e293b;
   padding:15px;
+  border-radius:15px;
   margin-top:15px;
+}
+
+#player{
+  width:100%;
+  height:350px;
   border-radius:15px;
 }
 
-#player{width:100%;height:350px;border-radius:15px;}
-
-.word{padding:10px;border-bottom:1px solid #334155;}
-.highlight{color:#22c55e;font-weight:bold;}
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- ✅ HEADER -->
+<div class="header">
 
-<h2>🎥 Live Classroom</h2>
+  <div class="user" id="userName">...</div>
 
-<input id="email" placeholder="Email">
-<input id="password" placeholder="Password">
-<br>
-<button onclick="signup()">إنشاء حساب</button>
-<button onclick="login()">دخول</button>
+  <div class="home-btn" onclick="goHome()">🏠 الرئيسية</div>
 
-<hr>
-
-<input id="room" placeholder="Room ID">
-<input id="url" placeholder="YouTube URL">
-
-<br>
-<button onclick="createRoom()">إنشاء غرفة (معلم)</button>
-<button onclick="joinRoom()">دخول غرفة (طالب)</button>
-
-<div id="videoBox" class="card" style="display:none;">
-  <div id="player"></div>
 </div>
 
-<div id="words"></div>
+<div class="container">
+
+  <div class="card">
+    <div id="player"></div>
+  </div>
 
 </div>
 
@@ -80,103 +91,54 @@ const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let player;
 let roomId;
+let videoId;
 let isTeacher=false;
 let channel;
 
-/* Auth */
-
-async function signup(){
-  await supa.auth.signUp({
-    email:email.value,
-    password:password.value
-  });
-  alert("تم إنشاء الحساب");
+/* ✅ قراءة الرابط */
+function getParams(){
+  const params=new URLSearchParams(location.search);
+  return {
+    room:params.get("room"),
+    video:params.get("video")
+  };
 }
 
-async function login(){
-  await supa.auth.signInWithPassword({
-    email:email.value,
-    password:password.value
-  });
-  alert("تم الدخول");
+/* 🔥 جلب اسم الطالب */
+async function loadUser(){
+
+  let {data}=await supa.auth.getUser();
+
+  if(!data.user) return;
+
+  // نفترض الاسم محفوظ في metadata
+  let first=data.user.user_metadata.first_name || "";
+  let last=data.user.user_metadata.last_name || "";
+
+  userName.innerText = first + " " + last;
+
 }
 
-/* YouTube */
-
-function getVideoId(url){
-  try{
-    return new URL(url).searchParams.get("v");
-  }catch{return null;}
-}
-
+/* 🎥 إنشاء الفيديو */
 function createPlayer(id){
-
-  if(player) player.destroy();
 
   player=new YT.Player('player',{
     videoId:id,
     events:{
       onReady:()=>{
-        if(isTeacher){
-          setInterval(syncSend,1500);
-        }
+        setInterval(syncSend,1500);
       }
     }
   });
 
 }
 
-/* إنشاء غرفة */
-
-async function createRoom(){
-
-  let id=getVideoId(url.value);
-  if(!id) return alert("رابط خطأ");
-
-  roomId=room.value;
-  isTeacher=true;
-
-  let user=(await supa.auth.getUser()).data.user;
-
-  await supa.from("rooms").insert({
-    id:roomId,
-    video_id:id,
-    teacher_id:user.id
-  });
-
-  startRoom(id);
-}
-
-/* دخول غرفة */
-
-async function joinRoom(){
-
-  roomId=room.value;
-  isTeacher=false;
-
-  let {data}=await supa.from("rooms")
-    .select("*")
-    .eq("id",roomId)
-    .single();
-
-  if(!data) return alert("الغرفة غير موجودة");
-
-  startRoom(data.video_id);
-}
-
-/* تشغيل */
-
-function startRoom(videoId){
-
-  videoBox.style.display="block";
-
-  createPlayer(videoId);
+/* 🔄 مزامنة */
+function startSync(){
 
   channel=supa.channel(roomId);
 
   channel.on('broadcast',{event:'sync'},(msg)=>{
-
-    if(isTeacher) return;
 
     let {time,state}=msg.payload;
 
@@ -192,7 +154,6 @@ function startRoom(videoId){
 }
 
 /* إرسال */
-
 function syncSend(){
 
   if(!player) return;
@@ -208,20 +169,233 @@ function syncSend(){
 
 }
 
-/* كلمات */
+/* 🏠 رجوع */
+function goHome(){
+  window.location.href="index.html";
+}
 
-async function saveWord(word,ar){
+/* 🚀 تشغيل الصفحة */
+async function init(){
 
-  let user=(await supa.auth.getUser()).data.user;
+  await loadUser();
 
-  await supa.from("words").insert({
-    user_id:user.id,
-    word,
-    translation:ar
+  let p=getParams();
+
+  roomId=p.room;
+  videoId=p.video;
+
+  if(!roomId || !videoId){
+    alert("الرابط ناقص");
+    return;
+  }
+
+  createPlayer(videoId);
+  startSync();
+
+}
+
+init();
+
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>مشاهدة الدرس</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<style>
+
+body{
+  background:#0f172a;
+  color:white;
+  font-family:Arial;
+  margin:0;
+}
+
+/* 🔥 HEADER */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px;
+  background:#020617;
+  border-bottom:1px solid #1e293b;
+}
+
+.user{
+  font-weight:bold;
+  color:#38bdf8;
+}
+
+.home-btn{
+  background:#22c55e;
+  padding:8px 15px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+/* محتوى */
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:#1e293b;
+  padding:15px;
+  border-radius:15px;
+  margin-top:15px;
+}
+
+#player{
+  width:100%;
+  height:350px;
+  border-radius:15px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ✅ HEADER -->
+<div class="header">
+
+  <div class="user" id="userName">...</div>
+
+  <div class="home-btn" onclick="goHome()">🏠 الرئيسية</div>
+
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <div id="player"></div>
+  </div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL="YOUR_URL";
+const SUPABASE_KEY="YOUR_KEY";
+
+const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let player;
+let roomId;
+let videoId;
+let isTeacher=false;
+let channel;
+
+/* ✅ قراءة الرابط */
+function getParams(){
+  const params=new URLSearchParams(location.search);
+  return {
+    room:params.get("room"),
+    video:params.get("video")
+  };
+}
+
+/* 🔥 جلب اسم الطالب */
+async function loadUser(){
+
+  let {data}=await supa.auth.getUser();
+
+  if(!data.user) return;
+
+  // نفترض الاسم محفوظ في metadata
+  let first=data.user.user_metadata.first_name || "";
+  let last=data.user.user_metadata.last_name || "";
+
+  userName.innerText = first + " " + last;
+
+}
+
+/* 🎥 إنشاء الفيديو */
+function createPlayer(id){
+
+  player=new YT.Player('player',{
+    videoId:id,
+    events:{
+      onReady:()=>{
+        setInterval(syncSend,1500);
+      }
+    }
   });
 
-  alert("تم الحفظ");
 }
+
+/* 🔄 مزامنة */
+function startSync(){
+
+  channel=supa.channel(roomId);
+
+  channel.on('broadcast',{event:'sync'},(msg)=>{
+
+    let {time,state}=msg.payload;
+
+    if(Math.abs(player.getCurrentTime()-time)>1){
+      player.seekTo(time,true);
+    }
+
+    if(state==="play") player.playVideo();
+    else player.pauseVideo();
+
+  }).subscribe();
+
+}
+
+/* إرسال */
+function syncSend(){
+
+  if(!player) return;
+
+  channel.send({
+    type:'broadcast',
+    event:'sync',
+    payload:{
+      time:player.getCurrentTime(),
+      state:player.getPlayerState()==1?"play":"pause"
+    }
+  });
+
+}
+
+/* 🏠 رجوع */
+function goHome(){
+  window.location.href="index.html";
+}
+
+/* 🚀 تشغيل الصفحة */
+async function init(){
+
+  await loadUser();
+
+  let p=getParams();
+
+  roomId=p.room;
+  videoId=p.video;
+
+  if(!roomId || !videoId){
+    alert("الرابط ناقص");
+    return;
+  }
+
+  createPlayer(videoId);
+  startSync();
+
+}
+
+init();
 
 </script>
 

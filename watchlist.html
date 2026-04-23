@@ -1,74 +1,68 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>المستويات</title>
+<title>قوائم الدروس</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 
 body{
   margin:0;
   font-family:Arial;
-  background:linear-gradient(135deg,#0f172a,#1e293b);
+  background:#0f172a;
   color:white;
 }
 
-/* 🔥 HEADER */
 .header{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   padding:15px;
   background:#020617;
 }
 
-.logo{
-  font-weight:bold;
-  font-size:20px;
-}
-
-.home{
-  background:#22c55e;
-  padding:8px 15px;
-  border-radius:10px;
-  cursor:pointer;
-}
-
-/* المحتوى */
 .container{
-  max-width:900px;
+  max-width:1000px;
   margin:auto;
   padding:20px;
 }
 
-/* كرت المستوى */
-.level{
-  background:#1e293b;
-  padding:15px;
-  border-radius:15px;
-  margin-bottom:20px;
-}
-
-.level h2{
-  margin-bottom:10px;
-  color:#38bdf8;
-}
-
-/* فيديو */
 .video{
-  background:#0f172a;
-  padding:12px;
-  border-radius:10px;
-  margin:8px 0;
+  display:flex;
+  gap:10px;
+  padding:10px;
+  border-radius:12px;
   cursor:pointer;
-  transition:0.3s;
 }
 
 .video:hover{
+  background:#1e293b;
+}
+
+.thumb{
+  width:140px;
+  height:80px;
+  border-radius:10px;
+}
+
+.progress{
+  height:4px;
   background:#334155;
-  transform:scale(1.02);
+  margin-top:5px;
+}
+
+.progress span{
+  display:block;
+  height:100%;
+  background:#22c55e;
+}
+
+.lock{
+  color:#f87171;
+  font-size:12px;
 }
 
 </style>
@@ -76,64 +70,113 @@ body{
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
-  <div class="logo">🎓 منصة التعلم</div>
-  <div class="home" onclick="goHome()">🏠 الرئيسية</div>
+  <div>📚 القوائم</div>
+
+  <select id="role">
+    <option value="teacher">👨‍🏫 معلم</option>
+    <option value="student">🎓 طالب</option>
+  </select>
 </div>
 
-<div class="container">
-
-  <!-- Beginner -->
-  <div class="level">
-    <h2>🟢 Beginner</h2>
-
-    <div class="video" onclick="openVideo('abc123','room1')">
-      🎥 Lesson 1 - Family
-    </div>
-
-    <div class="video" onclick="openVideo('def456','room1')">
-      🎥 Lesson 2 - Daily Life
-    </div>
-
-  </div>
-
-  <!-- Intermediate -->
-  <div class="level">
-    <h2>🟡 Intermediate</h2>
-
-    <div class="video" onclick="openVideo('ghi789','room2')">
-      🎥 Lesson 1 - Work
-    </div>
-
-  </div>
-
-  <!-- Advanced -->
-  <div class="level">
-    <h2>🔴 Advanced</h2>
-
-    <div class="video" onclick="openVideo('xyz111','room3')">
-      🎥 Lesson 1 - Business
-    </div>
-
-  </div>
-
-</div>
+<div class="container" id="list"></div>
 
 <script>
 
-/* 🔗 فتح الفيديو */
-function openVideo(videoId,room){
+const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-  window.location.href =
-    `watch.html?room=${room}&video=${videoId}`;
+const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let lessons=[];
+let user;
+let role;
+
+/* 🔥 روابطك هنا */
+const DATA = [
+  {id:"abc123",title:"Episode 1"},
+  {id:"def456",title:"Episode 2"},
+  {id:"ghi789",title:"Episode 3"}
+];
+
+/* تحميل */
+async function init(){
+
+  role = document.getElementById("role").value;
+
+  user = (await supa.auth.getUser()).data.user;
+
+  render([]);
 
 }
 
-/* 🏠 رجوع */
-function goHome(){
-  window.location.href="index.html";
+/* عرض */
+function render(progressData){
+
+  let html="";
+
+  DATA.forEach((v,i)=>{
+
+    let percent=0;
+
+    html+=`
+    <div class="video"
+      onclick="openVideo('${v.id}',${i})">
+
+      <img class="thumb"
+      src="https://img.youtube.com/vi/${v.id}/hqdefault.jpg">
+
+      <div style="flex:1">
+
+        <div>${i+1}. ${v.title}</div>
+
+        <div class="progress">
+          <span style="width:${percent}%"></span>
+        </div>
+
+      </div>
+
+    </div>
+    `;
+  });
+
+  list.innerHTML=html;
 }
+
+/* 🔥 فتح الفيديو (هنا السر) */
+async function openVideo(videoId,index){
+
+  let room = "room_main";
+
+  // 👨‍🏫 المعلم يحدد الفيديو للجميع
+  if(role === "teacher"){
+
+    const channel = supa.channel(room);
+
+    await channel.send({
+      type:'broadcast',
+      event:'start',
+      payload:{
+        video:videoId
+      }
+    });
+
+    window.location.href =
+      `watch.html?room=${room}&video=${videoId}&role=teacher`;
+
+  }
+
+  // 🎓 الطالب ينتظر الأمر
+  else{
+
+    window.location.href =
+      `watch.html?room=${room}&role=student`;
+
+  }
+
+}
+
+init();
 
 </script>
 

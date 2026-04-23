@@ -8,73 +8,66 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 
-<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/732/732200.png">
-
 <style>
-
-:root{
-  --bg:#0f172a;
-  --card:#1e293b;
-  --main:#22c55e;
-}
-
 body{
   margin:0;
-  font-family:Arial;
-  background:linear-gradient(135deg,#0f172a,#1e293b);
+  font-family:system-ui;
+  background:linear-gradient(180deg,#020617,#0f172a);
   color:white;
 }
 
-/* 🔥 الفيديو */
+/* الفيديو */
 .video-box{
-  width:100%;
-  aspect-ratio:16/9;
+  width:95%;
+  max-width:800px;
+  margin:20px auto;
   border-radius:20px;
   overflow:hidden;
-  background:black;
-  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
 }
 
-/* 🎮 الأزرار */
+/* الأزرار */
 .controls{
   display:flex;
   justify-content:center;
   gap:10px;
-  margin-top:20px;
   flex-wrap:wrap;
+  margin:20px;
 }
 
 button{
-  background:var(--main);
+  background:linear-gradient(135deg,#22c55e,#16a34a);
   border:none;
-  padding:10px 18px;
-  border-radius:12px;
+  padding:12px 18px;
+  border-radius:999px;
   color:white;
   cursor:pointer;
+  font-weight:bold;
 }
 
-/* 🌍 الترجمة */
+/* الترجمة */
 .sub-en{
-  margin-top:25px;
-  font-size:20px;
+  text-align:center;
+  font-size:24px;
   color:#38bdf8;
-  font-weight:bold;
+  margin-top:20px;
 }
 
 .sub-ar{
-  font-size:22px;
+  text-align:center;
+  font-size:26px;
   color:#facc15;
-  font-weight:bold;
-  margin-bottom:25px;
+  margin-bottom:30px;
 }
 
-/* 📚 الكلمات */
+/* الكلمات */
 .word{
+  background:#020617;
+  margin:10px;
+  padding:15px;
+  border-radius:15px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
-  padding:12px;
-  border-bottom:1px solid #334155;
 }
 
 .actions{
@@ -83,13 +76,13 @@ button{
 }
 
 .icon{
-  background:#020617;
+  background:#0f172a;
   padding:8px;
   border-radius:10px;
   cursor:pointer;
 }
 
-/* 🔔 toast */
+/* toast */
 .toast{
   position:fixed;
   bottom:20px;
@@ -100,20 +93,12 @@ button{
   border-radius:10px;
   display:none;
 }
-
 </style>
 </head>
 
 <body>
 
-<div style="max-width:900px;margin:auto;padding:15px">
-
-<h2>🎥 فصل مباشر</h2>
-
-<select id="role">
-  <option value="teacher">👨‍🏫 معلم</option>
-  <option value="student">🎓 طالب</option>
-</select>
+<h2 style="text-align:center">🎥 تعلم بذكاء</h2>
 
 <div class="video-box">
   <div id="player"></div>
@@ -132,30 +117,23 @@ button{
 
 <div id="words"></div>
 
-</div>
-
 <div id="toast" class="toast">✔️ تم الحفظ</div>
 
 <script>
 
-const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+/* إعداد */
 const WEBHOOK="https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
-
-const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let player;
 let subtitles=[];
-let lastText="";
-let offset=2; // 🔥 حل مشكلة البداية (موسيقى)
+let index=0;
+let timer;
 
+/* قراءة playlist */
 const params = new URLSearchParams(location.search);
 const listId = params.get("list");
 
-let isTeacher=false;
-let channel;
-
-/* ✅ إنشاء الفيديو */
+/* إنشاء الفيديو */
 function onYouTubeIframeAPIReady(){
   player = new YT.Player('player',{
     playerVars:{
@@ -163,33 +141,36 @@ function onYouTubeIframeAPIReady(){
       list:listId
     },
     events:{
-      onReady: init,
-      onStateChange: onChange
+      onReady:()=>{},
+      onStateChange:onChange
     }
   });
 }
 
-/* 🔄 تغيير فيديو */
+/* عند تشغيل الفيديو */
 function onChange(e){
 
   if(e.data === YT.PlayerState.PLAYING){
-
-    let vid = player.getVideoData().video_id;
-
-    if(!vid) return;
-
-    loadAI(vid);
+    startSubtitles();
+    loadAI();
   }
 
+  if(e.data === YT.PlayerState.PAUSED){
+    stopSubtitles();
+  }
 }
 
-/* 🤖 تحميل AI */
-async function loadAI(videoId){
+/* تحميل AI */
+async function loadAI(){
 
   subtitles=[];
-  lastText="";
+  index=0;
+  words.innerHTML="";
 
-  let url="https://www.youtube.com/watch?v="+videoId;
+  let vid = player.getVideoData().video_id;
+  if(!vid) return;
+
+  let url="https://www.youtube.com/watch?v="+vid;
 
   let res = await fetch(WEBHOOK,{
     method:"POST",
@@ -199,22 +180,21 @@ async function loadAI(videoId){
 
   let data = await res.json();
 
-  renderWords(data);
+  render(data);
 }
 
-/* 📚 عرض الكلمات */
-function renderWords(data){
+/* عرض الكلمات */
+function render(data){
 
   let html="";
 
   for(let cat in data){
 
-    html+=`<h3>${cat}</h3>`;
+    html+=`<h3 style="text-align:center">${cat}</h3>`;
 
     data[cat].forEach(w=>{
 
       subtitles.push({
-        time:w.time||0,
         en:w.example||"",
         ar:w.example_ar||""
       });
@@ -238,92 +218,52 @@ function renderWords(data){
   words.innerHTML=html;
 }
 
-/* 🔊 صوت */
+/* الترجمة (بدون وقت) */
+function startSubtitles(){
+
+  stopSubtitles();
+
+  function run(){
+
+    if(!subtitles[index]) return;
+
+    subEn.innerHTML = subtitles[index].en;
+    subAr.innerText = subtitles[index].ar;
+
+    index++;
+
+    timer = setTimeout(run,2500);
+  }
+
+  run();
+}
+
+function stopSubtitles(){
+  clearTimeout(timer);
+}
+
+/* صوت */
 function speak(t){
   let u=new SpeechSynthesisUtterance(t);
   u.lang="en-US";
   speechSynthesis.speak(u);
 }
 
-/* ⭐ حفظ */
+/* حفظ */
 function save(el){
   el.innerHTML="✔️";
   el.style.background="#22c55e";
 
   toast.style.display="block";
-  setTimeout(()=>toast.style.display="none",1500);
+  setTimeout(()=>toast.style.display="none",1200);
 }
 
-/* 🎮 تحكم */
-function play(){ player?.playVideo(); }
-function pause(){ player?.pauseVideo(); }
-function restart(){ player?.seekTo(0); }
-
-function next(){ player?.nextVideo(); }
-function prev(){ player?.previousVideo(); }
-
-/* 🎯 الترجمة الذكية */
-setInterval(()=>{
-
-  if(!player || !player.getCurrentTime) return;
-
-  let t = player.getCurrentTime();
-
-  let current = subtitles.find(s =>
-    t >= (s.time + offset) && t < (s.time + offset + 3)
-  );
-
-  if(!current) return;
-
-  // 🔥 منع التكرار
-  if(current.en === lastText) return;
-
-  lastText = current.en;
-
-  subEn.innerHTML = current.en;
-  subAr.innerText = current.ar;
-
-},400);
-
-/* 🔥 مزامنة */
-function init(){
-
-  isTeacher = document.getElementById("role").value==="teacher";
-
-  channel = supa.channel("room1");
-
-  channel.on('broadcast',{event:'sync'},(msg)=>{
-
-    if(isTeacher) return;
-
-    let {time,state} = msg.payload;
-
-    if(Math.abs(player.getCurrentTime()-time)>1){
-      player.seekTo(time,true);
-    }
-
-    if(state===1) player.playVideo();
-    else player.pauseVideo();
-
-  }).subscribe();
-
-  // المعلم يرسل
-  setInterval(()=>{
-
-    if(!isTeacher || !player) return;
-
-    channel.send({
-      type:'broadcast',
-      event:'sync',
-      payload:{
-        time:player.getCurrentTime(),
-        state:player.getPlayerState()
-      }
-    });
-
-  },1000);
-
-}
+/* تحكم */
+function play(){ player.playVideo(); }
+function pause(){ player.pauseVideo(); }
+function restart(){ player.seekTo(0); }
+function next(){ player.nextVideo(); }
+function prev(){ player.previousVideo(); }
 
 </script>
 

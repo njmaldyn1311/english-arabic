@@ -105,7 +105,7 @@ button {
   .sub-ar{ font-size:18px; }
 }
 
-/* 🔥 زر عائم */
+/* 🔥 زر الملاحظات */
 #noteBtn{
   position:fixed;
   bottom:20px;
@@ -183,7 +183,7 @@ button {
 
 </div>
 
-<!-- 🔥 زر الملاحظات -->
+<!-- 🔥 زر -->
 <div id="noteBtn" onclick="toggleNoteBox()">📝</div>
 
 <!-- 🔥 صندوق -->
@@ -254,13 +254,12 @@ function syncLoop(){
   },500);
 }
 
-/* 🔥 زر الملاحظات */
+/* 🔥 الملاحظات */
 function toggleNoteBox(){
   let box=document.getElementById("noteBox");
   box.style.display = box.style.display==="block" ? "none" : "block";
 }
 
-/* 🔥 toast */
 function showNoteToast(msg){
   let t=document.getElementById("noteToast");
   t.innerText=msg;
@@ -268,7 +267,6 @@ function showNoteToast(msg){
   setTimeout(()=>t.style.display="none",1500);
 }
 
-/* 🔥 حفظ */
 async function saveNote(){
 
   let text=document.getElementById("noteInput").value.trim();
@@ -289,48 +287,6 @@ async function saveNote(){
 
   document.getElementById("noteInput").value="";
   showNoteToast("✅ تم الحفظ");
-}
-
-async function sendUrl(){
-
-  let url=document.getElementById("url").value;
-  if(!url) return alert("اكتب رابط");
-
-  let id = getVideoId(url);
-  if(!id){
-    alert("❌ رابط غير صحيح");
-    return;
-  }
-
-  document.getElementById("loading").style.display="block";
-  document.getElementById("videoBox").style.display="block";
-
-  createPlayer(id);
-
-  let res=await fetch(WEBHOOK,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({url})
-  });
-
-  let text=await res.text();
-  let data=JSON.parse(text);
-
-  document.getElementById("loading").style.display="none";
-
-  subtitles=[];
-
-  for(let cat in data){
-    if(!Array.isArray(data[cat])) continue;
-
-    data[cat].forEach(w=>{
-      subtitles.push({
-        time:w.time||0,
-        en:w.example,
-        ar:w.example_ar
-      });
-    });
-  }
 }
 
 </script>

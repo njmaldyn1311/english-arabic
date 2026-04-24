@@ -2,199 +2,336 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>مشاهدة الدرس</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>AI Video Learning PRO+</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <style>
+html { -webkit-text-size-adjust: 100%; }
 
-body{
-  background:#0f172a;
-  color:white;
-  font-family:Arial;
-  margin:0;
+body {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  font-family: Arial;
+  text-align: center;
+  margin: 0;
 }
 
-/* 🔥 HEADER */
-.header{
+.container {
+  width: 90%;
+  max-width: 700px;
+  margin: auto;
+  padding: 15px;
+}
+
+input {
+  padding: 10px 10px;
+  width: 80%;
+  max-width: 320px;
+  border-radius: 12px;
+  border: none;
+  margin: 10px 0;
+  font-size: 16px;
+  direction: rtl;
+  text-align: right;
+}
+
+input::placeholder { text-align: right; }
+
+button {
+  background: #22c55e;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.card {
+  background: #1e293b;
+  margin: 15px 0;
+  padding: 15px;
+  border-radius: 15px;
+}
+
+#player { width: 100%; height: 220px; border-radius: 15px; }
+
+.sub-en { color: #38bdf8; font-weight: bold; }
+.sub-ar { color: #facc15; font-size: 20px; font-weight: bold; }
+
+.word-box{
+  border-bottom:1px solid #334155;
+  padding:10px;
+  text-align:left;
+}
+
+.word-top{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:15px;
-  background:#020617;
-  border-bottom:1px solid #1e293b;
 }
 
-.user{
-  font-weight:bold;
-  color:#38bdf8;
+.en{color:#38bdf8;font-weight:bold;}
+.ar{color:#f87171;}
+
+.icon{ cursor:pointer; margin-left:5px; font-size:18px; }
+
+.example{ margin-top:5px; color:#e2e8f0; cursor:pointer; font-size:14px; }
+.example-ar{ color:#facc15; font-size:14px; }
+
+.highlight{ color:#22c55e; font-weight:bold; }
+
+#loading {
+  display: none;
+  margin-top: 10px;
+  font-size: 16px;
+  color: #facc15;
+  animation: pulse 1s infinite;
 }
 
-.home-btn{
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+@media (max-width: 500px){
+  #player{ height:180px; }
+  .sub-ar{ font-size:18px; }
+}
+
+/* 🔥 زر عائم */
+#noteBtn{
+  position:fixed;
+  bottom:20px;
+  right:20px;
   background:#22c55e;
-  padding:8px 15px;
-  border-radius:10px;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
   cursor:pointer;
+  box-shadow:0 10px 25px rgba(0,0,0,0.4);
+  z-index:999;
 }
 
-/* محتوى */
-.container{
-  max-width:900px;
-  margin:auto;
-  padding:20px;
-}
-
-.card{
+/* 🔥 صندوق الملاحظات */
+#noteBox{
+  position:fixed;
+  bottom:90px;
+  right:20px;
+  width:260px;
   background:#1e293b;
   padding:15px;
   border-radius:15px;
-  margin-top:15px;
+  display:none;
+  z-index:999;
 }
 
-#player{
+#noteBox textarea{
   width:100%;
-  height:350px;
-  border-radius:15px;
+  height:80px;
+  border:none;
+  border-radius:10px;
+  padding:10px;
+  resize:none;
 }
 
+/* 🔥 toast */
+#noteToast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#22c55e;
+  padding:12px 25px;
+  border-radius:12px;
+  display:none;
+  font-size:15px;
+  z-index:999;
+}
 </style>
 </head>
 
 <body>
 
-<!-- ✅ HEADER -->
-<div class="header">
-
-  <div class="user" id="userName">...</div>
-
-  <div class="home-btn" onclick="goHome()">🏠 الرئيسية</div>
-
-</div>
-
 <div class="container">
 
-  <div class="card">
-    <div id="player"></div>
-  </div>
+<h2>🎥 تعلم من الفيديو بذكاء</h2>
+
+<input id="url" placeholder="ضع رابط YouTube">
+<br>
+<button onclick="sendUrl()">🔗 تحليل</button>
+
+<p id="loading">⏳ جاري التحليل...</p>
+
+<div id="videoBox" class="card" style="display:none;">
+  <div id="player"></div>
+  <div id="subEn" class="sub-en"></div>
+  <div id="subAr" class="sub-ar"></div>
+</div>
+
+<div id="result"></div>
 
 </div>
+
+<!-- 🔥 زر الملاحظات -->
+<div id="noteBtn" onclick="toggleNoteBox()">📝</div>
+
+<!-- 🔥 صندوق -->
+<div id="noteBox">
+  <textarea id="noteInput" placeholder="اكتب ملاحظتك..."></textarea>
+  <button onclick="saveNote()">💾 حفظ</button>
+</div>
+
+<!-- 🔥 toast -->
+<div id="noteToast"></div>
 
 <script>
 
-const SUPABASE_URL="YOUR_URL";
-const SUPABASE_KEY="YOUR_KEY";
+const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 
-const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const WEBHOOK="https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
+
+/* 🔥 user_id */
+let user_id = localStorage.getItem("user_id");
+
+if(!user_id){
+  user_id = "user_" + Math.random().toString(36).substr(2,9);
+  localStorage.setItem("user_id", user_id);
+}
 
 let player;
-let roomId;
-let videoId;
-let isTeacher=false;
-let channel;
+let subtitles=[];
 
-/* ✅ قراءة الرابط */
-function getParams(){
-  const params=new URLSearchParams(location.search);
-  return {
-    room:params.get("room"),
-    video:params.get("video")
-  };
+function getVideoId(url){
+  try{
+    if(url.includes("youtu.be")){
+      return url.split("/").pop().split("?")[0];
+    }
+    if(url.includes("youtube.com")){
+      const u = new URL(url);
+      return u.searchParams.get("v");
+    }
+    if(url.length===11) return url;
+    return null;
+  }catch{
+    return null;
+  }
 }
 
-/* 🔥 جلب اسم الطالب */
-async function loadUser(){
-
-  let {data}=await supa.auth.getUser();
-
-  if(!data.user) return;
-
-  // نفترض الاسم محفوظ في metadata
-  let first=data.user.user_metadata.first_name || "";
-  let last=data.user.user_metadata.last_name || "";
-
-  userName.innerText = first + " " + last;
-
-}
-
-/* 🎥 إنشاء الفيديو */
 function createPlayer(id){
+  if(player) player.destroy();
 
-  player=new YT.Player('player',{
+  player = new YT.Player('player',{
     videoId:id,
-    events:{
-      onReady:()=>{
-        setInterval(syncSend,1500);
-      }
-    }
+    events:{ onReady:syncLoop }
+  });
+}
+
+function syncLoop(){
+  setInterval(()=>{
+    if(!player) return;
+
+    let t = player.getCurrentTime();
+
+    let current = subtitles.find(s=>t>=s.time && t<s.time+4);
+    if(!current) return;
+
+    document.getElementById("subEn").innerHTML=current.en;
+    document.getElementById("subAr").innerText=current.ar;
+
+  },500);
+}
+
+/* 🔥 زر الملاحظات */
+function toggleNoteBox(){
+  let box=document.getElementById("noteBox");
+  box.style.display = box.style.display==="block" ? "none" : "block";
+}
+
+/* 🔥 toast */
+function showNoteToast(msg){
+  let t=document.getElementById("noteToast");
+  t.innerText=msg;
+  t.style.display="block";
+  setTimeout(()=>t.style.display="none",1500);
+}
+
+/* 🔥 حفظ */
+async function saveNote(){
+
+  let text=document.getElementById("noteInput").value.trim();
+  if(!text) return;
+
+  let time = player ? Math.floor(player.getCurrentTime()) : 0;
+
+  let { error } = await client.from("user_notes").insert({
+    user_id:user_id,
+    note:text,
+    time:time
   });
 
-}
-
-/* 🔄 مزامنة */
-function startSync(){
-
-  channel=supa.channel(roomId);
-
-  channel.on('broadcast',{event:'sync'},(msg)=>{
-
-    let {time,state}=msg.payload;
-
-    if(Math.abs(player.getCurrentTime()-time)>1){
-      player.seekTo(time,true);
-    }
-
-    if(state==="play") player.playVideo();
-    else player.pauseVideo();
-
-  }).subscribe();
-
-}
-
-/* إرسال */
-function syncSend(){
-
-  if(!player) return;
-
-  channel.send({
-    type:'broadcast',
-    event:'sync',
-    payload:{
-      time:player.getCurrentTime(),
-      state:player.getPlayerState()==1?"play":"pause"
-    }
-  });
-
-}
-
-/* 🏠 رجوع */
-function goHome(){
-  window.location.href="index.html";
-}
-
-/* 🚀 تشغيل الصفحة */
-async function init(){
-
-  await loadUser();
-
-  let p=getParams();
-
-  roomId=p.room;
-  videoId=p.video;
-
-  if(!roomId || !videoId){
-    alert("الرابط ناقص");
+  if(error){
+    showNoteToast("❌ خطأ");
     return;
   }
 
-  createPlayer(videoId);
-  startSync();
-
+  document.getElementById("noteInput").value="";
+  showNoteToast("✅ تم الحفظ");
 }
 
-init();
+async function sendUrl(){
+
+  let url=document.getElementById("url").value;
+  if(!url) return alert("اكتب رابط");
+
+  let id = getVideoId(url);
+  if(!id){
+    alert("❌ رابط غير صحيح");
+    return;
+  }
+
+  document.getElementById("loading").style.display="block";
+  document.getElementById("videoBox").style.display="block";
+
+  createPlayer(id);
+
+  let res=await fetch(WEBHOOK,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({url})
+  });
+
+  let text=await res.text();
+  let data=JSON.parse(text);
+
+  document.getElementById("loading").style.display="none";
+
+  subtitles=[];
+
+  for(let cat in data){
+    if(!Array.isArray(data[cat])) continue;
+
+    data[cat].forEach(w=>{
+      subtitles.push({
+        time:w.time||0,
+        en:w.example,
+        ar:w.example_ar
+      });
+    });
+  }
+}
 
 </script>
 

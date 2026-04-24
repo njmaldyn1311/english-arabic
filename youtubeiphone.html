@@ -123,7 +123,7 @@ button {
   z-index:999;
 }
 
-/* 🔥 صندوق الملاحظات */
+/* 🔥 صندوق */
 #noteBox{
   position:fixed;
   bottom:90px;
@@ -203,13 +203,34 @@ const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const WEBHOOK="https://n8n.srv1495053.hstgr.cloud/webhook/video-ai";
 
-/* 🔥 user_id */
+/* 🔥 توحيد user_id */
 let user_id = localStorage.getItem("user_id");
 
 if(!user_id){
   user_id = "user_" + Math.random().toString(36).substr(2,9);
   localStorage.setItem("user_id", user_id);
 }
+
+console.log("USER:", user_id);
+
+/* 🔥 تتبع */
+async function track(action){
+  await fetch(SUPABASE_URL + "/rest/v1/user_activity", {
+    method: "POST",
+    headers:{
+      "apikey": SUPABASE_KEY,
+      "Authorization":"Bearer "+SUPABASE_KEY,
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
+      user_id: user_id,
+      page: "video_page",
+      action: action
+    })
+  });
+}
+
+track("دخول الصفحة");
 
 let player;
 let subtitles=[];
@@ -254,6 +275,118 @@ function syncLoop(){
   },500);
 }
 
+function speak(t){
+  let u=new SpeechSynthesisUtterance(t);
+  u.lang="en-US";
+  speechSynthesis.speak(u);
+}
+
+/* ⭐ حفظ */
+async function saveWord(el,en,ar){
+
+  await client.from("user_star_words").insert({
+    user_id: user_id,
+    word: en,
+    translation: ar
+  });
+
+  track("حفظ كلمة: " + en);
+
+  el.innerText="✅";
+}
+
+function goTo(sec){
+  if(player) player.seekTo(sec,true);
+}
+
+function show(data){
+  subtitles=[];
+  let html="";
+
+  for(let cat in data){
+    if(!Array.isArray(data[cat])) continue;
+
+    html+=`<div class="card"><h3>${cat}</h3>`;
+
+    data[cat].forEach(w=>{
+
+      const word=w.en||"";
+      const ar=w.ar||"";
+      const ex=w.example||"";
+      const ex_ar=w.example_ar||"";
+
+      subtitles.push({
+        time:w.time||0,
+        en:ex,
+        ar:ex_ar
+      });
+
+      let highlighted = ex.replace(
+        new RegExp(word,"gi"),
+        `<span class="highlight">${word}</span>`
+      );
+
+      html+=`
+        <div class="word-box">
+          <div class="word-top">
+            <div>
+              <span class="en">${word}</span>
+              <span class="ar">${ar}</span>
+            </div>
+
+            <div>
+              <span class="icon" onclick="speak('${word}')">🔊</span>
+              <span class="icon" onclick="saveWord(this,'${word}','${ar}')">⭐</span>
+            </div>
+          </div>
+
+          <div class="example" onclick="goTo(${w.time||0})">
+            ${highlighted}
+          </div>
+
+          <div class="example-ar">${ex_ar}</div>
+        </div>
+      `;
+    });
+
+    html+="</div>";
+  }
+
+  document.getElementById("result").innerHTML=html;
+}
+
+async function sendUrl(){
+
+  let url=document.getElementById("url").value;
+  if(!url) return alert("اكتب رابط");
+
+  track("تحليل فيديو");
+
+  let id = getVideoId(url);
+  if(!id){
+    alert("❌ رابط غير صحيح");
+    return;
+  }
+
+  document.getElementById("loading").style.display="block";
+  document.getElementById("videoBox").style.display="block";
+
+  createPlayer(id);
+
+  let res=await fetch(WEBHOOK,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({url})
+  });
+
+  let text=await res.text();
+  let data=JSON.parse(text);
+
+  document.getElementById("loading").style.display="none";
+
+  show(data);
+}
+
 /* 🔥 الملاحظات */
 function toggleNoteBox(){
   let box=document.getElementById("noteBox");
@@ -281,15 +414,15 @@ async function saveNote(){
   });
 
   if(error){
-    showNoteToast("❌ خطأ");
+    showNoteToast("❌ خطأ في الحفظ");
     return;
   }
 
   document.getElementById("noteInput").value="";
-  showNoteToast("✅ تم الحفظ");
+  showNoteToast("✅ تم حفظ الملاحظة");
 }
 
 </script>
-
+<script src="auth.js"></script>
 </body>
 </html>

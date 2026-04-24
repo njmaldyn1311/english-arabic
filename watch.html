@@ -18,9 +18,29 @@ body{
   text-align:center;
 }
 
-.container{max-width:900px;margin:auto;padding:15px;}
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:15px;
+}
 
-#player{width:100%;height:220px;border-radius:15px;}
+/* 🔥 كارد الفيديو الجديد */
+.video-box{
+  width:100%;
+  max-width:1000px;
+  margin:auto;
+  aspect-ratio:16/9;
+  border-radius:20px;
+  overflow:hidden;
+  background:#000;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+
+/* الفيديو ياخذ كامل المساحة */
+#player{
+  width:100%;
+  height:100%;
+}
 
 .controls{
   display:flex;
@@ -39,8 +59,19 @@ button{
   cursor:pointer;
 }
 
-.sub-en{color:#38bdf8;font-weight:bold;margin-top:20px;}
-.sub-ar{color:#facc15;font-size:18px;font-weight:bold;margin-bottom:25px;}
+.sub-en{
+  color:#38bdf8;
+  font-weight:bold;
+  margin-top:25px;
+  font-size:20px;
+}
+
+.sub-ar{
+  color:#facc15;
+  font-size:22px;
+  font-weight:bold;
+  margin-bottom:30px;
+}
 
 .card{
   background:#1e293b;
@@ -87,7 +118,10 @@ button{
 
 <h2>🎥 تعلم من الفيديو</h2>
 
-<div id="player"></div>
+<!-- ✅ كارد الفيديو -->
+<div class="video-box">
+  <div id="player"></div>
+</div>
 
 <div class="controls">
   <button onclick="prev()">⏮ السابق</button>

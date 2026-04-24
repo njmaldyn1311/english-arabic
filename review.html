@@ -186,9 +186,10 @@ document.getElementById("username").innerText =
 async function loadNotes(){
 
   let { data, error } = await client
-    .from("user_notes")
-    .select("*")
-    .eq("user_id", user_id); // تأكد نفس القيمة
+  .from("user_notes")
+  .select("*")
+  .eq("user_id", user_id)
+  .order("created_at", { ascending: false }); // 🔥 الجديد // تأكد نفس القيمة
 
   if(error){
     console.log(error);

@@ -183,15 +183,27 @@ document.getElementById("username").innerText =
   "👤 " + p[0] + (p[1] ? " " + p[1] : "");
 
 /* 📝 الملاحظات */
-let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+async function loadNotes(){
 
-let html="";
-notes.forEach(n=>{
-  html += `<div class="note">• ${n}</div>`;
-});
+  let { data, error } = await client
+    .from("user_notes")
+    .select("*")
+    .eq("user_id", user_id); // تأكد نفس القيمة
 
-document.getElementById("notes").innerHTML =
-  html || "لا توجد ملاحظات";
+  if(error){
+    console.log(error);
+    return;
+  }
+
+  let html = "";
+
+  data.forEach(n=>{
+    html += `<div class="note">${n.note}</div>`;
+  });
+
+  document.getElementById("notes").innerHTML =
+    html || "لا توجد ملاحظات";
+}
 
 /* ⭐ الكلمات */
 let words = [];

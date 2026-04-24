@@ -151,7 +151,7 @@ async function loadWords(){
 
   let data = await res.json();
 
-  words = data.slice(0,20);
+  words = data.slice(0,1000);
 
   document.getElementById("count").innerText = words.length;
 

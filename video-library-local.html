@@ -24,13 +24,14 @@ video{display:block;width:100%;max-height:72vh;aspect-ratio:16/9;background:#020
 #lessonList{max-height:770px;overflow:auto}.unit{color:var(--blue);font-size:13px;margin:15px 4px 7px;font-weight:bold}
 .lesson{display:flex;gap:10px;align-items:center;padding:10px;border-radius:11px;cursor:pointer;border:1px solid transparent;margin-bottom:5px}.lesson:hover{background:#20324c}.lesson.active{background:#20324c;border-color:#0ea5e9}
 .thumb{width:100px;height:64px;object-fit:cover;background:#020617;border-radius:8px;flex-shrink:0}
+.thumb-placeholder{width:100px;height:64px;flex-shrink:0;border-radius:8px;background:linear-gradient(135deg,#164e63,#0f172a);display:flex;justify-content:center;align-items:center;font-size:27px;border:1px solid #334155}
 .lesson-info{min-width:0;flex:1}.lesson-name{font-size:13px;font-weight:bold;line-height:1.5}.lesson-meta{font-size:11px;color:var(--muted);margin-top:4px}.done{color:#86efac;font-size:11px}
 .progressline{height:5px;background:#334155;border-radius:5px;overflow:hidden;margin-top:6px}.progressline span{display:block;height:100%;background:var(--green);width:0}
 .toast{display:none;position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:40;padding:12px 18px;background:#15803d;color:white;border-radius:10px;max-width:90%;font-size:13px}.toast.error{background:#b91c1c}
 .empty{text-align:center;color:var(--muted);padding:22px 10px;font-size:13px;line-height:1.8}
 .footer{text-align:center;color:#64748b;font-size:11px;margin:28px 0;letter-spacing:1.4px}
 @media(max-width:800px){.layout{grid-template-columns:1fr}#lessonList{max-height:420px}.video-title{font-size:18px}}
-@media(max-width:520px){header{padding:10px 12px}.brand{font-size:17px}.brand small{font-size:9px}main{margin:15px auto;padding:0 10px 30px}.panel{padding:10px}.heading h1{font-size:21px}video{aspect-ratio:16/9}.thumb{width:90px;height:58px}.lesson-name{font-size:12px}.controls button{min-width:calc(50% - 8px)}}
+@media(max-width:520px){header{padding:10px 12px}.brand{font-size:17px}.brand small{font-size:9px}main{margin:15px auto;padding:0 10px 30px}.panel{padding:10px}.heading h1{font-size:21px}video{aspect-ratio:16/9}.thumb,.thumb-placeholder{width:90px;height:58px}.lesson-name{font-size:12px}.controls button{min-width:calc(50% - 8px)}}
 </style>
 </head>
 <body>
@@ -107,7 +108,31 @@ function renderLessons(){
     if(l.unit_name!==unit){unit=l.unit_name;const h=document.createElement("div");h.className="unit";h.textContent=unit||"دروس أخرى";list.append(h);}
     const i=lessons.findIndex(x=>x.id===l.id),p=getProgress(l.id),row=document.createElement("div");
     row.className="lesson"+(i===activeIndex?" active":"");
-    const thumb=document.createElement("img");thumb.className="thumb";thumb.alt="صورة الدرس";thumb.src=l.thumbnail_url||"";
+    let thumb;
+
+    if (l.thumbnail_url) {
+      thumb = document.createElement("img");
+      thumb.className = "thumb";
+      thumb.alt = "صورة الدرس";
+      thumb.loading = "lazy";
+      thumb.src = l.thumbnail_url;
+
+      // استبدال الصورة بغلاف افتراضي إذا فشل تحميلها.
+      thumb.onerror = () => {
+        const placeholder = document.createElement("div");
+        placeholder.className = "thumb-placeholder";
+        placeholder.textContent = "🎬";
+        placeholder.setAttribute("aria-label", "صورة الدرس غير متاحة");
+        thumb.replaceWith(placeholder);
+      };
+    } else {
+      // عرض غلاف افتراضي إذا لم يوجد رابط صورة.
+      thumb = document.createElement("div");
+      thumb.className = "thumb-placeholder";
+      thumb.textContent = "🎬";
+      thumb.setAttribute("aria-label", "غلاف الفيديو");
+    }
+
     const info=document.createElement("div");info.className="lesson-info";
     const title=document.createElement("div");title.className="lesson-name";title.textContent=`${l.lesson_number||i+1}. ${l.title||"درس بدون عنوان"}`;
     const meta=document.createElement("div");meta.className="lesson-meta";meta.textContent=l.book_title||"English Belarabi";

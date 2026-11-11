@@ -44,6 +44,7 @@ header{
 }
 
 .brand{font-size:20px;font-weight:bold}
+
 .brand small{
   display:block;
   color:var(--blue);
@@ -73,6 +74,7 @@ main{
 
 .heading{margin-bottom:16px}
 .heading h1{font-size:24px;margin:0 0 6px}
+
 .heading p{
   color:var(--muted);
   font-size:13px;
@@ -218,8 +220,19 @@ video{
 }
 
 .lesson-info{min-width:0;flex:1}
-.lesson-name{font-size:13px;font-weight:bold;line-height:1.5}
-.lesson-meta{font-size:11px;color:var(--muted);margin-top:4px}
+
+.lesson-name{
+  font-size:13px;
+  font-weight:bold;
+  line-height:1.5
+}
+
+.lesson-meta{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:4px
+}
+
 .done{color:#86efac;font-size:11px}
 
 .progressline{
@@ -270,7 +283,7 @@ video{
   letter-spacing:1.4px
 }
 
-/* تصميم التحليل بنفس صفحة الفصل الذكي */
+/* قسم التحليل */
 
 .analysis-panel{
   margin-top:16px;
@@ -333,12 +346,16 @@ video{
   overflow:hidden
 }
 
+/* عناوين الأقسام باللون الأبيض وفي المنتصف */
+
 .analysis-category h4{
-  margin:20px 0 0;
+  margin:20px 0 14px;
   padding:0 0 10px;
-  color:#facc15;
-  font-size:20px;
+  color:#ffffff;
+  font-size:22px;
   font-weight:bold;
+  text-align:center;
+  direction:ltr;
   border:0
 }
 
@@ -365,6 +382,8 @@ video{
   min-width:0
 }
 
+/* الترجمة العربية يميناً */
+
 .analysis-ar{
   order:1;
   flex:0 1 27%;
@@ -377,6 +396,8 @@ video{
   overflow-wrap:anywhere
 }
 
+/* أزرار الحفظ والنطق */
+
 .analysis-actions{
   order:2;
   display:flex;
@@ -386,6 +407,8 @@ video{
   flex:0 0 auto;
   direction:ltr
 }
+
+/* الكلمة الإنجليزية يساراً */
 
 .analysis-en{
   order:3;
@@ -420,57 +443,6 @@ video{
 .analysis-icon:active{transform:scale(.96)}
 .analysis-icon:disabled{opacity:.65}
 
-.analysis-example{
-  margin-top:9px;
-  color:#e2e8f0;
-  font-size:14px;
-  line-height:1.8;
-  cursor:pointer;
-  text-align:left;
-  direction:ltr;
-  padding:0 2px;
-  overflow-wrap:anywhere;
-  unicode-bidi:plaintext
-}
-
-.analysis-example-ar{
-  color:#facc15;
-  font-size:13px;
-  line-height:1.8;
-  margin-top:3px;
-  text-align:right;
-  direction:rtl;
-  overflow-wrap:anywhere
-}
-
-.analysis-highlight{
-  color:#22c55e;
-  font-weight:900
-}
-
-.analysis-grammar{
-  margin-top:20px;
-  background:transparent;
-  border:0;
-  border-top:1px solid #334155;
-  border-radius:0;
-  padding:16px 0 0;
-  line-height:2
-}
-
-.analysis-grammar h4{
-  margin:0 0 8px;
-  color:#facc15;
-  font-size:20px
-}
-
-.analysis-grammar-content{
-  white-space:pre-wrap;
-  color:#e2e8f0;
-  font-size:14px;
-  overflow-wrap:anywhere
-}
-
 .analysis-empty{
   text-align:center;
   color:#94a3b8;
@@ -489,10 +461,18 @@ video{
 
 @media(max-width:600px){
   .analysis-panel{padding:14px 12px}
-  .analysis-category h4{font-size:19px;margin-top:18px}
+
+  .analysis-category h4{
+    font-size:20px;
+    margin-top:18px;
+    text-align:center;
+    color:#ffffff
+  }
+
   .analysis-word-top{gap:7px}
   .analysis-ar{flex-basis:25%;font-size:17px}
   .analysis-actions{gap:7px}
+
   .analysis-icon{
     width:52px;
     height:52px;
@@ -500,8 +480,8 @@ video{
     border-radius:12px;
     font-size:23px
   }
+
   .analysis-en{font-size:17px}
-  .analysis-example{font-size:13px}
 }
 
 @media(max-width:520px){
@@ -522,12 +502,14 @@ video{
   .analysis-word-top{gap:5px}
   .analysis-ar{flex-basis:23%;font-size:15px}
   .analysis-actions{gap:5px}
+
   .analysis-icon{
     width:45px;
     height:45px;
     flex-basis:45px;
     font-size:21px
   }
+
   .analysis-en{font-size:15px}
 }
 
@@ -550,14 +532,18 @@ body.lesson-focus #videoPlayer{max-height:78vh}
   </div>
 
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-    <button id="showListBtn" class="secondary"
-      onclick="showLessonList()" style="display:none">
+
+    <button id="showListBtn"
+      class="secondary"
+      onclick="showLessonList()"
+      style="display:none">
       ☰ قائمة الدروس
     </button>
 
     <button class="secondary" onclick="location.href='index.html'">
       🏠 الرئيسية
     </button>
+
   </div>
 </header>
 
@@ -593,6 +579,7 @@ body.lesson-focus #videoPlayer{max-height:78vh}
       </div>
 
       <div class="controls">
+
         <button class="secondary" onclick="previousLesson()">
           ⬅ الدرس السابق
         </button>
@@ -604,6 +591,7 @@ body.lesson-focus #videoPlayer{max-height:78vh}
         <button class="secondary" onclick="saveProgress(true)">
           💾 حفظ التقدم
         </button>
+
       </div>
 
       <div id="progressText" class="muted" style="margin-top:10px"></div>
@@ -644,7 +632,7 @@ body.lesson-focus #videoPlayer{max-height:78vh}
         <h3>🧠 تحليل الدرس الذكي</h3>
 
         <div class="analysis-subtitle" id="analysisSubtitle">
-          اختر درساً لعرض المفردات والأمثلة والترجمة والقاعدة.
+          اختر درساً لعرض الكلمات وترجماتها في الأقسام الستة.
         </div>
       </div>
 
@@ -663,21 +651,9 @@ body.lesson-focus #videoPlayer{max-height:78vh}
       ⏳ جارٍ تفريغ صوت الدرس واستخراج المفردات...
     </div>
 
-    <div id="analysisCaptions"
-      style="margin-top:12px;display:none">
-
-      <div id="analysisSubEn"></div>
-      <div id="analysisSubAr"></div>
-
-      <div class="analysis-subtitle">
-        اضغط على المثال للانتقال إلى توقيته داخل الفيديو.
-      </div>
-
-    </div>
-
     <div id="analysisResult">
       <div class="analysis-empty">
-        ستظهر هنا الأفعال والأسماء والصفات والظروف وحروف الجر والعبارات والقاعدة بعد تحليل الدرس.
+        ستظهر هنا الأفعال والأسماء والصفات والأفعال المركبة والتعبيرات الاصطلاحية والظروف.
       </div>
     </div>
 
@@ -853,7 +829,7 @@ async function init(){
     `${lessons.length} درس متاح في مكتبة إنجلش بالعربي`;
 
     $("description").textContent =
-    "اختر الحلقة التي تريد دراستها. ستظهر المفردات والترجمة والقاعدة أسفل الفيديو.";
+    "اختر الحلقة التي تريد دراستها. ستظهر المفردات والترجمة أسفل الفيديو.";
 
     $("reanalyzeBtn").disabled = true;
 
@@ -1095,29 +1071,17 @@ async function playLesson(index,startSeconds=0){
 /* ===== التحليل الذكي ===== */
 
 let currentAnalysis = null;
-let subtitleRows = [];
-let subtitleTimer = null;
 
 
-/* الأقسام التي تظهر في الصفحة */
+/* الأقسام الستة */
 
 const analysisLabels = {
-
-  verbs:"🧠 الأفعال",
-  nouns:"📦 الأسماء",
-  adjectives:"✨ الصفات",
-  adverbs:"⚡ الظروف",
-  prepositions:"🔗 حروف الجر",
-  pronouns:"👤 الضمائر",
-  conjunctions:"🔀 أدوات الربط",
-  determiners:"🧭 المحددات وأدوات التعريف",
-  modal_verbs:"🎯 الأفعال الناقصة",
-  phrasal_verbs:"🧩 الأفعال المركبة",
-  idioms:"💬 التعبيرات الاصطلاحية",
-  collocations:"🤝 المتلازمات اللفظية",
-  expressions:"🗣️ العبارات والتعبيرات",
-  interjections:"❗ التعجبات والتداخلات"
-
+  verbs: "verbs",
+  nouns: "nouns",
+  adjectives: "adjectives",
+  phrasal_verbs: "phrasal verbs",
+  idioms: "idioms",
+  adverbs: "adverbs"
 };
 
 
@@ -1138,8 +1102,6 @@ async function analyzeCurrentLesson(force=false){
 
   $("analysisResult").innerHTML =
   '<div class="analysis-empty">⏳ يرجى الانتظار...</div>';
-
-  $("analysisCaptions").style.display = "none";
 
   try{
 
@@ -1221,87 +1183,22 @@ async function analyzeCurrentLesson(force=false){
 }
 
 
-/* توحيد شكل بيانات الكلمات */
+/* توحيد بيانات الكلمات
+   لا نقرأ الأمثلة أو ترجماتها نهائياً */
 
 function normalizeAnalysisItem(item){
 
   item = item || {};
 
-  const t = Number(item.time ?? item.start ?? 0);
-
   return {
-
-    en:String(
-      item.en ?? item.word ?? item.text ?? ""
-    ),
-
-    ar:String(
-      item.ar ?? item.translation ?? ""
-    ),
-
-    example:String(
-      item.example ?? item.sentence ?? ""
-    ),
-
-    example_ar:String(
-      item.example_ar ?? item.sentence_ar ?? ""
-    ),
-
-    time:
-      Number.isFinite(t) && t>=0
-      ? t
-      : 0,
-
-    duration:
-      Math.max(1,Number(item.duration)||4)
-
+    en: String(item.en ?? item.word ?? item.text ?? "").trim(),
+    ar: String(item.ar ?? item.translation ?? "").trim()
   };
 
 }
 
 
-/* تمييز الكلمة داخل المثال */
-
-function addSafeHighlightedText(container,text,word){
-
-  if(!word){
-
-    container.textContent = text;
-    return;
-
-  }
-
-  const lower = text.toLowerCase();
-  const needle = word.toLowerCase();
-
-  let cursor = 0;
-  let at;
-
-  while((at=lower.indexOf(needle,cursor))!==-1){
-
-    container.appendChild(
-      document.createTextNode(text.slice(cursor,at))
-    );
-
-    const mark = document.createElement("span");
-
-    mark.className = "analysis-highlight";
-    mark.textContent = text.slice(at,at+word.length);
-
-    container.appendChild(mark);
-
-    cursor = at + word.length;
-
-  }
-
-  container.appendChild(
-    document.createTextNode(text.slice(cursor))
-  );
-
-}
-
-
-/* إنشاء صف الكلمة */
+/* إنشاء صف الكلمة فقط */
 
 function makeAnalysisWord(item){
 
@@ -1311,16 +1208,18 @@ function makeAnalysisWord(item){
   const top = document.createElement("div");
   top.className = "analysis-word-top";
 
-  /* الترجمة العربية */
+  // الترجمة العربية على اليمين
 
   const ar = document.createElement("span");
   ar.className = "analysis-ar";
   ar.textContent = item.ar;
 
-  /* الأزرار */
+  // أزرار الحفظ والنطق في الوسط
 
   const actions = document.createElement("div");
   actions.className = "analysis-actions";
+
+  // زر الحفظ
 
   const saveBtn = document.createElement("button");
 
@@ -1329,15 +1228,11 @@ function makeAnalysisWord(item){
   saveBtn.textContent = "⭐";
   saveBtn.title = "حفظ الكلمة في المفضلة";
 
-  saveBtn.onclick = ()=>{
-
-    saveLessonWord(
-      saveBtn,
-      item.en,
-      item.ar
-    );
-
+  saveBtn.onclick = () => {
+    saveLessonWord(saveBtn, item.en, item.ar);
   };
+
+  // زر النطق
 
   const speakBtn = document.createElement("button");
 
@@ -1346,71 +1241,29 @@ function makeAnalysisWord(item){
   speakBtn.textContent = "📢";
   speakBtn.title = "استمع إلى النطق";
 
-  speakBtn.onclick = ()=>{
-
+  speakBtn.onclick = () => {
     speakLessonWord(item.en);
-
   };
 
-  actions.append(saveBtn,speakBtn);
+  actions.append(saveBtn, speakBtn);
 
-  /* الكلمة الإنجليزية */
+  // الكلمة الإنجليزية على اليسار
 
   const en = document.createElement("span");
 
   en.className = "analysis-en";
   en.textContent = item.en;
 
-  top.append(ar,actions,en);
+  top.append(ar, actions, en);
 
   row.appendChild(top);
-
-  /* المثال الإنجليزي */
-
-  if(item.example){
-
-    const ex = document.createElement("div");
-
-    ex.className = "analysis-example";
-
-    addSafeHighlightedText(
-      ex,
-      item.example,
-      item.en
-    );
-
-    ex.title = "اضغط للانتقال إلى توقيت المثال";
-
-    ex.onclick = ()=>{
-
-      seekLessonVideo(item.time);
-
-    };
-
-    row.appendChild(ex);
-
-  }
-
-  /* ترجمة المثال */
-
-  if(item.example_ar){
-
-    const arEx = document.createElement("div");
-
-    arEx.className = "analysis-example-ar";
-
-    arEx.textContent = item.example_ar;
-
-    row.appendChild(arEx);
-
-  }
 
   return row;
 
 }
 
 
-/* عرض جميع أقسام التحليل */
+/* عرض الأقسام الستة دون أمثلة أو ترجماتها */
 
 function renderLessonAnalysis(data){
 
@@ -1418,12 +1271,10 @@ function renderLessonAnalysis(data){
 
   root.innerHTML = "";
 
-  subtitleRows = [];
-
-  if(!data || typeof data!=="object"){
+  if(!data || typeof data !== "object"){
 
     root.innerHTML =
-    '<div class="analysis-empty">لا توجد بيانات تحليل لهذا الدرس.</div>';
+      '<div class="analysis-empty">لا توجد بيانات تحليل لهذا الدرس.</div>';
 
     return;
 
@@ -1435,50 +1286,41 @@ function renderLessonAnalysis(data){
 
   let count = 0;
 
-  Object.keys(analysisLabels).forEach(key=>{
+  Object.keys(analysisLabels).forEach(key => {
 
-    const entries =
-    Array.isArray(data[key])
+    const entries = Array.isArray(data[key])
       ? data[key]
       : [];
 
-    if(!entries.length)return;
+    const items = entries
+      .map(normalizeAnalysisItem)
+      .filter(item => item.en);
+
+    // لا نعرض القسم إذا لم توجد كلمات فيه
+
+    if(!items.length)return;
 
     const section = document.createElement("section");
 
     section.className = "analysis-category";
 
-    const h = document.createElement("h4");
+    // عنوان القسم
 
-    h.textContent =
-    `${analysisLabels[key]} · ${entries.length}`;
+    const heading = document.createElement("h4");
 
-    section.appendChild(h);
+    heading.textContent = analysisLabels[key];
 
-    entries.forEach(raw=>{
+    section.appendChild(heading);
 
-      const item = normalizeAnalysisItem(raw);
+    // عرض الكلمات فقط
 
-      if(!item.en && !item.example)return;
-
-      count++;
-
-      if(item.example){
-
-        subtitleRows.push({
-
-          time:item.time,
-          duration:item.duration,
-          en:item.example,
-          ar:item.example_ar
-
-        });
-
-      }
+    items.forEach(item => {
 
       section.appendChild(
         makeAnalysisWord(item)
       );
+
+      count++;
 
     });
 
@@ -1486,37 +1328,10 @@ function renderLessonAnalysis(data){
 
   });
 
-
-  /* قسم القواعد */
-
-  if(data.grammar){
-
-    const grammar = document.createElement("div");
-
-    grammar.className = "analysis-grammar";
-
-    const h = document.createElement("h4");
-
-    h.textContent = "📘 القاعدة";
-
-    const text = document.createElement("div");
-
-    text.className = "analysis-grammar-content";
-
-    text.textContent = String(data.grammar);
-
-    grammar.append(h,text);
-
-    grid.appendChild(grammar);
-
-    count++;
-
-  }
-
   if(!count){
 
     root.innerHTML =
-    '<div class="analysis-empty">اكتمل التحليل، لكن لم تُستخرج مفردات كافية للعرض.</div>';
+      '<div class="analysis-empty">اكتمل التحليل، لكن لم تُستخرج كلمات قابلة للعرض.</div>';
 
     return;
 
@@ -1524,70 +1339,10 @@ function renderLessonAnalysis(data){
 
   root.appendChild(grid);
 
-  $("analysisCaptions").style.display =
-  subtitleRows.length ? "block" : "none";
-
-  startLessonSubtitleSync();
-
 }
 
 
-/* مزامنة الأمثلة مع الفيديو */
-
-function startLessonSubtitleSync(){
-
-  if(subtitleTimer){
-    clearInterval(subtitleTimer);
-  }
-
-  subtitleTimer = setInterval(()=>{
-
-    const video = $("videoPlayer");
-
-    if(!video || video.paused || !subtitleRows.length)return;
-
-    const t = video.currentTime || 0;
-
-    const row = subtitleRows.find(
-      x=>t>=x.time && t<x.time+x.duration
-    );
-
-    if(row){
-
-      $("analysisSubEn").textContent = row.en;
-      $("analysisSubAr").textContent = row.ar;
-
-    }
-
-  },350);
-
-}
-
-
-/* الانتقال إلى توقيت المثال */
-
-function seekLessonVideo(seconds){
-
-  const video = $("videoPlayer");
-
-  if(!video || !Number.isFinite(video.duration)){
-
-    toast("الفيديو لم يجهز بعد.",true);
-    return;
-
-  }
-
-  video.currentTime = Math.max(
-    0,
-    Math.min(Number(seconds)||0,video.duration)
-  );
-
-  video.play().catch(()=>{});
-
-}
-
-
-/* النطق */
+/* النطق الإنجليزي */
 
 function speakLessonWord(word){
 
@@ -1666,7 +1421,7 @@ function enterLessonFocus(){
 }
 
 
-/* الرجوع لقائمة الدروس */
+/* الرجوع إلى قائمة الدروس */
 
 function showLessonList(){
 
@@ -1675,7 +1430,7 @@ function showLessonList(){
   $("showListBtn").style.display = "none";
 
   const playlist =
-  document.querySelector(".playlist-panel");
+    document.querySelector(".playlist-panel");
 
   if(playlist){
 
@@ -1720,7 +1475,7 @@ function nextLesson(){
 }
 
 
-/* تقدم المشاهدة */
+/* تحديث موضع المشاهدة */
 
 function updateProgressLabel(){
 
@@ -1733,10 +1488,12 @@ function updateProgressLabel(){
   const s = sec%60;
 
   $("progressText").textContent =
-  `الدرس ${activeIndex+1} من ${lessons.length} · موضع المشاهدة ${min}:${String(s).padStart(2,"0")}`;
+    `الدرس ${activeIndex+1} من ${lessons.length} · موضع المشاهدة ${min}:${String(s).padStart(2,"0")}`;
 
 }
 
+
+/* حفظ تقدم المشاهدة */
 
 async function saveProgress(completed=false){
 
@@ -1785,9 +1542,13 @@ async function saveProgress(completed=false){
     };
 
     if(old){
+
       Object.assign(old,item);
+
     }else{
+
       progress.push(item);
+
     }
 
     updateProgressLabel();
@@ -1795,9 +1556,13 @@ async function saveProgress(completed=false){
     renderLessons();
 
     if(completed){
+
       toast("✅ تم تسجيل إكمال الدرس");
+
     }else{
+
       toast("💾 تم حفظ تقدمك");
+
     }
 
     return true;
@@ -1819,30 +1584,35 @@ async function saveProgress(completed=false){
 
 $("videoPlayer").addEventListener(
   "timeupdate",
-  ()=>{
+  () => {
+
     if(activeIndex>=0){
       updateProgressLabel();
     }
+
   }
 );
 
 $("videoPlayer").addEventListener(
   "ended",
-  ()=>saveProgress(true)
+  () => saveProgress(true)
 );
 
 document.addEventListener(
   "visibilitychange",
-  ()=>{
+  () => {
+
     if(document.hidden){
       saveProgress(false);
     }
+
   }
 );
 
 window.addEventListener(
   "pagehide",
-  ()=>{
+  () => {
+
     clearInterval(saveTimer);
 
     if(activeIndex>=0){
@@ -1871,6 +1641,7 @@ window.addEventListener(
       );
 
     }
+
   }
 );
 

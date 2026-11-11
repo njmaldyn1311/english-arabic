@@ -34,16 +34,22 @@ header{
   position:sticky;
   top:0;
   z-index:20;
-  background:#0b1220f2;
+  background:#0b1220f5;
   border-bottom:1px solid #26354d;
   padding:12px max(14px,calc((100% - 1320px)/2));
-  display:flex;
-  justify-content:space-between;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
   align-items:center;
-  gap:12px
+  gap:12px;
+  backdrop-filter:blur(12px)
 }
 
-.brand{font-size:20px;font-weight:bold}
+.brand{
+  min-width:0;
+  font-size:20px;
+  font-weight:bold;
+  text-align:right
+}
 
 .brand small{
   display:block;
@@ -51,6 +57,19 @@ header{
   font-size:10px;
   letter-spacing:1.4px;
   margin-top:4px
+}
+
+.header-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:8px;
+  flex-wrap:wrap
+}
+
+.header-actions button{
+  min-height:44px;
+  white-space:nowrap
 }
 
 button{
@@ -220,19 +239,8 @@ video{
 }
 
 .lesson-info{min-width:0;flex:1}
-
-.lesson-name{
-  font-size:13px;
-  font-weight:bold;
-  line-height:1.5
-}
-
-.lesson-meta{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:4px
-}
-
+.lesson-name{font-size:13px;font-weight:bold;line-height:1.5}
+.lesson-meta{font-size:11px;color:var(--muted);margin-top:4px}
 .done{color:#86efac;font-size:11px}
 
 .progressline{
@@ -346,7 +354,7 @@ video{
   overflow:hidden
 }
 
-/* عناوين الأقسام باللون الأبيض وفي المنتصف */
+/* عناوين الأقسام */
 
 .analysis-category h4{
   margin:20px 0 14px;
@@ -359,11 +367,11 @@ video{
   border:0
 }
 
-/* صفوف الكلمات */
+/* صفوف الكلمات: الإنجليزية يساراً، الأزرار بالوسط، العربية يميناً */
 
 .analysis-word{
   display:block;
-  direction:rtl;
+  direction:ltr;
   width:100%;
   min-width:0;
   padding:14px 0;
@@ -372,67 +380,61 @@ video{
 }
 
 .analysis-word-top{
-  display:flex;
-  direction:rtl;
-  flex-direction:row;
-  justify-content:space-between;
+  display:grid;
+  direction:ltr;
+  grid-template-columns:minmax(0,1fr) 116px minmax(0,1fr);
   align-items:center;
-  gap:12px;
+  gap:8px;
   width:100%;
   min-width:0
 }
 
-/* الترجمة العربية يميناً */
-
-.analysis-ar{
-  order:1;
-  flex:0 1 27%;
+.analysis-en{
+  grid-column:1;
   min-width:0;
-  color:#facc15;
-  font-size:clamp(17px,2.4vw,21px);
-  font-weight:500;
-  text-align:right;
-  direction:rtl;
-  overflow-wrap:anywhere
+  color:#38bdf8;
+  font-size:clamp(16px,2.2vw,21px);
+  font-weight:600;
+  text-align:left;
+  direction:ltr;
+  unicode-bidi:plaintext;
+  overflow-wrap:anywhere;
+  padding-left:8px
 }
 
-/* أزرار الحفظ والنطق */
-
 .analysis-actions{
-  order:2;
+  grid-column:2;
+  width:116px;
   display:flex;
-  gap:12px;
+  gap:8px;
   align-items:center;
   justify-content:center;
-  flex:0 0 auto;
   direction:ltr
 }
 
-/* الكلمة الإنجليزية يساراً */
-
-.analysis-en{
-  order:3;
-  flex:1 1 0;
+.analysis-ar{
+  grid-column:3;
   min-width:0;
-  color:#38bdf8;
-  font-size:clamp(17px,2.4vw,21px);
+  color:#facc15;
+  font-size:clamp(16px,2.2vw,21px);
   font-weight:500;
-  text-align:left;
-  direction:ltr;
+  text-align:right;
+  direction:rtl;
+  unicode-bidi:plaintext;
   overflow-wrap:anywhere;
-  unicode-bidi:plaintext
+  padding-right:8px
 }
 
 .analysis-icon{
-  width:62px;
-  height:62px;
-  flex:0 0 62px;
+  width:54px;
+  height:54px;
+  flex:0 0 54px;
   padding:0;
   border:1px solid #172338;
   background:#0f172a;
   color:white;
   border-radius:13px;
-  font-size:25px;
+  font-size:24px;
   display:grid;
   place-items:center;
   cursor:pointer;
@@ -443,6 +445,15 @@ video{
 .analysis-icon:active{transform:scale(.96)}
 .analysis-icon:disabled{opacity:.65}
 
+.analysis-section-empty{
+  text-align:center;
+  color:#94a3b8;
+  font-size:13px;
+  padding:10px 8px 16px;
+  border-bottom:1px solid #334155;
+  line-height:1.8
+}
+
 .analysis-empty{
   text-align:center;
   color:#94a3b8;
@@ -451,7 +462,7 @@ video{
   line-height:1.8
 }
 
-/* الموبايل */
+/* الشاشات المتوسطة */
 
 @media(max-width:800px){
   .layout{grid-template-columns:1fr}
@@ -459,36 +470,72 @@ video{
   .video-title{font-size:18px}
 }
 
+/* الجوال */
+
 @media(max-width:600px){
+
+  header{
+    grid-template-columns:1fr;
+    justify-items:stretch;
+    padding:10px 12px;
+    gap:10px
+  }
+
+  .brand{
+    text-align:center;
+    font-size:18px
+  }
+
+  .brand small{
+    font-size:9px;
+    letter-spacing:1px
+  }
+
+  .header-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    width:100%;
+    gap:8px
+  }
+
+  .header-actions button{
+    width:100%;
+    min-width:0;
+    min-height:44px;
+    padding:9px 8px;
+    font-size:14px
+  }
+
   .analysis-panel{padding:14px 12px}
 
   .analysis-category h4{
     font-size:20px;
-    margin-top:18px;
+    margin:20px 0 12px;
     text-align:center;
     color:#ffffff
   }
 
-  .analysis-word-top{gap:7px}
-  .analysis-ar{flex-basis:25%;font-size:17px}
-  .analysis-actions{gap:7px}
-
-  .analysis-icon{
-    width:52px;
-    height:52px;
-    flex-basis:52px;
-    border-radius:12px;
-    font-size:23px
+  .analysis-word-top{
+    grid-template-columns:minmax(0,1fr) 104px minmax(0,1fr);
+    gap:5px
   }
 
-  .analysis-en{font-size:17px}
-}
+  .analysis-actions{
+    width:104px;
+    gap:6px
+  }
 
-@media(max-width:520px){
-  header{padding:10px 12px}
-  .brand{font-size:17px}
-  .brand small{font-size:9px}
-  main{margin:15px auto;padding:0 10px 30px}
+  .analysis-icon{
+    width:48px;
+    height:48px;
+    flex-basis:48px;
+    border-radius:12px;
+    font-size:22px
+  }
+
+  .analysis-en,.analysis-ar{font-size:16px}
+
+  main{margin:14px auto;padding:0 10px 30px}
   .panel{padding:10px}
   .heading h1{font-size:21px}
   video{aspect-ratio:16/9}
@@ -497,20 +544,30 @@ video{
   .controls button{min-width:calc(50% - 8px)}
 }
 
-@media(max-width:380px){
-  .analysis-panel{padding:12px 9px}
-  .analysis-word-top{gap:5px}
-  .analysis-ar{flex-basis:23%;font-size:15px}
-  .analysis-actions{gap:5px}
+/* الجوال الصغير */
 
-  .analysis-icon{
-    width:45px;
-    height:45px;
-    flex-basis:45px;
-    font-size:21px
+@media(max-width:380px){
+
+  .analysis-panel{padding:12px 8px}
+
+  .analysis-word-top{
+    grid-template-columns:minmax(0,1fr) 92px minmax(0,1fr);
+    gap:4px
   }
 
-  .analysis-en{font-size:15px}
+  .analysis-actions{
+    width:92px;
+    gap:4px
+  }
+
+  .analysis-icon{
+    width:44px;
+    height:44px;
+    flex-basis:44px;
+    font-size:20px
+  }
+
+  .analysis-en,.analysis-ar{font-size:15px}
 }
 
 /* إخفاء القائمة عند فتح الدرس */
@@ -531,19 +588,15 @@ body.lesson-focus #videoPlayer{max-height:78vh}
     <small>ENGLISH BELARABI · VIDEO ACADEMY</small>
   </div>
 
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-
-    <button id="showListBtn"
-      class="secondary"
-      onclick="showLessonList()"
-      style="display:none">
+  <div class="header-actions">
+    <button id="showListBtn" class="secondary"
+      onclick="showLessonList()" style="display:none">
       ☰ قائمة الدروس
     </button>
 
     <button class="secondary" onclick="location.href='index.html'">
       🏠 الرئيسية
     </button>
-
   </div>
 </header>
 
@@ -632,7 +685,7 @@ body.lesson-focus #videoPlayer{max-height:78vh}
         <h3>🧠 تحليل الدرس الذكي</h3>
 
         <div class="analysis-subtitle" id="analysisSubtitle">
-          اختر درساً لعرض الكلمات وترجماتها في الأقسام الستة.
+          اختر درساً لعرض الأفعال والأسماء والصفات والأفعال المركبة والتعبيرات الاصطلاحية والظروف.
         </div>
       </div>
 
@@ -1183,8 +1236,7 @@ async function analyzeCurrentLesson(force=false){
 }
 
 
-/* توحيد بيانات الكلمات
-   لا نقرأ الأمثلة أو ترجماتها نهائياً */
+/* توحيد بيانات الكلمات */
 
 function normalizeAnalysisItem(item){
 
@@ -1198,7 +1250,7 @@ function normalizeAnalysisItem(item){
 }
 
 
-/* إنشاء صف الكلمة فقط */
+/* إنشاء صف الكلمة */
 
 function makeAnalysisWord(item){
 
@@ -1219,43 +1271,29 @@ function makeAnalysisWord(item){
   const actions = document.createElement("div");
   actions.className = "analysis-actions";
 
-  // زر الحفظ
-
   const saveBtn = document.createElement("button");
-
   saveBtn.type = "button";
   saveBtn.className = "analysis-icon save-icon";
   saveBtn.textContent = "⭐";
   saveBtn.title = "حفظ الكلمة في المفضلة";
-
-  saveBtn.onclick = () => {
-    saveLessonWord(saveBtn, item.en, item.ar);
-  };
-
-  // زر النطق
+  saveBtn.onclick = () => saveLessonWord(saveBtn, item.en, item.ar);
 
   const speakBtn = document.createElement("button");
-
   speakBtn.type = "button";
   speakBtn.className = "analysis-icon speak-icon";
   speakBtn.textContent = "📢";
   speakBtn.title = "استمع إلى النطق";
-
-  speakBtn.onclick = () => {
-    speakLessonWord(item.en);
-  };
+  speakBtn.onclick = () => speakLessonWord(item.en);
 
   actions.append(saveBtn, speakBtn);
 
   // الكلمة الإنجليزية على اليسار
 
   const en = document.createElement("span");
-
   en.className = "analysis-en";
   en.textContent = item.en;
 
   top.append(ar, actions, en);
-
   row.appendChild(top);
 
   return row;
@@ -1263,81 +1301,68 @@ function makeAnalysisWord(item){
 }
 
 
-/* عرض الأقسام الستة دون أمثلة أو ترجماتها */
+/* عرض الأقسام الستة دائماً دون أمثلة أو ترجماتها */
 
 function renderLessonAnalysis(data){
 
   const root = $("analysisResult");
-
   root.innerHTML = "";
 
+  // قبول نتيجة فارغة دون إخفاء عناوين الأقسام
+
   if(!data || typeof data !== "object"){
-
-    root.innerHTML =
-      '<div class="analysis-empty">لا توجد بيانات تحليل لهذا الدرس.</div>';
-
-    return;
-
+    data = {};
   }
 
   const grid = document.createElement("div");
-
   grid.className = "analysis-grid";
 
-  let count = 0;
+  let totalWords = 0;
 
   Object.keys(analysisLabels).forEach(key => {
 
-    const entries = Array.isArray(data[key])
-      ? data[key]
-      : [];
+    const entries = Array.isArray(data[key]) ? data[key] : [];
 
     const items = entries
+      .filter(item => item && typeof item === "object")
       .map(normalizeAnalysisItem)
       .filter(item => item.en);
 
-    // لا نعرض القسم إذا لم توجد كلمات فيه
-
-    if(!items.length)return;
-
     const section = document.createElement("section");
-
     section.className = "analysis-category";
 
-    // عنوان القسم
-
     const heading = document.createElement("h4");
-
     heading.textContent = analysisLabels[key];
-
     section.appendChild(heading);
 
-    // عرض الكلمات فقط
+    if(items.length === 0){
 
-    items.forEach(item => {
+      const empty = document.createElement("div");
+      empty.className = "analysis-section-empty";
+      empty.textContent = "لم تصل كلمات لهذا القسم في نتيجة التحليل الحالية.";
+      section.appendChild(empty);
 
-      section.appendChild(
-        makeAnalysisWord(item)
-      );
+    }else{
 
-      count++;
+      items.forEach(item => {
+        section.appendChild(makeAnalysisWord(item));
+        totalWords++;
+      });
 
-    });
+    }
 
     grid.appendChild(section);
 
   });
 
-  if(!count){
-
-    root.innerHTML =
-      '<div class="analysis-empty">اكتمل التحليل، لكن لم تُستخرج كلمات قابلة للعرض.</div>';
-
-    return;
-
-  }
-
   root.appendChild(grid);
+
+  const summary = document.createElement("div");
+  summary.className = "analysis-subtitle";
+  summary.style.textAlign = "center";
+  summary.style.marginTop = "14px";
+  summary.textContent = `إجمالي الكلمات المعروضة: ${totalWords}`;
+  root.appendChild(summary);
 
 }
 
@@ -1488,7 +1513,7 @@ function updateProgressLabel(){
   const s = sec%60;
 
   $("progressText").textContent =
-    `الدرس ${activeIndex+1} من ${lessons.length} · موضع المشاهدة ${min}:${String(s).padStart(2,"0")}`;
+  `الدرس ${activeIndex+1} من ${lessons.length} · موضع المشاهدة ${min}:${String(s).padStart(2,"0")}`;
 
 }
 
@@ -1542,13 +1567,9 @@ async function saveProgress(completed=false){
     };
 
     if(old){
-
       Object.assign(old,item);
-
     }else{
-
       progress.push(item);
-
     }
 
     updateProgressLabel();
@@ -1556,13 +1577,9 @@ async function saveProgress(completed=false){
     renderLessons();
 
     if(completed){
-
       toast("✅ تم تسجيل إكمال الدرس");
-
     }else{
-
       toast("💾 تم حفظ تقدمك");
-
     }
 
     return true;
@@ -1584,35 +1601,30 @@ async function saveProgress(completed=false){
 
 $("videoPlayer").addEventListener(
   "timeupdate",
-  () => {
-
+  ()=>{
     if(activeIndex>=0){
       updateProgressLabel();
     }
-
   }
 );
 
 $("videoPlayer").addEventListener(
   "ended",
-  () => saveProgress(true)
+  ()=>saveProgress(true)
 );
 
 document.addEventListener(
   "visibilitychange",
-  () => {
-
+  ()=>{
     if(document.hidden){
       saveProgress(false);
     }
-
   }
 );
 
 window.addEventListener(
   "pagehide",
-  () => {
-
+  ()=>{
     clearInterval(saveTimer);
 
     if(activeIndex>=0){
@@ -1641,7 +1653,6 @@ window.addEventListener(
       );
 
     }
-
   }
 );
 

@@ -47,9 +47,11 @@ button:disabled{opacity:.6;cursor:wait}
   <label class="field-label" for="url">رابط الفيديو (YouTube أو TikTok أو Facebook)</label>
   <input id="url" type="url" placeholder="ألصق رابط الفيديو هنا" autocomplete="url">
   <label class="field-label" for="transcript">نص الفيديو للتحليل (اختياري)</label>
-  <textarea id="transcript" placeholder="ألصق هنا نص التفريغ أو الكلام المنسوخ من الفيديو حتى يحلله النظام إلى أفعال وأسماء وصفات وأفعال مركبة وتعبيرات اصطلاحية وظروف..."></textarea>
-  <div class="hint">يمكن تشغيل رابط الفيديو مباشرة. لتحليل الكلمات تلقائياً من هذا الرابط، يجب توفير نص التفريغ هنا، أو رفع ملف الفيديو/الصوت الأصلي إلى مسار تحليل الملفات. الرابط وحده لا يتيح دائماً الوصول إلى الصوت.</div>
-  <button id="analyzeBtn" onclick="sendUrl()">🔗 تشغيل الفيديو وتحليل النص</button>
+  <textarea id="transcript" placeholder="اختياري: ألصق نص التفريغ هنا. أو ارفع ملف الفيديو/الصوت أدناه ليُفرّغ النظام الكلام تلقائياً..."></textarea>
+  <label class="field-label" for="mediaFile">ملف الفيديو أو الصوت للتفريغ التلقائي (اختياري)</label>
+  <input id="mediaFile" type="file" accept=".mp4,.mp3,.mpeg,.mpga,.m4a,.wav,.webm,video/mp4,video/webm,audio/mpeg,audio/mp4,audio/wav,audio/webm">
+  <div class="hint">للتفريغ التلقائي ارفع نسخة من الفيديو أو الصوت الذي تملك حق استخدامه. الصيغ المدعومة: MP4 / MP3 / M4A / WAV / WEBM. الحد الحالي للرفع من الصفحة 15 ميجابايت. رابط TikTok وحده يشغّل الفيديو، لكنه لا يوفّر الصوت للتحليل تلقائياً.</div>
+  <button id="analyzeBtn" onclick="sendUrl()">🎙️ تشغيل الفيديو وتفريغ الصوت وتحليل النص</button>
   <div id="loading">⏳ جارٍ تجهيز الفيديو وتحليل النص...</div>
   <div id="status"></div>
   <div id="videoBox" class="card">
@@ -62,7 +64,7 @@ button:disabled{opacity:.6;cursor:wait}
 const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const WEBHOOK="https://steelblue-frog-379077.hostingersite.com/webhook/video-ai-multiplatform";
+const WEBHOOK="https://steelblue-frog-379077.hostingersite.com/webhook/video-ai-multiplatform-auto";
 let user_id=localStorage.getItem("user_id");
 if(!user_id){user_id=crypto.randomUUID();localStorage.setItem("user_id",user_id)}
 async function track(action){try{await fetch(SUPABASE_URL+"/rest/v1/user_activity",{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({user_id,page:"video_page",action})})}catch(e){console.debug("Tracking skipped",e)}}
@@ -105,17 +107,40 @@ function show(data){
  const footer=document.createElement("div");footer.className="hint";footer.style.textAlign="center";footer.textContent="إجمالي المفردات المستخرجة: "+total;root.appendChild(footer);
 }
 async function sendUrl(){
- const url=document.getElementById("url").value.trim();const transcript=document.getElementById("transcript").value.trim();
+ const url=document.getElementById("url").value.trim();
+ const transcript=document.getElementById("transcript").value.trim();
+ const fileInput=document.getElementById("mediaFile");
+ const file=fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
  if(!url){alert("أدخل رابط الفيديو أولاً");return}
- const btn=document.getElementById("analyzeBtn");btn.disabled=true;document.getElementById("loading").style.display="block";document.getElementById("result").replaceChildren();document.getElementById("status").style.display="none";
+ if(file && file.size > 15*1024*1024){alert("حجم الملف أكبر من 15 ميجابايت. قلّل حجمه أو ارفع مقطعاً أقصر.");return}
+ const btn=document.getElementById("analyzeBtn");
+ btn.disabled=true;
+ document.getElementById("loading").style.display="block";
+ document.getElementById("loading").textContent=file?"⏳ جارٍ رفع الملف وتفريغ الصوت ثم تحليل الكلمات...":"⏳ جارٍ تجهيز الفيديو وتحليل النص...";
+ document.getElementById("result").replaceChildren();
+ document.getElementById("status").style.display="none";
  try{
-  const response=await fetch(WEBHOOK,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url,transcript,user_id})});
-  const raw=await response.text();let data;try{data=JSON.parse(raw)}catch{throw new Error("استجابة غير مفهومة من n8n: "+raw.slice(0,300))}
-  if(!response.ok||data.success===false)throw new Error(data.message||"تعذر معالجة الرابط");
+  let requestBody,headers={};
+  if(file){
+   const form=new FormData();
+   form.append("url",url);
+   form.append("transcript",transcript);
+   form.append("user_id",user_id);
+   form.append("video",file,file.name);
+   requestBody=form;
+  }else{
+   headers["Content-Type"]="application/json";
+   requestBody=JSON.stringify({url,transcript,user_id});
+  }
+  const response=await fetch(WEBHOOK,{method:"POST",headers,body:requestBody});
+  const raw=await response.text();let data;
+  try{data=JSON.parse(raw)}catch{throw new Error("استجابة غير مفهومة من n8n: "+raw.slice(0,300))}
+  if(!response.ok||data.success===false)throw new Error(data.message||"تعذر معالجة الرابط أو الملف");
   if(!data.embed_url)throw new Error("لم يصل رابط تشغيل الفيديو من n8n");
   setPlayer(data);show(data);
-  if(data.analysis_ready)setStatus(data.message||"اكتمل تحليل النص.");else setStatus(data.message||"تم تجهيز الفيديو. أضف نص التفريغ لإكمال التحليل.");
-  track("تشغيل وتحليل "+data.platform);
+  if(data.analysis_ready)setStatus(data.message||"اكتمل التفريغ والتحليل.");
+  else setStatus(data.message||"تم تشغيل الفيديو. ارفع ملف الفيديو/الصوت للتفريغ التلقائي أو ألصق نص التفريغ.");
+  track(file?"رفع فيديو وتفريغ تلقائي وتحليل "+data.platform:"تشغيل وتحليل "+data.platform);
  }catch(e){console.error(e);setStatus(e.message||"حدث خطأ أثناء التحليل",true)}
  finally{btn.disabled=false;document.getElementById("loading").style.display="none"}
 }

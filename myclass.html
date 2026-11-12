@@ -32,21 +32,30 @@ h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
 .level-pill{background:#0f172a;color:#7dd3fc;border:1px solid #334155;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:bold}
 .story-panel{border:1px solid #334155;border-radius:13px;padding:14px;margin:10px 0 16px;background:#0f172a}
 .story-label{font-size:13px;color:#7dd3fc;font-weight:bold;margin-bottom:9px}
-.story{font-size:17px;line-height:2;white-space:normal;overflow-wrap:anywhere;margin:0}
-.story-en {
-  direction: ltr;
-  text-align: left;
-  line-height: 1.9;
-  word-spacing: normal;
-  letter-spacing: normal;
-  overflow-wrap: break-word;
-}
-.story-ar{direction:rtl;text-align:right;color:#e2e8f0}
+.story{display:block;width:100%;max-width:100%;font-size:17px;line-height:2;white-space:normal;overflow-wrap:break-word;word-break:normal;margin:0}
+.story-en{direction:ltr!important;text-align:left!important;unicode-bidi:plaintext;line-height:1.95;word-spacing:normal;letter-spacing:normal;overflow-wrap:break-word;}
+.story-ar{direction:rtl!important;text-align:right!important;unicode-bidi:plaintext;color:#e2e8f0;line-height:2.05;}
+.story-word{direction:ltr;unicode-bidi:isolate;display:inline;border-radius:4px;cursor:pointer;padding:1px 0;transition:background .12s,color .12s,box-shadow .12s;}
+.story-word:hover{background:rgba(56,189,248,.13);}
+.story-word.is-speaking{background:#facc15!important;color:#0f172a!important;border-radius:5px;padding:1px 3px;box-shadow:0 0 0 2px rgba(250,204,21,.18);font-weight:bold;}
 .read-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .read-btn{display:inline-flex;align-items:center;gap:7px;background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:9px 13px;border-radius:11px;font-size:13px;font-weight:bold;cursor:pointer}
 .read-btn:hover{border-color:#38bdf8}
+.read-btn:disabled{opacity:.5;cursor:not-allowed}
 .read-btn.stop{background:#7f1d1d;border-color:#991b1b;color:#fee2e2}
+.read-btn.pause{background:#164e63;border-color:#0e7490;color:#cffafe}
 .read-note{font-size:11px;color:#94a3b8}
+.meaning-toast{position:fixed;z-index:9999;left:50%;bottom:18px;transform:translateX(-50%);width:min(92%,430px);display:none;background:#1e293b;border:1px solid #38bdf8;border-radius:15px;padding:13px 15px;box-shadow:0 12px 36px rgba(0,0,0,.38);direction:rtl;text-align:right;}
+.meaning-toast.show{display:block;animation:meaningIn .18s ease-out;}
+.meaning-toast-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px;}
+.meaning-toast-word{direction:ltr;text-align:left;color:#38bdf8;font-weight:bold;font-size:16px;}
+.meaning-toast-close{background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:9px;padding:4px 9px;cursor:pointer;font-size:16px;}
+.meaning-toast-ar{color:#facc15;font-size:17px;line-height:1.8;}
+.meaning-toast-meta{color:#94a3b8;font-size:11px;margin-top:4px;}
+.points{color:#facc15;font-size:14px;font-weight:bold;background:transparent;border:0;padding:4px;cursor:pointer}
+.word-en.clickable-word{cursor:pointer;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;}
+.word-en.clickable-word:hover{text-decoration-color:#38bdf8;}
+@keyframes meaningIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
 .divider{border:0;border-top:1px solid #334155;margin:17px 0}
 .category-card{background:#1e293b;border:1px solid #334155;border-radius:15px;padding:13px;margin:13px 0}
 .category-title{color:#fff;text-align:center;direction:ltr;font-size:21px;margin:4px 0 12px;font-weight:bold}
@@ -61,14 +70,14 @@ h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
 .empty-cat{text-align:center;color:#94a3b8;font-size:12px;padding:9px 5px 13px}
 .profile-note{color:#a7f3d0;background:#064e3b55;border:1px solid #065f46;padding:10px;border-radius:10px;font-size:13px;line-height:1.8}
 .footer-note{text-align:center;color:#94a3b8;font-size:12px;padding:6px}
-@media(max-width:520px){.container{width:94%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}}
+@media(max-width:520px){.container{width:94%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.story-en{direction:ltr!important;text-align:left!important}.story-ar{direction:rtl!important;text-align:right!important}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}.read-controls{gap:6px}.read-btn{font-size:12px;padding:8px 10px}.meaning-toast{bottom:12px}}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="top">
     <div class="user" id="username">👤</div>
-    <div class="points">⭐ كلماتك: 0</div>
+    <button class="points" id="wordCountBtn" type="button" title="فتح مفرداتي">⭐ كلماتك: <span id="savedWordCount">0</span></button>
     <button class="review" id="profileBtn" type="button">👤 حسابي</button>
   </div>
 
@@ -83,6 +92,15 @@ h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
   </section>
 
   <div id="lesson" aria-live="polite"></div>
+</div>
+
+<div id="wordMeaningCard" class="meaning-toast" role="status" aria-live="polite">
+  <div class="meaning-toast-head">
+    <span id="meaningWord" class="meaning-toast-word"></span>
+    <button id="closeMeaningCard" class="meaning-toast-close" type="button" aria-label="إغلاق">×</button>
+  </div>
+  <div id="meaningArabic" class="meaning-toast-ar"></div>
+  <div id="meaningMeta" class="meaning-toast-meta">اضغط على أي كلمة في القصة لسماع نطقها ومعرفة معناها</div>
 </div>
 
 <script>
@@ -106,6 +124,48 @@ const fullName = localStorage.getItem("user") || "";
 document.getElementById("username").textContent = "👤 " + (fullName.split(" ").slice(0, 2).join(" ") || "الطالب");
 document.getElementById("profileBtn").addEventListener("click", () => { window.location.href = "student.html"; });
 
+let currentWordMeanings = new Map();
+let meaningCardTimer = null;
+let storyUtterance = null;
+let storyWordSpans = [];
+let storyReadingState = "idle";
+
+// عدد المفردات المحفوظة للطالب في Supabase
+async function refreshSavedWordCount() {
+  const countEl = document.getElementById("savedWordCount");
+  if (!countEl) return;
+  try {
+    const url = SUPABASE_URL + "/rest/v1/user_star_words?select=user_id&user_id=eq." + encodeURIComponent(user_id);
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        Prefer: "count=exact",
+        Range: "0-0"
+      },
+      cache: "no-store"
+    });
+    if (!response.ok) throw new Error(await response.text());
+    const range = response.headers.get("Content-Range") || "";
+    const match = range.match(/\/(\d+|\*)$/);
+    if (match && match[1] !== "*") {
+      countEl.textContent = match[1];
+    } else {
+      const rows = await response.json();
+      countEl.textContent = Array.isArray(rows) ? String(rows.length) : "0";
+    }
+  } catch (error) {
+    console.debug("Could not load saved word count", error);
+    countEl.textContent = "—";
+  }
+}
+
+document.getElementById("wordCountBtn").addEventListener("click", () => {
+  window.location.href = "review.html";
+});
+refreshSavedWordCount();
+
 async function track(action) {
   try {
     await fetch(SUPABASE_URL + "/rest/v1/user_activity", {
@@ -124,49 +184,183 @@ async function track(action) {
 }
 track("دخول الفصل");
 
+function clearStoryHighlight() {
+  storyWordSpans.forEach(span => span.classList.remove("is-speaking"));
+}
+
+function resetStoryControls() {
+  const read = document.getElementById("readStoryBtn");
+  const pause = document.getElementById("pauseStoryBtn");
+  if (read) read.textContent = "🔊 قراءة القصة";
+  if (pause) {
+    pause.textContent = "⏸ إيقاف مؤقت";
+    pause.disabled = true;
+  }
+  storyReadingState = "idle";
+  clearStoryHighlight();
+}
+
+function showWordMeaning(word, options = {}) {
+  const card = document.getElementById("wordMeaningCard");
+  const wordEl = document.getElementById("meaningWord");
+  const arEl = document.getElementById("meaningArabic");
+  const metaEl = document.getElementById("meaningMeta");
+  if (!card) return;
+
+  const key = normalizeWord(word);
+  let found = options.entry || currentWordMeanings.get(key);
+  if (!found) {
+    const candidates = [
+      key.replace(/'s$/i, ""),
+      key.replace(/'re$/i, ""),
+      key.replace(/'ve$/i, ""),
+      key.replace(/'ll$/i, ""),
+      key.replace(/ies$/i, "y"),
+      key.replace(/(ing|ed|es|s)$/i, "")
+    ].filter(Boolean);
+    for (const candidate of candidates) {
+      if (currentWordMeanings.has(candidate)) {
+        found = currentWordMeanings.get(candidate);
+        break;
+      }
+    }
+  }
+  wordEl.textContent = word;
+  arEl.textContent = found?.ar || "لم يُدرج معنى هذه الكلمة ضمن مفردات الدرس.";
+  metaEl.textContent = found?.category ? "القسم: " + (categoryLabels[found.category] || found.category) : (found ? "من مفردات الدرس" : "المعنى غير متاح في مفردات هذا الدرس");
+  card.classList.add("show");
+  clearTimeout(meaningCardTimer);
+  meaningCardTimer = setTimeout(() => card.classList.remove("show"), 5500);
+}
+
+function normalizeWord(value) {
+  return String(value || "").toLowerCase().replace(/[’‘]/g, "'").replace(/^[^a-z]+|[^a-z']+$/gi, "").trim();
+}
+
 function speakWord(text) {
   if (!text || !("speechSynthesis" in window)) return;
+  // نوقف قراءة القصة قبل نطق الكلمة المفردة، حتى لا يتداخل الصوتان.
   speechSynthesis.cancel();
+  storyUtterance = null;
+  resetStoryControls();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "en-US";
   utterance.rate = 0.9;
   speechSynthesis.speak(utterance);
 }
 
-let storyUtterance = null;
-function stopStoryReading() {
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
-  storyUtterance = null;
-  const button = document.getElementById("readStoryBtn");
-  if (button) {
-    button.textContent = "🔊 قراءة القصة";
-    button.classList.remove("stop");
-    button.setAttribute("aria-pressed", "false");
-  }
+function handleStoryWordClick(word) {
+  showWordMeaning(word);
+  speakWord(word);
 }
 
-function readStory(button) {
-  const storyText = document.getElementById("storyEnglishText")?.innerText?.trim();
+function renderClickableStory(text, element) {
+  const source = String(text || "");
+  element.replaceChildren();
+  storyWordSpans = [];
+  const regex = /[A-Za-z]+(?:[’'][A-Za-z]+)*(?:-[A-Za-z]+)*/g;
+  let cursor = 0;
+  let match;
+  while ((match = regex.exec(source)) !== null) {
+    if (match.index > cursor) {
+      element.appendChild(document.createTextNode(source.slice(cursor, match.index)));
+    }
+    const wordText = match[0];
+    const wordStart = match.index;
+    const span = document.createElement("span");
+    span.className = "story-word";
+    span.textContent = wordText;
+    span.dataset.start = String(wordStart);
+    span.dataset.end = String(wordStart + wordText.length);
+    span.title = "اضغط لسماع الكلمة ومعرفة معناها";
+    span.addEventListener("click", () => handleStoryWordClick(wordText));
+    element.appendChild(span);
+    storyWordSpans.push(span);
+    cursor = wordStart + wordText.length;
+  }
+  if (cursor < source.length) element.appendChild(document.createTextNode(source.slice(cursor)));
+}
+
+function highlightStoryAt(charIndex) {
+  if (!Number.isFinite(charIndex)) return;
+  let active = null;
+  for (const span of storyWordSpans) {
+    const start = Number(span.dataset.start);
+    const end = Number(span.dataset.end);
+    if (charIndex >= start && charIndex < end) {
+      active = span;
+      break;
+    }
+  }
+  // بعض المتصفحات ترسل موضعاً قبل أول حرف من الكلمة؛ نختار أقرب كلمة تالية.
+  if (!active) {
+    active = storyWordSpans.find(span => Number(span.dataset.end) > charIndex) || null;
+  }
+  storyWordSpans.forEach(span => span.classList.toggle("is-speaking", span === active));
+  if (active) active.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
+function startStoryReading(fromBeginning = false) {
+  const storyEl = document.getElementById("storyEnglishText");
+  const readButton = document.getElementById("readStoryBtn");
+  const pauseButton = document.getElementById("pauseStoryBtn");
+  const storyText = storyEl?.dataset.rawText || storyEl?.textContent?.trim();
   if (!storyText) return;
   if (!("speechSynthesis" in window)) {
     alert("ميزة القراءة الصوتية غير مدعومة في هذا المتصفح.");
     return;
   }
-  if (button.classList.contains("stop")) {
-    stopStoryReading();
-    return;
-  }
+
   speechSynthesis.cancel();
-  storyUtterance = new SpeechSynthesisUtterance(storyText);
-  storyUtterance.lang = "en-US";
-  storyUtterance.rate = 0.88;
-  storyUtterance.pitch = 1;
-  button.textContent = "⏹ إيقاف القراءة";
-  button.classList.add("stop");
-  button.setAttribute("aria-pressed", "true");
-  storyUtterance.onend = stopStoryReading;
-  storyUtterance.onerror = stopStoryReading;
-  speechSynthesis.speak(storyUtterance);
+  clearStoryHighlight();
+  const utterance = new SpeechSynthesisUtterance(storyText);
+  storyUtterance = utterance;
+  utterance.lang = "en-US";
+  utterance.rate = 0.88;
+  utterance.pitch = 1;
+  storyReadingState = "speaking";
+  if (readButton) readButton.textContent = "🔄 إعادة من البداية";
+  if (pauseButton) {
+    pauseButton.disabled = false;
+    pauseButton.textContent = "⏸ إيقاف مؤقت";
+  }
+
+  utterance.onboundary = event => {
+    if (storyUtterance !== utterance) return;
+    if (event.name === "word" || Number.isFinite(event.charIndex)) highlightStoryAt(event.charIndex);
+  };
+  utterance.onend = () => {
+    if (storyUtterance !== utterance) return;
+    storyUtterance = null;
+    resetStoryControls();
+  };
+  utterance.onerror = event => {
+    if (storyUtterance !== utterance || event.error === "canceled" || event.error === "interrupted") return;
+    storyUtterance = null;
+    resetStoryControls();
+  };
+  speechSynthesis.speak(utterance);
+}
+
+function toggleStoryPause() {
+  if (!("speechSynthesis" in window) || !storyUtterance) return;
+  if (speechSynthesis.paused || storyReadingState === "paused") {
+    speechSynthesis.resume();
+    storyReadingState = "speaking";
+    const pause = document.getElementById("pauseStoryBtn");
+    if (pause) pause.textContent = "⏸ إيقاف مؤقت";
+  } else if (speechSynthesis.speaking) {
+    speechSynthesis.pause();
+    storyReadingState = "paused";
+    const pause = document.getElementById("pauseStoryBtn");
+    if (pause) pause.textContent = "▶ استكمال القراءة";
+  }
+}
+
+function stopStoryReading() {
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  storyUtterance = null;
+  resetStoryControls();
 }
 
 async function saveWord(button, en, ar, category) {
@@ -187,6 +381,7 @@ async function saveWord(button, en, ar, category) {
     if (!response.ok) throw new Error(await response.text());
     button.textContent = "✅";
     track("حفظ كلمة: " + en);
+    await refreshSavedWordCount();
   } catch (error) {
     console.error(error);
     button.textContent = original;
@@ -211,7 +406,24 @@ const categoryLabels = {
   adverbs: "adverbs"
 };
 
+function buildWordMeanings(words) {
+  currentWordMeanings = new Map();
+  for (const key of Object.keys(categoryLabels)) {
+    const entries = Array.isArray(words?.[key]) ? words[key] : [];
+    for (const entry of entries) {
+      const en = String(entry?.en || "").trim();
+      const ar = String(entry?.ar || "").trim();
+      if (!en || !ar) continue;
+      const normalized = normalizeWord(en);
+      if (normalized && !currentWordMeanings.has(normalized)) {
+        currentWordMeanings.set(normalized, { en, ar, category: key });
+      }
+    }
+  }
+}
+
 function renderWords(words) {
+  buildWordMeanings(words);
   const fragment = document.createElement("div");
   for (const key of Object.keys(categoryLabels)) {
     const entries = Array.isArray(words?.[key]) ? words[key] : [];
@@ -237,8 +449,10 @@ function renderWords(words) {
       row.className = "word-row";
 
       const english = document.createElement("span");
-      english.className = "word-en";
+      english.className = "word-en clickable-word";
       english.textContent = en;
+      english.title = "اضغط لسماع الكلمة ومعرفة معناها";
+      english.addEventListener("click", () => handleStoryWordClick(en));
 
       const actions = document.createElement("div");
       actions.className = "word-actions";
@@ -297,12 +511,33 @@ function renderLesson(data) {
   readButton.id = "readStoryBtn";
   readButton.className = "read-btn";
   readButton.textContent = "🔊 قراءة القصة";
-  readButton.setAttribute("aria-pressed", "false");
-  readButton.addEventListener("click", () => readStory(readButton));
+  readButton.addEventListener("click", () => startStoryReading(false));
+
+  const pauseButton = document.createElement("button");
+  pauseButton.type = "button";
+  pauseButton.id = "pauseStoryBtn";
+  pauseButton.className = "read-btn pause";
+  pauseButton.textContent = "⏸ إيقاف مؤقت";
+  pauseButton.disabled = true;
+  pauseButton.addEventListener("click", toggleStoryPause);
+
+  const restartButton = document.createElement("button");
+  restartButton.type = "button";
+  restartButton.id = "restartStoryBtn";
+  restartButton.className = "read-btn";
+  restartButton.textContent = "↻ من البداية";
+  restartButton.addEventListener("click", () => startStoryReading(true));
+
+  const stopButton = document.createElement("button");
+  stopButton.type = "button";
+  stopButton.className = "read-btn stop";
+  stopButton.textContent = "⏹ إيقاف";
+  stopButton.addEventListener("click", stopStoryReading);
+
   const readNote = document.createElement("span");
   readNote.className = "read-note";
-  readNote.textContent = "استمع إلى القصة باللغة الإنجليزية";
-  readControls.append(readButton, readNote);
+  readNote.textContent = "اضغط على أي كلمة لسماعها ومعرفة معناها";
+  readControls.append(readButton, pauseButton, restartButton, stopButton, readNote);
   storyHead.append(storyTitle, level, readControls);
   lessonCard.appendChild(storyHead);
 
@@ -312,9 +547,14 @@ function renderLesson(data) {
   englishLabel.className = "story-label";
   englishLabel.textContent = "English Story";
   const englishText = document.createElement("p");
+  englishPanel.dir = "ltr";
+  englishPanel.lang = "en";
   englishText.className = "story story-en";
   englishText.id = "storyEnglishText";
-  englishText.textContent = data.story || "لم تصل القصة.";
+  englishText.setAttribute("dir", "ltr");
+  englishText.setAttribute("lang", "en");
+  englishText.dataset.rawText = String(data.story || "لم تصل القصة.");
+  renderClickableStory(data.story || "لم تصل القصة.", englishText);
   englishPanel.append(englishLabel, englishText);
   lessonCard.appendChild(englishPanel);
 
@@ -324,7 +564,11 @@ function renderLesson(data) {
   arabicLabel.className = "story-label";
   arabicLabel.textContent = "الترجمة العربية";
   const arabicText = document.createElement("p");
+  arabicPanel.dir = "rtl";
+  arabicPanel.lang = "ar";
   arabicText.className = "story story-ar";
+  arabicText.setAttribute("dir", "rtl");
+  arabicText.setAttribute("lang", "ar");
   arabicText.textContent = data.translation || "⚠️ لا توجد ترجمة";
   arabicPanel.append(arabicLabel, arabicText);
   lessonCard.appendChild(arabicPanel);
@@ -382,6 +626,10 @@ async function generateLesson() {
   }
 }
 
+document.getElementById("closeMeaningCard").addEventListener("click", () => {
+  clearTimeout(meaningCardTimer);
+  document.getElementById("wordMeaningCard").classList.remove("show");
+});
 document.getElementById("generateBtn").addEventListener("click", generateLesson);
 document.getElementById("textInput").addEventListener("keydown", event => {
   if (event.key === "Enter") generateLesson();

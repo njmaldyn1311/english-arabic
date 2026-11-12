@@ -64,10 +64,18 @@ button:disabled{opacity:.6;cursor:wait}
 .note-item p{margin:0 0 8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
 .note-meta{font-size:11px;color:#94a3b8}
 .note-delete{background:#7f1d1d;padding:6px 10px;font-size:12px;margin-top:8px}
-.dictionary-result{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:10px;margin-top:10px;color:#cbd5e1;line-height:1.7;font-size:14px;direction:rtl;text-align:right;display:flex;flex-direction:column;gap:8px}
-.meaning-option{width:100%;background:#243449;border:1px solid #475569;border-radius:11px;padding:13px 14px;color:#fff;text-align:right;direction:rtl;font-size:15px;line-height:1.8;white-space:normal}
-.meaning-option:active{background:#0f766e}
+.dictionary-result{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px 12px;margin-top:10px;color:#1f2937;line-height:1.7;font-size:14px;direction:rtl;text-align:right;display:flex;flex-direction:column;gap:0;box-shadow:0 4px 14px rgba(15,23,42,.10)}
+.meaning-option{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;background:#fff;border:0;border-bottom:1px solid #e5e7eb;border-radius:0;padding:12px 4px;color:#1f2937;text-align:right;direction:rtl;font-size:15px;line-height:1.8;white-space:normal;cursor:default}
+.meaning-option:last-child{border-bottom:0}
+.meaning-option:active{background:#f8fafc}
 .meaning-option:disabled{opacity:.55}
+.meaning-word{flex:0 0 auto;color:#1f2937;font-size:16px;font-weight:700;direction:ltr;text-align:right;overflow-wrap:anywhere}
+.meaning-translation{flex:1;min-width:0;color:#e6a700;font-size:16px;font-weight:700;direction:rtl;text-align:right;overflow-wrap:anywhere}
+.meaning-actions{display:flex;flex:0 0 auto;align-items:center;justify-content:center;gap:9px;margin-inline:10px}
+.meaning-icon{width:36px;height:36px;min-width:36px;flex:0 0 36px;padding:0;margin:0;display:grid;place-items:center;border-radius:50%;background:#f1f3f5;border:1px solid #e5e7eb;color:#475569;font-size:17px;line-height:1;box-shadow:none;cursor:pointer}
+.meaning-icon:hover{background:#e9edf2}
+.meaning-icon:active{background:#dfe5ec}
+.meaning-icon:disabled{opacity:.5;cursor:wait}
 .meaning-help{color:#cbd5e1;font-size:12px;line-height:1.7;margin:8px 2px}
 .saved-meaning{background:#064e3b;border:1px solid #10b981;color:#d1fae5;border-radius:12px;padding:12px;line-height:1.8;text-align:center;direction:rtl}
 .whatsapp-float{position:fixed;right:18px;bottom:18px;z-index:950;background:#25D366;color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:25px;box-shadow:0 8px 24px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25)}
@@ -76,6 +84,11 @@ button:disabled{opacity:.6;cursor:wait}
  .floating-tools{left:10px;bottom:12px;gap:8px}
  .float-btn{padding:11px 13px;font-size:13px}
  .modal-panel{padding:14px}
+ .dictionary-result{padding:7px 9px}
+ .meaning-option{gap:9px;padding:11px 2px}
+ .meaning-actions{gap:8px;margin-inline:6px}
+ .meaning-icon{width:34px;height:34px;min-width:34px;flex-basis:34px;font-size:16px}
+ .meaning-word,.meaning-translation{font-size:15px}
  .whatsapp-float{right:12px;bottom:14px;width:52px;height:52px}
 }
 

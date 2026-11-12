@@ -86,10 +86,10 @@ body.has-reading-dock{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
 
 .story-paragraph-block{display:block;width:100%;max-width:100%;min-width:0;margin:0 0 13px;scroll-margin-top:18px;}
 .story-paragraph-block.active-reading{border-radius:9px;}
-.paragraph-translation-follow{display:none;margin:9px 0 4px;padding:10px 12px;border-radius:11px;background:rgba(148,163,184,.13);border:1px solid rgba(148,163,184,.26);color:#e2e8f0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(0,0,0,.12);direction:rtl;text-align:right;line-height:1.85;font-size:14px;}
+.paragraph-translation-follow{display:none;margin:6px 0 5px 10px;padding:7px 11px 8px;border-radius:0 10px 10px 0;background:linear-gradient(90deg,rgba(56,189,248,.085),rgba(148,163,184,.035));border:1px solid rgba(148,163,184,.13);border-inline-start:3px solid rgba(56,189,248,.34);color:#e2e8f0;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 14px rgba(0,0,0,.08);direction:rtl;text-align:right;line-height:1.75;font-size:13px;opacity:.82;}
 .paragraph-translation-follow.active{display:block;animation:translationFollowIn .18s ease-out;}
-.paragraph-translation-label{display:block;color:#7dd3fc;font-size:10px;font-weight:bold;margin-bottom:4px;}
-.paragraph-translation-text{display:block;color:#f1f5f9;font-size:14px;line-height:1.9;direction:rtl;text-align:right;unicode-bidi:plaintext;}
+.paragraph-translation-label{display:block;color:rgba(125,211,252,.78);font-size:9px;font-weight:bold;margin-bottom:2px;}
+.paragraph-translation-text{display:block;color:rgba(241,245,249,.86);font-size:13px;line-height:1.8;direction:rtl;text-align:right;unicode-bidi:plaintext;}
 .story-paragraph-block.active-reading .story-paragraph{background:rgba(56,189,248,.025);border-radius:7px;}
 .word-ar-wrap{grid-column:3;display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0;padding-right:6px;}
 .word-ar-wrap .word-ar{padding:0;}
@@ -117,7 +117,7 @@ body.has-reading-dock{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
 .empty-cat{text-align:center;color:#94a3b8;font-size:12px;padding:9px 5px 13px}
 .profile-note{color:#a7f3d0;background:#064e3b55;border:1px solid #065f46;padding:10px;border-radius:10px;font-size:13px;line-height:1.8}
 .footer-note{text-align:center;color:#94a3b8;font-size:12px;padding:6px}
-@media(max-width:520px){.container{width:94%;max-width:100%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.story-en{width:100%;max-width:100%;direction:ltr!important;text-align:left!important;overflow-wrap:break-word}.story-ar{width:100%;max-width:100%;direction:rtl!important;text-align:right!important;overflow-wrap:break-word}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}.read-controls{gap:6px}.read-btn{font-size:12px;padding:8px 10px}.meaning-toast{bottom:12px}.read-speed{width:100%;justify-content:space-between}.read-speed input{flex:1;min-width:90px}.saved-lesson-item{align-items:flex-start}.saved-lesson-actions{width:100%}}
+@media(max-width:520px){.paragraph-translation-follow{margin:5px 0 4px 6px;padding:6px 9px 7px;opacity:.78}.paragraph-translation-text{font-size:12.5px}.container{width:94%;max-width:100%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.story-en{width:100%;max-width:100%;direction:ltr!important;text-align:left!important;overflow-wrap:break-word}.story-ar{width:100%;max-width:100%;direction:rtl!important;text-align:right!important;overflow-wrap:break-word}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}.read-controls{gap:6px}.read-btn{font-size:12px;padding:8px 10px}.meaning-toast{bottom:12px}.read-speed{width:100%;justify-content:space-between}.read-speed input{flex:1;min-width:90px}.saved-lesson-item{align-items:flex-start}.saved-lesson-actions{width:100%}}
 
 @media(max-width:520px){
   .reading-dock{width:96%;gap:6px;padding:8px 7px;border-radius:13px;align-items:stretch;}
@@ -226,6 +226,12 @@ let currentSavedLessonId = null;
 let lessonSaveQueue = Promise.resolve();
 const pendingLessonSaveKeys = new Set();
 let activeHighlightSpan = null;
+let storyResumeOffset = 0;
+let pendingNextParagraphIndex = null;
+let paragraphAdvanceTimer = null;
+let fallbackAnchorAt = 0;
+let fallbackAnchorIndex = 0;
+let nativeBoundarySeen = false;
 const savedStoryRateKey = "class_story_rate_" + user_id;
 let storyRate = Number(localStorage.getItem(savedStoryRateKey) || "0.80");
 if (!Number.isFinite(storyRate)) storyRate = 0.80;
@@ -422,62 +428,70 @@ function normalizeWord(value) {
 }
 
 function chooseMaleEnglishVoice() {
-  if (!("speechSynthesis" in window)) return null;
+  if (!('speechSynthesis' in window)) return null;
   const voices = speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
-  const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang || ""));
+  const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang || ''));
   if (!english.length) {
     maleVoiceAvailable = false;
+    maleEnglishVoice = null;
     return null;
   }
 
-  const maleHints = /\b(male|man|masculine|david|daniel|alex|fred|guy|mark|james|oliver|aaron|eric|brian|thomas|matthew|christopher|andrew|arthur|tom|rishi|ryan|george|liam|lee|gordon|jordan|michael)\b/i;
-  const femaleHints = /\b(female|woman|feminine|samantha|victoria|karen|moira|tessa|susan|zira|jenny|aria|ava|emma|olivia|salli|sarah|fiona|kate|lucy|allison|joanna|veena|serena|natasha|hazel|siri female)\b/i;
-  const scored = english.map(v => {
-    const label = (v.name || "") + " " + (v.voiceURI || "") + " " + (v.gender || "");
+  // Prefer voices explicitly labelled male, including common Android/Google/Microsoft names.
+  const maleHints = /\b(male|man|masculine|david|daniel|alex|fred|guy|mark|james|oliver|aaron|eric|brian|thomas|matthew|christopher|andrew|arthur|tom|rishi|ryan|george|liam|lee|gordon|jordan|michael|google uk english male|microsoft guy)\b/i;
+  const femaleHints = /\b(female|woman|feminine|samantha|victoria|karen|moira|tessa|susan|zira|jenny|aria|ava|emma|olivia|salli|sarah|fiona|kate|lucy|allison|joanna|veena|serena|natasha|hazel)\b/i;
+  const ranked = english.map(v => {
+    const label = `${v.name || ''} ${v.voiceURI || ''} ${v.gender || ''}`;
     let score = 0;
-    if (maleHints.test(label) || /male/i.test(v.gender || "")) score += 100;
-    if (femaleHints.test(label) || /female/i.test(v.gender || "")) score -= 120;
-    if (/en-US/i.test(v.lang || "")) score += 8;
+    if (/male/i.test(v.gender || '') || maleHints.test(label)) score += 100;
+    if (/female/i.test(v.gender || '') || femaleHints.test(label)) score -= 150;
+    if (/en-US/i.test(v.lang || '')) score += 8;
+    if (/en-GB/i.test(v.lang || '')) score += 5;
     if (v.default) score += 1;
     return { voice: v, score };
-  }).sort((a,b) => b.score - a.score);
+  }).sort((a, b) => b.score - a.score);
 
-  const explicitMale = scored.find(x => x.score >= 100);
+  const explicitMale = ranked.find(x => x.score >= 100);
   maleVoiceAvailable = !!explicitMale;
-  return explicitMale?.voice || scored[0]?.voice || null;
+  maleEnglishVoice = explicitMale?.voice || ranked[0]?.voice || null;
+  return maleEnglishVoice;
 }
 
 function updateVoiceNotice() {
-  const note = document.getElementById("readNoteText");
+  const note = document.getElementById('readNoteText');
   if (!note) return;
-  note.textContent = maleVoiceAvailable
-    ? "الصوت الإنجليزي الرجالي متاح على جهازك"
-    : "لا يظهر صوت رجالي محدد في أصوات جهازك؛ سيتم استخدام الصوت الإنجليزي المتاح";
+  if (maleVoiceAvailable && maleEnglishVoice) {
+    note.textContent = 'الصوت الرجالي المتاح: ' + maleEnglishVoice.name;
+  } else {
+    note.textContent = 'لا يوفر هذا الجهاز صوتاً رجالياً محدداً؛ استُخدم صوت إنجليزي بطبقة أخفض';
+  }
 }
 
 function speakWord(text) {
-  if (!text || !("speechSynthesis" in window)) return;
+  if (!text || !('speechSynthesis' in window)) return;
+  storyPlaybackGeneration++;
   speechSynthesis.cancel();
   clearReadingFallback();
+  if (paragraphAdvanceTimer) clearTimeout(paragraphAdvanceTimer);
+  paragraphAdvanceTimer = null;
   storyUtterance = null;
-  storyPlaybackGeneration++;
+  storyReadingState = 'idle';
   resetStoryControls();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-US";
+  utterance.lang = 'en-US';
   utterance.rate = Math.max(0.8, storyRate);
   const voice = chooseMaleEnglishVoice();
   if (voice) utterance.voice = voice;
-  // Lower pitch slightly only as a fallback; actual gender depends on the selected device voice.
-  utterance.pitch = maleVoiceAvailable ? 1 : 0.78;
+  utterance.pitch = maleVoiceAvailable ? 1 : 0.62;
   speechSynthesis.speak(utterance);
 }
 
 function splitStoryParagraphs(text) {
-  return String(text || "").replace(/\r/g, "").split(/\n\s*\n|\n/).map(x => x.trim()).filter(Boolean);
+  return String(text || '').replace(/\r/g, '').split(/\n\s*\n|\n/).map(x => x.trim()).filter(Boolean);
 }
 
 function renderClickableStory(text, element, paragraphIndex) {
-  const source = String(text || "");
+  const source = String(text || '');
   element.replaceChildren();
   const paragraphData = storyParagraphsData[paragraphIndex];
   const regex = /[A-Za-z]+(?:[’'][A-Za-z]+)*(?:-[A-Za-z]+)*/g;
@@ -486,14 +500,14 @@ function renderClickableStory(text, element, paragraphIndex) {
   while ((match = regex.exec(source)) !== null) {
     if (match.index > cursor) element.appendChild(document.createTextNode(source.slice(cursor, match.index)));
     const wordText = match[0];
-    const span = document.createElement("span");
-    span.className = "story-word";
+    const span = document.createElement('span');
+    span.className = 'story-word';
     span.textContent = wordText;
     span.dataset.start = String(match.index);
     span.dataset.end = String(match.index + wordText.length);
     span.dataset.paragraph = String(paragraphIndex);
-    span.title = "اضغط لسماع الكلمة ومعرفة معناها";
-    span.addEventListener("click", () => handleStoryWordClick(wordText));
+    span.title = 'اضغط لسماع الكلمة ومعرفة معناها';
+    span.addEventListener('click', () => handleStoryWordClick(wordText));
     element.appendChild(span);
     storyWordSpans.push(span);
     paragraphData.wordSpans.push(span);
@@ -503,7 +517,7 @@ function renderClickableStory(text, element, paragraphIndex) {
 }
 
 function clearStoryHighlight() {
-  storyWordSpans.forEach(span => span.classList.remove("is-speaking"));
+  storyWordSpans.forEach(span => span.classList.remove('is-speaking'));
   activeHighlightSpan = null;
 }
 
@@ -512,85 +526,124 @@ function clearReadingFallback() {
   readingFallbackTimer = null;
   fallbackStartedAt = 0;
   fallbackPausedAt = 0;
+  fallbackAnchorAt = 0;
+  fallbackAnchorIndex = 0;
   lastBoundaryAt = 0;
+  nativeBoundarySeen = false;
 }
 
 function showParagraphTranslation(index) {
-  const fullArabicPanel = document.getElementById("fullArabicTranslationPanel");
-  if (fullArabicPanel) fullArabicPanel.style.display = "none";
+  const fullArabicPanel = document.getElementById('fullArabicTranslationPanel');
+  if (fullArabicPanel) fullArabicPanel.style.display = 'none';
   storyParagraphsData.forEach((item, i) => {
-    item.block.classList.toggle("active-reading", i === index);
-    item.translationCard.classList.toggle("active", i === index);
+    item.block.classList.toggle('active-reading', i === index);
+    item.translationCard.classList.toggle('active', i === index);
   });
   const current = storyParagraphsData[index];
   if (current?.block) {
     const rect = current.block.getBoundingClientRect();
-    const dockHeight = document.getElementById("readingDock")?.offsetHeight || 0;
-    if (rect.top < 65 || rect.top > window.innerHeight - dockHeight - 120) {
-      current.block.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+    const dockHeight = document.getElementById('readingDock')?.offsetHeight || 0;
+    if (rect.top < 78 || rect.top > window.innerHeight - dockHeight - 100) {
+      current.block.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
     }
   }
 }
 
 function hideParagraphTranslations() {
   storyParagraphsData.forEach(item => {
-    item.block.classList.remove("active-reading");
-    item.translationCard.classList.remove("active");
+    item.block.classList.remove('active-reading');
+    item.translationCard.classList.remove('active');
   });
-  const fullArabicPanel = document.getElementById("fullArabicTranslationPanel");
-  if (fullArabicPanel) fullArabicPanel.style.display = "block";
+  const fullArabicPanel = document.getElementById('fullArabicTranslationPanel');
+  if (fullArabicPanel) fullArabicPanel.style.display = 'block';
+}
+
+function findWordSpanAt(paragraphIndex, charIndex) {
+  const para = storyParagraphsData[paragraphIndex];
+  if (!para) return null;
+  return para.wordSpans.find(span => charIndex >= Number(span.dataset.start) && charIndex < Number(span.dataset.end))
+    || para.wordSpans.find(span => Number(span.dataset.end) > charIndex)
+    || null;
 }
 
 function highlightStoryAt(paragraphIndex, charIndex) {
   if (!Number.isFinite(charIndex)) return;
-  const para = storyParagraphsData[paragraphIndex];
-  if (!para) return;
-  let active = para.wordSpans.find(span => charIndex >= Number(span.dataset.start) && charIndex < Number(span.dataset.end)) || null;
-  if (!active) active = para.wordSpans.find(span => Number(span.dataset.end) > charIndex) || null;
-  storyWordSpans.forEach(span => span.classList.toggle("is-speaking", span === active));
+  const active = findWordSpanAt(paragraphIndex, charIndex);
+  storyWordSpans.forEach(span => span.classList.toggle('is-speaking', span === active));
+  if (active) {
+    storyCurrentParagraphIndex = paragraphIndex;
+    storyCurrentCharIndex = Number(active.dataset.start);
+    storyResumeOffset = storyCurrentCharIndex;
+  }
   if (active && active !== activeHighlightSpan) {
     activeHighlightSpan = active;
     const rect = active.getBoundingClientRect();
-    const dockHeight = document.getElementById("readingDock")?.offsetHeight || 0;
+    const dockHeight = document.getElementById('readingDock')?.offsetHeight || 0;
     const safeBottom = window.innerHeight - dockHeight - 18;
     if (rect.top < 78 || rect.bottom > safeBottom) {
-      active.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      active.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
     }
   }
 }
 
-function startFallbackWordTracking(paragraphIndex, initialOffset, remainingText) {
+function estimatedWordDuration(span) {
+  const word = (span?.textContent || '').toLowerCase();
+  const syllables = Math.max(1, Math.min(5, (word.match(/[aeiouy]+/g) || []).length));
+  let seconds = (0.14 + syllables * 0.115) / Math.max(0.65, storyRate);
+  if (/[,:;]$/.test(word)) seconds += 0.12;
+  if (/[.!?]$/.test(word)) seconds += 0.22;
+  return Math.max(0.18, seconds);
+}
+
+function startFallbackWordTracking(paragraphIndex, initialOffset) {
   clearReadingFallback();
   const para = storyParagraphsData[paragraphIndex];
   if (!para) return;
-  const words = para.wordSpans.filter(span => Number(span.dataset.end) > initialOffset);
-  if (!words.length) return;
-  fallbackStartedAt = Date.now();
-  // Fallback for mobile voices/browsers that do not emit speech boundary events.
-  const secondsPerWord = 0.36 / Math.max(0.65, storyRate);
+  const words = para.wordSpans;
+  const initialIndex = Math.max(0, words.findIndex(span => Number(span.dataset.end) > initialOffset));
+  if (!words.length || initialIndex < 0) return;
+
+  // Highlight the first word immediately, so the audio never starts visibly ahead of the tracker.
+  fallbackAnchorIndex = initialIndex;
+  fallbackAnchorAt = Date.now();
+  fallbackStartedAt = fallbackAnchorAt;
+  highlightStoryAt(paragraphIndex, Number(words[initialIndex].dataset.start));
+
   readingFallbackTimer = setInterval(() => {
-    if (storyReadingState !== "speaking" || !fallbackStartedAt) return;
-    // Prefer accurate native word-boundary events; use estimation when they stop arriving.
-    if (lastBoundaryAt && Date.now() - lastBoundaryAt < 850) return;
-    const elapsed = (Date.now() - fallbackStartedAt) / 1000;
-    const index = Math.min(words.length - 1, Math.floor(elapsed / secondsPerWord));
-    const selected = words[index];
-    if (selected) {
-      storyCurrentCharIndex = Number(selected.dataset.start);
-      highlightStoryAt(paragraphIndex, storyCurrentCharIndex);
+    if (storyReadingState !== 'speaking' || !fallbackAnchorAt) return;
+    // Native word-boundary callbacks are more accurate; only estimate during a callback gap.
+    if (nativeBoundarySeen && lastBoundaryAt && Date.now() - lastBoundaryAt < 1100) return;
+
+    let index = fallbackAnchorIndex;
+    let elapsed = (Date.now() - fallbackAnchorAt) / 1000;
+    while (index < words.length - 1) {
+      const duration = estimatedWordDuration(words[index]);
+      if (elapsed < duration) break;
+      elapsed -= duration;
+      index++;
     }
-  }, 150);
+    if (index !== fallbackAnchorIndex || !activeHighlightSpan) {
+      fallbackAnchorIndex = index;
+      fallbackAnchorAt = Date.now() - Math.max(0, elapsed * 1000);
+      const selected = words[index];
+      if (selected) highlightStoryAt(paragraphIndex, Number(selected.dataset.start));
+    }
+  }, 100);
 }
 
 function resetStoryControls() {
-  const read = document.getElementById("readStoryBtn");
-  const pause = document.getElementById("pauseStoryBtn");
-  if (read) read.textContent = "🔊 قراءة القصة";
+  const read = document.getElementById('readStoryBtn');
+  const pause = document.getElementById('pauseStoryBtn');
+  if (read) read.textContent = '🔊 قراءة القصة';
   if (pause) {
-    pause.textContent = "⏸ إيقاف مؤقت";
+    pause.textContent = '⏸ إيقاف مؤقت';
     pause.disabled = true;
   }
-  storyReadingState = "idle";
+  storyReadingState = 'idle';
+  storyResumeOffset = 0;
+  pendingNextParagraphIndex = null;
+  if (paragraphAdvanceTimer) clearTimeout(paragraphAdvanceTimer);
+  paragraphAdvanceTimer = null;
   clearReadingFallback();
   clearStoryHighlight();
   hideParagraphTranslations();
@@ -600,11 +653,21 @@ function finishStoryReading(generation) {
   if (generation !== storyPlaybackGeneration) return;
   storyUtterance = null;
   storyCurrentCharIndex = 0;
+  storyResumeOffset = 0;
+  pendingNextParagraphIndex = null;
   clearReadingFallback();
   resetStoryControls();
 }
 
-function speakStoryParagraph(paragraphIndex, offset, generation, pauseImmediately = false) {
+function updatePauseButton(label, disabled = false) {
+  const pause = document.getElementById('pauseStoryBtn');
+  if (pause) {
+    pause.textContent = label;
+    pause.disabled = disabled;
+  }
+}
+
+function speakStoryParagraph(paragraphIndex, offset, generation) {
   if (generation !== storyPlaybackGeneration) return;
   const para = storyParagraphsData[paragraphIndex];
   if (!para) return finishStoryReading(generation);
@@ -620,129 +683,168 @@ function speakStoryParagraph(paragraphIndex, offset, generation, pauseImmediatel
 
   storyCurrentParagraphIndex = paragraphIndex;
   storyCurrentCharIndex = actualOffset;
+  storyResumeOffset = actualOffset;
+  pendingNextParagraphIndex = null;
   clearStoryHighlight();
   showParagraphTranslation(paragraphIndex);
+
   const utterance = new SpeechSynthesisUtterance(remaining);
   storyUtterance = utterance;
-  utterance.lang = "en-US";
+  utterance.lang = 'en-US';
   utterance.rate = storyRate;
-  utterance.pitch = maleVoiceAvailable ? 1 : 0.78;
   const voice = chooseMaleEnglishVoice();
   if (voice) utterance.voice = voice;
+  // A lower pitch is only a fallback when this device has no explicitly male English voice.
+  utterance.pitch = maleVoiceAvailable ? 1 : 0.62;
 
-  lastBoundaryAt = Date.now();
-  storyReadingState = "speaking";
-  const readButton = document.getElementById("readStoryBtn");
-  const pauseButton = document.getElementById("pauseStoryBtn");
-  if (readButton) readButton.textContent = "🔄 إعادة من البداية";
-  if (pauseButton) {
-    pauseButton.disabled = false;
-    pauseButton.textContent = "⏸ إيقاف مؤقت";
-  }
+  storyReadingState = 'speaking';
+  const readButton = document.getElementById('readStoryBtn');
+  if (readButton) readButton.textContent = '🔄 إعادة من البداية';
+  updatePauseButton('⏸ إيقاف مؤقت', false);
   updateVoiceNotice();
 
-  startFallbackWordTracking(paragraphIndex, actualOffset, remaining);
+  startFallbackWordTracking(paragraphIndex, actualOffset);
+  let lastNativeCharIndex = -1;
   utterance.onboundary = event => {
     if (storyUtterance !== utterance || generation !== storyPlaybackGeneration) return;
-    if (Number.isFinite(event.charIndex)) {
+    if (!Number.isFinite(event.charIndex)) return;
+    const relative = Math.max(0, Number(event.charIndex));
+    if (relative < lastNativeCharIndex) return;
+    lastNativeCharIndex = relative;
+    const absolute = Math.min(text.length, actualOffset + relative);
+    const span = findWordSpanAt(paragraphIndex, absolute);
+    if (span) {
+      nativeBoundarySeen = true;
       lastBoundaryAt = Date.now();
-      storyCurrentCharIndex = actualOffset + event.charIndex;
-      highlightStoryAt(paragraphIndex, storyCurrentCharIndex);
+      const idx = para.wordSpans.indexOf(span);
+      if (idx >= 0) {
+        fallbackAnchorIndex = idx;
+        fallbackAnchorAt = Date.now();
+      }
+      highlightStoryAt(paragraphIndex, Number(span.dataset.start));
     }
   };
+
   utterance.onend = () => {
     if (storyUtterance !== utterance || generation !== storyPlaybackGeneration) return;
     clearReadingFallback();
     storyUtterance = null;
-    if (paragraphIndex + 1 < storyParagraphsData.length) {
-      // Show the translation card fully after this paragraph, then continue automatically.
-      const translationCard = storyParagraphsData[paragraphIndex]?.translationCard;
-      if (translationCard) translationCard.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-      setTimeout(() => speakStoryParagraph(paragraphIndex + 1, 0, generation), 1300);
+    const nextIndex = paragraphIndex + 1;
+    if (nextIndex < storyParagraphsData.length) {
+      // Keep the just-read paragraph translation visible briefly before advancing.
+      storyReadingState = 'between';
+      pendingNextParagraphIndex = nextIndex;
+      updatePauseButton('⏸ إيقاف مؤقت', false);
+      const translationCard = para.translationCard;
+      if (translationCard) translationCard.classList.add('active');
+      paragraphAdvanceTimer = setTimeout(() => {
+        if (generation === storyPlaybackGeneration && storyReadingState === 'between') {
+          paragraphAdvanceTimer = null;
+          speakStoryParagraph(nextIndex, 0, generation);
+        }
+      }, 950);
     } else {
       finishStoryReading(generation);
     }
   };
+
   utterance.onerror = event => {
     if (generation !== storyPlaybackGeneration || storyUtterance !== utterance) return;
-    if (event.error === "canceled" || event.error === "interrupted") return;
-    console.warn("Speech synthesis error", event.error);
+    if (event.error === 'canceled' || event.error === 'interrupted') return;
+    console.warn('Speech synthesis error', event.error);
     finishStoryReading(generation);
   };
-  speechSynthesis.speak(utterance);
 
-  if (pauseImmediately) {
-    setTimeout(() => {
-      if (storyUtterance === utterance && speechSynthesis.speaking) {
-        speechSynthesis.pause();
-        storyReadingState = "paused";
-        if (pauseButton) pauseButton.textContent = "▶ استكمال القراءة";
-        fallbackPausedAt = Date.now();
-      }
-    }, 130);
-  }
+  // Give mobile browsers a fresh synthesis queue for each paragraph.
+  speechSynthesis.speak(utterance);
 }
 
-function startStoryReading(fromBeginning = false, paragraphIndex = null, startAt = 0, shouldPause = false) {
+function startStoryReading(fromBeginning = false, paragraphIndex = null, startAt = 0) {
   if (!storyParagraphsData.length) return;
-  if (!("speechSynthesis" in window)) {
-    alert("ميزة القراءة الصوتية غير مدعومة في هذا المتصفح.");
+  if (!('speechSynthesis' in window)) {
+    alert('ميزة القراءة الصوتية غير مدعومة في هذا المتصفح.');
     return;
   }
-  const startParagraph = fromBeginning ? 0 : (Number.isInteger(paragraphIndex) ? paragraphIndex : (storyReadingState === "idle" ? 0 : storyCurrentParagraphIndex));
+  const startParagraph = fromBeginning ? 0 : (Number.isInteger(paragraphIndex) ? paragraphIndex : (storyReadingState === 'idle' ? 0 : storyCurrentParagraphIndex));
   const startOffset = fromBeginning ? 0 : (Number.isInteger(paragraphIndex) ? startAt : 0);
   storyPlaybackGeneration++;
   const generation = storyPlaybackGeneration;
+  if (paragraphAdvanceTimer) clearTimeout(paragraphAdvanceTimer);
+  paragraphAdvanceTimer = null;
   speechSynthesis.cancel();
   storyUtterance = null;
   clearReadingFallback();
   clearStoryHighlight();
-  speakStoryParagraph(startParagraph, startOffset, generation, shouldPause);
+  speakStoryParagraph(startParagraph, startOffset, generation);
 }
 
 function currentWordStartForResume() {
-  const active = storyWordSpans.find(span => span.classList.contains("is-speaking") && Number(span.dataset.paragraph) === storyCurrentParagraphIndex);
-  return active ? Number(active.dataset.start) : storyCurrentCharIndex;
+  const active = storyWordSpans.find(span => span.classList.contains('is-speaking') && Number(span.dataset.paragraph) === storyCurrentParagraphIndex);
+  return active ? Number(active.dataset.start) : storyResumeOffset || storyCurrentCharIndex;
 }
 
 function updateStoryRate(value, applyImmediately = false) {
   const parsed = Math.min(1.25, Math.max(0.65, Number(value) || 0.8));
   storyRate = parsed;
   localStorage.setItem(savedStoryRateKey, String(storyRate));
-  const output = document.getElementById("storyRateValue");
-  if (output) output.textContent = storyRate.toFixed(2) + "×";
-  if (applyImmediately && storyUtterance && (storyReadingState === "speaking" || storyReadingState === "paused")) {
-    const wasPaused = storyReadingState === "paused" || speechSynthesis.paused;
+  const output = document.getElementById('storyRateValue');
+  if (output) output.textContent = storyRate.toFixed(2) + '×';
+  if (!applyImmediately) return;
+  if (storyReadingState === 'speaking' && storyUtterance) {
     const resumeAt = currentWordStartForResume();
-    startStoryReading(false, storyCurrentParagraphIndex, resumeAt, wasPaused);
+    startStoryReading(false, storyCurrentParagraphIndex, resumeAt);
   }
+  // If paused, keep the saved position and apply the new speed when the student resumes.
 }
 
 function toggleStoryPause() {
-  if (!("speechSynthesis" in window) || !storyUtterance) return;
-  const pause = document.getElementById("pauseStoryBtn");
-  if (speechSynthesis.paused || storyReadingState === "paused") {
-    const pausedFor = fallbackPausedAt ? Date.now() - fallbackPausedAt : 0;
-    if (fallbackStartedAt) fallbackStartedAt += pausedFor;
-    fallbackPausedAt = 0;
-    lastBoundaryAt = Date.now();
-    speechSynthesis.resume();
-    storyReadingState = "speaking";
-    if (pause) pause.textContent = "⏸ إيقاف مؤقت";
-  } else if (speechSynthesis.speaking) {
-    speechSynthesis.pause();
-    storyReadingState = "paused";
-    fallbackPausedAt = Date.now();
-    if (pause) pause.textContent = "▶ استكمال القراءة";
+  if (!('speechSynthesis' in window)) return;
+  const pause = document.getElementById('pauseStoryBtn');
+
+  if (storyReadingState === 'speaking' && storyUtterance) {
+    // Do not rely on speechSynthesis.pause() on mobile browsers: cancel and remember the active word.
+    storyResumeOffset = currentWordStartForResume();
+    storyCurrentCharIndex = storyResumeOffset;
+    storyPlaybackGeneration++;
+    speechSynthesis.cancel();
+    storyUtterance = null;
+    clearReadingFallback();
+    storyReadingState = 'paused';
+    if (pause) {
+      pause.textContent = '▶ استكمال القراءة';
+      pause.disabled = false;
+    }
+    return;
+  }
+
+  if (storyReadingState === 'between' && pendingNextParagraphIndex !== null) {
+    if (paragraphAdvanceTimer) clearTimeout(paragraphAdvanceTimer);
+    paragraphAdvanceTimer = null;
+    storyReadingState = 'paused-between';
+    if (pause) {
+      pause.textContent = '▶ استكمال القراءة';
+      pause.disabled = false;
+    }
+    return;
+  }
+
+  if (storyReadingState === 'paused') {
+    startStoryReading(false, storyCurrentParagraphIndex, storyResumeOffset);
+    return;
+  }
+
+  if (storyReadingState === 'paused-between' && pendingNextParagraphIndex !== null) {
+    startStoryReading(false, pendingNextParagraphIndex, 0);
   }
 }
 
 function stopStoryReading() {
   storyPlaybackGeneration++;
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
   storyUtterance = null;
   resetStoryControls();
 }
+
 async function saveWord(button, en, ar, category) {
   const original = button.textContent;
   button.disabled = true;

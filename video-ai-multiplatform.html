@@ -139,10 +139,10 @@ button:disabled{opacity:.6;cursor:wait}
       <div class="modal-actions">
         <button id="searchWordBtn" type="button" class="secondary-btn">بحث عن المعاني</button>
       </div>
-      <div class="meaning-help">ستظهر المعاني باللغة العربية فقط. اختر المعنى الأنسب لاستخدام الكلمة في السياق، وسيُحدَّد نوعها تلقائياً ثم تُحفظ في مفرداتك.</div>
+      <div class="meaning-help">ستظهر الكلمة الإنجليزية وبجوارها معناها بالعربية. استمع إلى النطق، ثم اضغط ⭐ على المعنى المناسب للسياق لحفظه؛ وسيُحدَّد نوع الكلمة تلقائياً.</div>
       <div id="dictionaryResult" class="dictionary-result" style="display:none" aria-live="polite"></div>
       <div id="wordMessage" class="modal-message" aria-live="polite"></div>
-      <div class="hint">بعد اختيار المعنى سيتم حفظ المفردة مع نوعها تلقائياً في قائمة مفرداتك.</div>
+      <div class="hint">استخدم 🔊 لسماع الكلمة قبل حفظها، ثم اضغط ⭐ لحفظ المعنى الذي يناسبك.</div>
     </div>
   </div>
 </div>
@@ -455,29 +455,77 @@ const categoryForPartOfSpeech = {
 
 let searchedWordCandidates = [];
 
-async function translateDefinitionToArabic(definition) {
-  const query = String(definition || "").trim().slice(0, 450);
-  if (!query) return "";
-  const endpoint = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(query) + "&langpair=en|ar";
-  const response = await fetch(endpoint, { method: "GET", cache: "no-store" });
-  if (!response.ok) throw new Error("تعذر الاتصال بخدمة ترجمة المعاني.");
-  const payload = await response.json();
-  const translated = String(payload?.responseData?.translatedText || "").trim();
-  // Never show the English definition: only accept a result that contains Arabic text.
-  if (!translated || !/[\u0600-\u06FF]/.test(translated)) return "";
-  return translated.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+async function translateWordToArabic(word, category, fallbackDefinition = "") {
+  // Translate the headword itself so the student sees concise pairs such as
+  // move — يتحرك and school — مدرسة, rather than an English dictionary definition.
+  const cleanWord = String(word || "").trim();
+  // Add a short grammatical context so common words are translated naturally:
+  // "I move" -> أتحرك, "a school" -> مدرسة.
+  let contextualQuery = cleanWord;
+  if (category === "verbs" || category === "phrasal_verbs") contextualQuery = "I " + cleanWord;
+  else if (category === "nouns") contextualQuery = "a " + cleanWord;
+  const queries = [contextualQuery, cleanWord, String(fallbackDefinition || "").trim()].filter(Boolean);
+  for (const query of queries) {
+    const endpoint = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(query) + "&langpair=en|ar";
+    const response = await fetch(endpoint, { method: "GET", cache: "no-store" });
+    if (!response.ok) continue;
+    const payload = await response.json();
+    let translated = String(payload?.responseData?.translatedText || "").trim();
+    translated = translated.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+    if (translated && /[\u0600-\u06FF]/.test(translated)) {
+      // Remove accidental source-word prefixes returned by some translation matches.
+      translated = translated.replace(/^\s*\([^)]*\)\s*/, "").trim();
+      if (category === "verbs" || category === "phrasal_verbs") {
+        translated = translated.replace(/^(?:أنا|انا|I)\s+/u, "").trim();
+      }
+      return translated;
+    }
+  }
+  return "";
 }
 
 function showMeaningCandidates(candidates, root) {
   root.replaceChildren();
-  candidates.forEach((candidate, index) => {
-    const option = document.createElement("button");
-    option.type = "button";
-    option.className = "meaning-option";
-    option.textContent = candidate.arabic; // Arabic meaning only; no English definition or POS shown.
-    option.setAttribute("aria-label", "اختيار المعنى: " + candidate.arabic);
-    option.addEventListener("click", () => chooseAndSaveMeaning(candidate, option));
-    root.appendChild(option);
+  candidates.forEach(candidate => {
+    const row = document.createElement("div");
+    row.className = "meaning-option";
+
+    const english = document.createElement("span");
+    english.className = "meaning-word";
+    english.textContent = candidate.word;
+
+    const translation = document.createElement("span");
+    translation.className = "meaning-translation";
+    translation.textContent = candidate.arabic;
+
+    const actions = document.createElement("div");
+    actions.className = "meaning-actions";
+
+    const sound = document.createElement("button");
+    sound.type = "button";
+    sound.className = "meaning-icon";
+    sound.textContent = "🔊";
+    sound.title = "اسمع نطق المفردة";
+    sound.setAttribute("aria-label", "اسمع نطق " + candidate.word);
+    sound.addEventListener("click", event => {
+      event.stopPropagation();
+      speak(candidate.word);
+    });
+
+    const save = document.createElement("button");
+    save.type = "button";
+    save.className = "meaning-icon";
+    save.textContent = "⭐";
+    save.title = "احفظ هذا المعنى في مفرداتي";
+    save.setAttribute("aria-label", "احفظ " + candidate.word + " بمعنى " + candidate.arabic);
+    save.addEventListener("click", event => {
+      event.stopPropagation();
+      chooseAndSaveMeaning(candidate, save);
+    });
+
+    actions.append(sound, save);
+    row.append(english, actions, translation);
+    root.appendChild(row);
   });
   root.style.display = candidates.length ? "flex" : "none";
 }
@@ -490,6 +538,11 @@ async function searchDictionaryWord() {
   const message = document.getElementById("wordMessage");
   if (!word) {
     message.textContent = "اكتب المفردة الإنجليزية أولاً.";
+    message.className = "modal-message error";
+    return;
+  }
+  if (!/^[a-z][a-z\s'-]*$/i.test(word)) {
+    message.textContent = "اكتب كلمة أو تعبيراً باللغة الإنجليزية فقط.";
     message.className = "modal-message error";
     return;
   }
@@ -508,24 +561,24 @@ async function searchDictionaryWord() {
       throw new Error("لم نعثر على معانٍ لهذه المفردة. تحقق من كتابتها وحاول مرة أخرى.");
     }
 
+    // One candidate per detected part of speech. This avoids repeating the
+    // same headword many times while still letting the learner choose its use.
     const rawCandidates = [];
-    const seenDefinitions = new Set();
+    const seenCategories = new Set();
     for (const entry of data) {
       for (const meaning of (entry.meanings || [])) {
         const pos = String(meaning.partOfSpeech || "").toLowerCase().trim();
         const mapped = categoryForPartOfSpeech[pos];
-        if (!mapped) continue; // keep only the six supported vocabulary categories.
-        for (const definition of (meaning.definitions || []).slice(0, 3)) {
-          const text = String(definition.definition || "").trim();
-          const key = pos + "|" + text.toLowerCase();
-          if (!text || seenDefinitions.has(key)) continue;
-          seenDefinitions.add(key);
-          rawCandidates.push({ definition: text, category: mapped.value, typeLabel: mapped.label });
-          if (rawCandidates.length >= 8) break;
-        }
-        if (rawCandidates.length >= 8) break;
+        if (!mapped || seenCategories.has(mapped.value)) continue;
+        const firstDefinition = (meaning.definitions || []).find(d => d && d.definition)?.definition || "";
+        rawCandidates.push({
+          word,
+          category: mapped.value,
+          typeLabel: mapped.label,
+          definition: String(firstDefinition).trim()
+        });
+        seenCategories.add(mapped.value);
       }
-      if (rawCandidates.length >= 8) break;
     }
 
     if (!rawCandidates.length) {
@@ -535,30 +588,30 @@ async function searchDictionaryWord() {
     message.textContent = "جارٍ تجهيز المعاني العربية...";
     const translated = await Promise.all(rawCandidates.map(async candidate => {
       try {
-        const arabic = await translateDefinitionToArabic(candidate.definition);
+        const arabic = await translateWordToArabic(candidate.word, candidate.category, candidate.definition);
         return arabic ? { ...candidate, arabic } : null;
       } catch (error) {
-        console.warn("Meaning translation failed", error);
+        console.warn("Word translation failed", error);
         return null;
       }
     }));
 
     const unique = [];
-    const seenArabic = new Set();
+    const seen = new Set();
     for (const candidate of translated.filter(Boolean)) {
       const key = candidate.category + "|" + candidate.arabic.replace(/\s+/g, " ").trim();
-      if (seenArabic.has(key)) continue;
-      seenArabic.add(key);
+      if (seen.has(key)) continue;
+      seen.add(key);
       unique.push(candidate);
     }
 
     if (!unique.length) {
-      throw new Error("تعذر جلب المعاني بالعربية حالياً. حاول البحث مرة أخرى بعد قليل.");
+      throw new Error("تعذر جلب المعنى العربي حالياً. حاول البحث مرة أخرى بعد قليل.");
     }
 
-    searchedWordCandidates = unique.map(candidate => ({ ...candidate, word }));
+    searchedWordCandidates = unique;
     showMeaningCandidates(searchedWordCandidates, result);
-    message.textContent = "اختر المعنى العربي الأنسب للسياق؛ سيتم تحديد نوع الكلمة وحفظها تلقائياً.";
+    message.textContent = "استمع إلى النطق 🔊، ثم اضغط ⭐ بجانب المعنى المناسب لحفظه. نوع الكلمة سيُحدَّد تلقائياً.";
     message.className = "modal-message";
   } catch (error) {
     result.style.display = "none";
@@ -592,9 +645,9 @@ function addWordToVisibleResults(en, ar, category) {
 async function chooseAndSaveMeaning(candidate, chosenButton) {
   const result = document.getElementById("dictionaryResult");
   const message = document.getElementById("wordMessage");
-  const buttons = Array.from(result.querySelectorAll("button.meaning-option"));
+  const buttons = Array.from(result.querySelectorAll("button.meaning-icon"));
   buttons.forEach(button => button.disabled = true);
-  chosenButton.textContent = "جارٍ الحفظ...";
+  chosenButton.textContent = "…";
   message.textContent = "";
   const en = candidate.word;
   const ar = candidate.arabic;
@@ -652,7 +705,7 @@ async function chooseAndSaveMeaning(candidate, chosenButton) {
   } catch (error) {
     console.error(error);
     buttons.forEach(button => button.disabled = false);
-    chosenButton.textContent = candidate.arabic;
+    chosenButton.textContent = "⭐";
     message.textContent = error.message || "تعذر حفظ المفردة. تحقق من صلاحيات جدول user_star_words.";
     message.className = "modal-message error";
   }
@@ -689,6 +742,34 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function friendlyAnalysisError(rawError) {
+  const raw = String(rawError || "");
+  const lower = raw.toLowerCase();
+
+  if (lower.includes("ip address is blocked") || lower.includes("blocked from accessing tiktok") || lower.includes("every url failed to transcribe")) {
+    return "تعذّر الوصول إلى هذا الفيديو من خادم خدمة التفريغ حالياً. جرّب رابط TikTok آخر أو أعد المحاولة لاحقاً. إذا تكرر الخطأ مع روابط متعددة، فالمشكلة مؤقتة لدى مزوّد الاستخراج وليست من جوالك.";
+  }
+  if (lower.includes("429") || lower.includes("rate limit") || lower.includes("quota") || lower.includes("too many requests")) {
+    return "وصلت خدمة التفريغ إلى حدّ الطلبات المسموح مؤقتاً. انتظر قليلاً ثم أعد المحاولة.";
+  }
+  if (lower.includes("401") || lower.includes("not authorized") || lower.includes("invalid api key") || lower.includes("unauthorized")) {
+    return "تعذّر توثيق طلب التفريغ. يحتاج مسؤول المنصة إلى مراجعة مفتاح RapidAPI داخل n8n.";
+  }
+  if (lower.includes("403") || lower.includes("private") || lower.includes("access denied") || lower.includes("forbidden")) {
+    return "لا تستطيع خدمة التفريغ الوصول إلى هذا الفيديو. تأكد أن الفيديو عام وأن رابطه يسمح بالمشاهدة.";
+  }
+  if (lower.includes("404") || lower.includes("not found")) {
+    return "لم يتم العثور على الفيديو. تأكد من الرابط وأن الفيديو لم يُحذف.";
+  }
+  if (lower.includes("500") || lower.includes("internal server error") || lower.includes("rapidapi request failed")) {
+    return "خدمة استخراج الكلام تواجه عطلاً مؤقتاً. جرّب رابطاً آخر أو أعد المحاولة بعد قليل.";
+  }
+  if (lower.includes("استغرق تحليل الفيديو وقتاً أطول") || lower.includes("timeout")) {
+    return "استغرق التحليل وقتاً أطول من المتوقع. قد يكون الفيديو طويلاً أو خدمة التفريغ بطيئة؛ يمكنك إعادة المحاولة لاحقاً.";
+  }
+  return raw || "تعذّر تحليل الفيديو حالياً. تحقق من الرابط وحاول مرة أخرى.";
+}
+
 async function pollJobResult(jobId, timeoutMs = 20 * 60 * 1000) {
   const startedAt = Date.now();
   let attempt = 0;
@@ -723,7 +804,7 @@ async function pollJobResult(jobId, timeoutMs = 20 * 60 * 1000) {
     }
 
     if (payload.status === "failed") {
-      throw new Error(payload.error || "تعذر تحليل الفيديو. راجع سجل التنفيذ في n8n.");
+      throw new Error(friendlyAnalysisError(payload.error || payload.message || ""));
     }
 
     if (payload.status === "not_found") {
@@ -809,7 +890,7 @@ async function sendUrl() {
     track("تشغيل وتحليل " + (data.platform || platformInfo.platform));
   } catch (error) {
     console.error(error);
-    setStatus(error.message || "حدث خطأ أثناء تحليل الفيديو.", true);
+    setStatus(friendlyAnalysisError(error.message || "حدث خطأ أثناء تحليل الفيديو."), true);
   } finally {
     loading.style.display = "none";
     if (button.style.display !== "none") button.disabled = false;

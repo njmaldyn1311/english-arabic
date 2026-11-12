@@ -3,54 +3,385 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>الفصل الذكي</title>
+<meta name="theme-color" content="#0f172a">
+<title>الفصل الذكي | إنجلش بالعربي</title>
 <style>
-body{margin:0;font-family:"Cairo",sans-serif;background:linear-gradient(135deg,#0f172a,#1e293b);color:white}
-.top{display:flex;justify-content:space-between;padding:15px;gap:8px;flex-wrap:wrap}
-.user{color:#38bdf8}.points{color:#FFD700}.review{background:#6366f1;padding:10px;border-radius:12px;cursor:pointer}
-.title{text-align:center}.subtitle{text-align:center;color:#94a3b8}
-.card{background:#1e293b;margin:20px;padding:20px;border-radius:20px}
-.select{background:#e5e7eb;color:black;padding:15px;border-radius:15px;display:flex;justify-content:space-between;cursor:pointer}
-.options{display:none;background:white;border-radius:15px;margin-top:10px}.option{padding:15px;border-bottom:1px solid #ddd;color:black}
-.input{width:100%;padding:15px;border:none;border-radius:15px;margin-top:10px;box-sizing:border-box;font-size:16px}
-input,textarea{font-size:16px!important}
-.btn{width:100%;padding:15px;border:none;border-radius:15px;background:#22c55e;color:white;margin-top:10px;font-size:16px;cursor:pointer}
-.btn:disabled{opacity:.6;cursor:wait}.loading{text-align:center;margin-top:20px;color:#facc15}
-.story{line-height:2;font-size:17px;margin-bottom:15px;white-space:normal}.story-en{direction:ltr;text-align:justify}.story-ar{direction:rtl;text-align:justify}
-.section-title{margin-top:20px;font-weight:bold;font-size:20px}
-.word{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid #334155}
-.en{color:#38bdf8;direction:ltr;text-align:left}.ar{color:#facc15;direction:rtl;text-align:right}
-.actions{display:flex;gap:15px;flex-shrink:0}.icon{cursor:pointer;background:#0f172a;padding:10px;border-radius:10px;font-size:18px}
-.meta-note{color:#a7f3d0;font-size:13px;line-height:1.7}.error{color:#fecaca;background:#7f1d1d;padding:12px;border-radius:12px;line-height:1.8}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;font-family:Arial,"Cairo",sans-serif;min-height:100vh}
+.container{width:min(94%,760px);margin:0 auto;padding:14px 0 42px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+.user{color:#38bdf8;font-size:14px;font-weight:bold}
+.points{color:#facc15;font-size:14px;font-weight:bold}
+.review{display:inline-flex;align-items:center;justify-content:center;background:#6366f1;color:#fff;padding:10px 14px;border-radius:12px;text-decoration:none;font-size:14px;font-weight:bold;cursor:pointer;border:0}
+h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
+.subtitle{text-align:center;color:#94a3b8;font-size:14px;margin:0 0 18px}
+.card{background:#1e293b;border:1px solid #334155;margin:16px 0;padding:16px;border-radius:16px;min-width:0;box-shadow:0 5px 18px rgba(0,0,0,.08)}
+.field-label{display:block;color:#cbd5e1;font-size:14px;font-weight:bold;margin:4px 2px 8px}
+.input{display:block;width:100%;padding:14px;border:1px solid #334155;border-radius:12px;background:#f8fafc;color:#0f172a;font:16px Arial,sans-serif;direction:auto;text-align:right;outline:none}
+.input:focus{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.16)}
+.hint{font-size:12px;color:#94a3b8;line-height:1.8;margin:8px 2px}
+.btn{border:0;border-radius:12px;padding:13px 18px;background:#22c55e;color:#fff;font-size:15px;font-weight:bold;cursor:pointer}
+.btn:disabled{opacity:.6;cursor:wait}
+#generateBtn{width:100%;margin-top:12px}
+.loading{text-align:center;margin:18px 0;color:#facc15;line-height:1.8}
+.error{color:#fee2e2;background:#7f1d1d;padding:13px;border-radius:12px;line-height:1.8}
+.lesson-card{padding:14px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:4px 0 12px}
+.section-title{font-size:20px;font-weight:bold;color:#fff;margin:0}
+.level-pill{background:#0f172a;color:#7dd3fc;border:1px solid #334155;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:bold}
+.story-panel{border:1px solid #334155;border-radius:13px;padding:14px;margin:10px 0 16px;background:#0f172a}
+.story-label{font-size:13px;color:#7dd3fc;font-weight:bold;margin-bottom:9px}
+.story{font-size:17px;line-height:2;white-space:normal;overflow-wrap:anywhere;margin:0}
+.story-en{direction:ltr;text-align:left;color:#f8fafc}
+.story-ar{direction:rtl;text-align:right;color:#e2e8f0}
+.read-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.read-btn{display:inline-flex;align-items:center;gap:7px;background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:9px 13px;border-radius:11px;font-size:13px;font-weight:bold;cursor:pointer}
+.read-btn:hover{border-color:#38bdf8}
+.read-btn.stop{background:#7f1d1d;border-color:#991b1b;color:#fee2e2}
+.read-note{font-size:11px;color:#94a3b8}
+.divider{border:0;border-top:1px solid #334155;margin:17px 0}
+.category-card{background:#1e293b;border:1px solid #334155;border-radius:15px;padding:13px;margin:13px 0}
+.category-title{color:#fff;text-align:center;direction:ltr;font-size:21px;margin:4px 0 12px;font-weight:bold}
+.word-row{display:grid;grid-template-columns:minmax(0,1fr) 108px minmax(0,1fr);gap:6px;align-items:center;padding:13px 0;border-bottom:1px solid #334155;direction:ltr;min-width:0}
+.word-row:last-child{border-bottom:0}
+.word-en{grid-column:1;color:#38bdf8;font-size:17px;font-weight:bold;text-align:left;direction:ltr;overflow-wrap:anywhere;padding-left:6px}
+.word-actions{grid-column:2;display:flex;justify-content:center;align-items:center;gap:8px;width:108px}
+.word-ar{grid-column:3;color:#facc15;font-size:17px;text-align:right;direction:rtl;overflow-wrap:anywhere;padding-right:6px}
+.icon-btn{width:42px;height:42px;display:grid;place-items:center;padding:0;border:1px solid #334155;border-radius:12px;background:#0f172a;color:#fff;font-size:19px;cursor:pointer}
+.icon-btn:hover{border-color:#38bdf8}
+.icon-btn:disabled{opacity:.65;cursor:wait}
+.empty-cat{text-align:center;color:#94a3b8;font-size:12px;padding:9px 5px 13px}
+.profile-note{color:#a7f3d0;background:#064e3b55;border:1px solid #065f46;padding:10px;border-radius:10px;font-size:13px;line-height:1.8}
+.footer-note{text-align:center;color:#94a3b8;font-size:12px;padding:6px}
+@media(max-width:520px){.container{width:94%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}}
 </style>
 </head>
 <body>
-<div class="top"><div class="user" id="username">👤</div><div class="points">⭐ كلماتك: 0</div><div class="review" onclick="goProfile()">👤 حسابي</div></div>
-<h2 class="title">📚 الفصل الذكي</h2><p class="subtitle">📘 درس مناسب لمستواك</p>
-<div class="card">
-  <div class="select"><span id="typeText">📝 نص</span></div>
-  <input id="textInput" class="input" placeholder="اكتب موضوع الدرس هنا...">
-  <button id="generateBtn" class="btn" onclick="generateLesson()">🚀 إنشاء الدرس</button>
+<div class="container">
+  <div class="top">
+    <div class="user" id="username">👤</div>
+    <div class="points">⭐ كلماتك: 0</div>
+    <button class="review" id="profileBtn" type="button">👤 حسابي</button>
+  </div>
+
+  <h1 class="page-title">📚 الفصل الذكي</h1>
+  <p class="subtitle">📘 أنشئ درساً وقصة مناسبة لمستواك في الإنجليزية</p>
+
+  <section class="card">
+    <label class="field-label" for="textInput">📝 موضوع الدرس</label>
+    <input id="textInput" class="input" type="text" placeholder="اكتب موضوع الدرس هنا..." autocomplete="off">
+    <div class="hint">اكتب موضوعاً أو فكرة، وسيُنشأ درس مناسب لمستواك المسجل.</div>
+    <button id="generateBtn" class="btn" type="button">🚀 إنشاء الدرس</button>
+  </section>
+
+  <div id="lesson" aria-live="polite"></div>
 </div>
-<div id="lesson"></div>
+
 <script>
-const SUPABASE_URL="https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY="sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
-const WEBHOOK="https://steelblue-frog-379077.hostingersite.com/webhook/lesson";
-let user_id=localStorage.getItem("user_id");
-if(!user_id){user_id=crypto.randomUUID?crypto.randomUUID():"user_"+Math.random().toString(36).slice(2);localStorage.setItem("user_id",user_id)}
-const phone=localStorage.getItem("phone")||"";
-const storedLevel=localStorage.getItem("student_level")||localStorage.getItem("english_level")||localStorage.getItem("level")||"";
-const fullName=localStorage.getItem("user")||"";
-document.getElementById("username").textContent="👤 "+fullName.split(" ").slice(0,2).join(" ");
-async function track(action){try{await fetch(SUPABASE_URL+"/rest/v1/user_activity",{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({user_id,page:"class_page",action})})}catch(e){console.debug("tracking skipped",e)}}
+'use strict';
+
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+const WEBHOOK = "https://n8n.srv1495053.hstgr.cloud/webhook/lesson";
+
+let user_id = localStorage.getItem("user_id");
+if (!user_id) {
+  user_id = (window.crypto && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : "user_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  localStorage.setItem("user_id", user_id);
+}
+
+const phone = localStorage.getItem("phone") || "";
+const storedLevel = localStorage.getItem("student_level") || localStorage.getItem("english_level") || localStorage.getItem("level") || "";
+const fullName = localStorage.getItem("user") || "";
+document.getElementById("username").textContent = "👤 " + (fullName.split(" ").slice(0, 2).join(" ") || "الطالب");
+document.getElementById("profileBtn").addEventListener("click", () => { window.location.href = "student.html"; });
+
+async function track(action) {
+  try {
+    await fetch(SUPABASE_URL + "/rest/v1/user_activity", {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({ user_id, page: "class_page", action })
+    });
+  } catch (error) {
+    console.debug("Tracking skipped", error);
+  }
+}
 track("دخول الفصل");
-function goProfile(){location.href="student.html"}
-function speak(text){if(!text||!("speechSynthesis" in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";speechSynthesis.speak(u)}
-async function saveWord(el,en,ar,category){el.textContent="…";el.style.pointerEvents="none";try{const res=await fetch(SUPABASE_URL+"/rest/v1/user_star_words",{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({user_id,word:en,translation:ar,category})});if(!res.ok)throw new Error(await res.text());el.textContent="✅";track("حفظ كلمة: "+en)}catch(e){console.error(e);el.textContent="⭐";el.style.pointerEvents="auto";alert("تعذر حفظ المفردة. تحقق من صلاحيات جدول user_star_words وعمود category.")}}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function renderWords(words){let html="";const keys=["verbs","nouns","adjectives","phrasal_verbs","idioms","adverbs"];for(const section of keys){const arr=Array.isArray(words?.[section])?words[section]:[];html+=`<div class="section-title">${section.replace("_"," ")}</div>`;for(const w of arr){const en=esc(w.en),ar=esc(w.ar);html+=`<div class="word"><div class="ar">${ar}</div><div class="actions"><button class="icon" type="button" onclick="speak('${en.replace(/\\/g,"\\\\").replace(/'/g,"\\'")}')">🔊</button><button class="icon" type="button" onclick="saveWord(this,'${en.replace(/\\/g,"\\\\").replace(/'/g,"\\'")}','${ar.replace(/\\/g,"\\\\").replace(/'/g,"\\'")}','${section}')">⭐</button></div><div class="en">${en}</div></div>`}}return html}
-async function generateLesson(){const input=document.getElementById("textInput").value.trim();if(!input){alert("اكتب موضوع الدرس أولاً");return}const btn=document.getElementById("generateBtn");const root=document.getElementById("lesson");btn.disabled=true;root.innerHTML='<div class="loading">⏳ جاري إعداد درس مناسب لمستواك...</div>';track("إنشاء درس بمستوى الطالب");try{const res=await fetch(WEBHOOK,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({inputPart:input,type:"text",user_id,phone,student_level:storedLevel})});const raw=await res.text();let data;try{data=JSON.parse(raw)}catch{throw new Error("استجابة غير مفهومة من n8n: "+raw.slice(0,250))}if(!res.ok||data.success===false)throw new Error(data.message||data.error||"تعذر إنشاء الدرس");document.getElementById("textInput").value="";const words=data.words||{};root.innerHTML=`<div class="card"><div class="section-title">📖 القصة (${esc(data.student_level||storedLevel||"A1")})</div><div class="story story-en">${esc(data.story).replace(/\n/g,"<br>")}</div><hr><div class="section-title">🌍 الترجمة</div><div class="story story-ar">${esc(data.translation||"⚠️ لا توجد ترجمة").replace(/\n/g,"<br>")}</div>${renderWords(words)}${data.profile_notice?`<p class="meta-note">${esc(data.profile_notice)}</p>`:""}</div>`;track("اكتمال إنشاء الدرس")}catch(e){console.error(e);root.innerHTML=`<div class="card error">❌ ${esc(e.message||"حدث خطأ أثناء إنشاء الدرس")}</div>`}finally{btn.disabled=false}}
+
+function speakWord(text) {
+  if (!text || !("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "en-US";
+  utterance.rate = 0.9;
+  speechSynthesis.speak(utterance);
+}
+
+let storyUtterance = null;
+function stopStoryReading() {
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  storyUtterance = null;
+  const button = document.getElementById("readStoryBtn");
+  if (button) {
+    button.textContent = "🔊 قراءة القصة";
+    button.classList.remove("stop");
+    button.setAttribute("aria-pressed", "false");
+  }
+}
+
+function readStory(button) {
+  const storyText = document.getElementById("storyEnglishText")?.innerText?.trim();
+  if (!storyText) return;
+  if (!("speechSynthesis" in window)) {
+    alert("ميزة القراءة الصوتية غير مدعومة في هذا المتصفح.");
+    return;
+  }
+  if (button.classList.contains("stop")) {
+    stopStoryReading();
+    return;
+  }
+  speechSynthesis.cancel();
+  storyUtterance = new SpeechSynthesisUtterance(storyText);
+  storyUtterance.lang = "en-US";
+  storyUtterance.rate = 0.88;
+  storyUtterance.pitch = 1;
+  button.textContent = "⏹ إيقاف القراءة";
+  button.classList.add("stop");
+  button.setAttribute("aria-pressed", "true");
+  storyUtterance.onend = stopStoryReading;
+  storyUtterance.onerror = stopStoryReading;
+  speechSynthesis.speak(storyUtterance);
+}
+
+async function saveWord(button, en, ar, category) {
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = "…";
+  try {
+    const response = await fetch(SUPABASE_URL + "/rest/v1/user_star_words", {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({ user_id, word: en, translation: ar, category })
+    });
+    if (!response.ok) throw new Error(await response.text());
+    button.textContent = "✅";
+    track("حفظ كلمة: " + en);
+  } catch (error) {
+    console.error(error);
+    button.textContent = original;
+    alert("تعذر حفظ المفردة. تحقق من صلاحيات جدول user_star_words وعمود category.");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
+
+const categoryLabels = {
+  verbs: "verbs",
+  nouns: "nouns",
+  adjectives: "adjectives",
+  phrasal_verbs: "phrasal verbs",
+  idioms: "idioms",
+  adverbs: "adverbs"
+};
+
+function renderWords(words) {
+  const fragment = document.createElement("div");
+  for (const key of Object.keys(categoryLabels)) {
+    const entries = Array.isArray(words?.[key]) ? words[key] : [];
+    const category = document.createElement("section");
+    category.className = "category-card";
+    const heading = document.createElement("h3");
+    heading.className = "category-title";
+    heading.textContent = categoryLabels[key];
+    category.appendChild(heading);
+
+    if (!entries.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-cat";
+      empty.textContent = "لا توجد مفردات في هذا القسم.";
+      category.appendChild(empty);
+    }
+
+    for (const entry of entries) {
+      const en = String(entry?.en || "").trim();
+      const ar = String(entry?.ar || "").trim();
+      if (!en) continue;
+      const row = document.createElement("div");
+      row.className = "word-row";
+
+      const english = document.createElement("span");
+      english.className = "word-en";
+      english.textContent = en;
+
+      const actions = document.createElement("div");
+      actions.className = "word-actions";
+
+      const save = document.createElement("button");
+      save.className = "icon-btn";
+      save.type = "button";
+      save.textContent = "⭐";
+      save.title = "حفظ المفردة";
+      save.setAttribute("aria-label", "حفظ " + en);
+      save.addEventListener("click", () => saveWord(save, en, ar, key));
+
+      const sound = document.createElement("button");
+      sound.className = "icon-btn";
+      sound.type = "button";
+      sound.textContent = "🔊";
+      sound.title = "استمع إلى النطق";
+      sound.setAttribute("aria-label", "نطق " + en);
+      sound.addEventListener("click", () => speakWord(en));
+
+      actions.append(save, sound);
+
+      const arabic = document.createElement("span");
+      arabic.className = "word-ar";
+      arabic.textContent = ar;
+
+      row.append(english, actions, arabic);
+      category.appendChild(row);
+    }
+    fragment.appendChild(category);
+  }
+  return fragment;
+}
+
+function renderLesson(data) {
+  const root = document.getElementById("lesson");
+  root.replaceChildren();
+  stopStoryReading();
+
+  const lessonCard = document.createElement("section");
+  lessonCard.className = "card lesson-card";
+
+  const storyHead = document.createElement("div");
+  storyHead.className = "section-head";
+  const storyTitle = document.createElement("h2");
+  storyTitle.className = "section-title";
+  storyTitle.textContent = "📖 القصة";
+  const level = document.createElement("span");
+  level.className = "level-pill";
+  level.textContent = "المستوى: " + (data.student_level || storedLevel || "A1");
+
+  const readControls = document.createElement("div");
+  readControls.className = "read-controls";
+  const readButton = document.createElement("button");
+  readButton.type = "button";
+  readButton.id = "readStoryBtn";
+  readButton.className = "read-btn";
+  readButton.textContent = "🔊 قراءة القصة";
+  readButton.setAttribute("aria-pressed", "false");
+  readButton.addEventListener("click", () => readStory(readButton));
+  const readNote = document.createElement("span");
+  readNote.className = "read-note";
+  readNote.textContent = "استمع إلى القصة باللغة الإنجليزية";
+  readControls.append(readButton, readNote);
+  storyHead.append(storyTitle, level, readControls);
+  lessonCard.appendChild(storyHead);
+
+  const englishPanel = document.createElement("div");
+  englishPanel.className = "story-panel";
+  const englishLabel = document.createElement("div");
+  englishLabel.className = "story-label";
+  englishLabel.textContent = "English Story";
+  const englishText = document.createElement("p");
+  englishText.className = "story story-en";
+  englishText.id = "storyEnglishText";
+  englishText.textContent = data.story || "لم تصل القصة.";
+  englishPanel.append(englishLabel, englishText);
+  lessonCard.appendChild(englishPanel);
+
+  const arabicPanel = document.createElement("div");
+  arabicPanel.className = "story-panel";
+  const arabicLabel = document.createElement("div");
+  arabicLabel.className = "story-label";
+  arabicLabel.textContent = "الترجمة العربية";
+  const arabicText = document.createElement("p");
+  arabicText.className = "story story-ar";
+  arabicText.textContent = data.translation || "⚠️ لا توجد ترجمة";
+  arabicPanel.append(arabicLabel, arabicText);
+  lessonCard.appendChild(arabicPanel);
+
+  if (data.words && typeof data.words === "object") {
+    lessonCard.appendChild(renderWords(data.words));
+  }
+
+  if (data.profile_notice) {
+    const notice = document.createElement("p");
+    notice.className = "profile-note";
+    notice.textContent = data.profile_notice;
+    lessonCard.appendChild(notice);
+  }
+
+  root.appendChild(lessonCard);
+  track("اكتمال إنشاء الدرس");
+}
+
+async function generateLesson() {
+  const input = document.getElementById("textInput").value.trim();
+  if (!input) {
+    alert("اكتب موضوع الدرس أولاً");
+    return;
+  }
+
+  const button = document.getElementById("generateBtn");
+  const root = document.getElementById("lesson");
+  button.disabled = true;
+  button.textContent = "⏳ جارٍ الإنشاء...";
+  root.innerHTML = '<div class="card loading">⏳ جاري إعداد القصة والترجمة والمفردات بما يناسب مستواك...</div>';
+  track("إنشاء درس بمستوى الطالب");
+
+  try {
+    const response = await fetch(WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inputPart: input, type: "text", user_id, phone, student_level: storedLevel })
+    });
+    const raw = await response.text();
+    let data;
+    try { data = JSON.parse(raw); }
+    catch { throw new Error("استجابة غير مفهومة من n8n: " + raw.slice(0, 250)); }
+    if (!response.ok || data.success === false) {
+      throw new Error(data.message || data.error || "تعذر إنشاء الدرس.");
+    }
+    document.getElementById("textInput").value = "";
+    renderLesson(data);
+  } catch (error) {
+    console.error(error);
+    root.innerHTML = '<div class="card error">❌ ' + escapeHTML(error.message || "حدث خطأ أثناء إنشاء الدرس") + '</div>';
+  } finally {
+    button.disabled = false;
+    button.textContent = "🚀 إنشاء الدرس";
+  }
+}
+
+document.getElementById("generateBtn").addEventListener("click", generateLesson);
+document.getElementById("textInput").addEventListener("keydown", event => {
+  if (event.key === "Enter") generateLesson();
+});
+window.addEventListener("beforeunload", () => {
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+});
 </script>
 </body>
 </html>

@@ -24,6 +24,12 @@ button:disabled{opacity:.6;cursor:wait}
 #videoFrame{width:100%;height:100%;min-height:220px;border:0;background:#020617}
 .player-wrap.tiktok{aspect-ratio:9/16;max-width:430px;margin:auto;min-height:560px}
 .player-wrap.facebook{aspect-ratio:16/9;min-height:260px}
+.player-placeholder{width:100%;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;color:#cbd5e1;text-align:center;line-height:1.8;background:#020617}
+.player-placeholder strong{color:#fff;font-size:18px}
+.video-source-link{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;padding:10px 14px;border-radius:10px;background:#334155;color:#fff;text-decoration:none;font-weight:bold;font-size:13px}
+.video-source-link:hover{background:#475569}
+.player-placeholder[hidden]{display:none}
+
 .platform-note{color:#cbd5e1;font-size:13px;line-height:1.8;margin-top:10px;text-align:right}
 #loading{display:none;text-align:center;margin:16px 0;color:#facc15;line-height:1.8}
 #status{display:none;padding:12px;border-radius:11px;background:#164e63;color:#cffafe;line-height:1.7;font-size:13px;margin-top:12px;text-align:right;overflow-wrap:anywhere}
@@ -111,6 +117,7 @@ button:disabled{opacity:.6;cursor:wait}
       <iframe id="videoFrame" title="Video player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
     </div>
     <div id="platformNote" class="platform-note"></div>
+    <a id="openOriginalVideo" class="video-source-link" href="#" target="_blank" rel="noopener noreferrer" style="display:none">↗ فتح الفيديو الأصلي على المنصة</a>
   </div>
 
   <div id="result"></div>
@@ -222,60 +229,174 @@ function setStatus(message, isError = false) {
   el.style.display = message ? "block" : "none";
 }
 
+function cleanPastedUrl(value) {
+  let raw = String(value || "")
+    .replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069\u200b\u200c\u200d\ufeff]/g, "")
+    .replace(/\u00a0/g, " ")
+    .trim();
+
+  // Support pasted Markdown/WhatsApp-style wrappers such as [https://...]
+  const embeddedUrl = raw.match(/https?:\/\/[^\s<>"'\[\]()]+/i);
+  if (embeddedUrl) raw = embeddedUrl[0];
+
+  raw = raw
+    .replace(/^[\s"'`<\[(]+/, "")
+    .replace(/[\s"'`>\])،؛,]+$/, "")
+    .trim();
+
+  return raw;
+}
+
 function identifyPlatform(rawUrl) {
+  const cleaned = cleanPastedUrl(rawUrl);
   let parsed;
   try {
-    parsed = new URL(rawUrl);
+    parsed = new URL(cleaned);
   } catch {
     throw new Error("الرابط غير صحيح. الصق رابطاً كاملاً يبدأ بـ https://");
   }
   const host = parsed.hostname.toLowerCase().replace(/^www\./, "").replace(/^m\./, "");
-  if (host === "tiktok.com" || host.endsWith(".tiktok.com")) return { platform: "tiktok", parsed };
-  if (host === "youtube.com" || host.endsWith(".youtube.com") || host === "youtu.be" || host === "youtube-nocookie.com") return { platform: "youtube", parsed };
-  if (host === "facebook.com" || host.endsWith(".facebook.com") || host === "fb.watch") return { platform: "facebook", parsed };
+  if (host === "tiktok.com" || host.endsWith(".tiktok.com")) return { platform: "tiktok", parsed, cleaned };
+  if (host === "youtube.com" || host.endsWith(".youtube.com") || host === "youtu.be" || host === "youtube-nocookie.com") return { platform: "youtube", parsed, cleaned };
+  if (host === "facebook.com" || host.endsWith(".facebook.com") || host === "fb.watch") return { platform: "facebook", parsed, cleaned };
   throw new Error("المنصة غير مدعومة. استخدم TikTok أو YouTube أو Facebook.");
+}
+
+function facebookEmbedUrl(rawUrl, videoId = "") {
+  const info = identifyPlatform(rawUrl);
+  const p = info.parsed;
+  let canonical = info.cleaned;
+
+  // When the transcriber resolves a Reel/share link to a numeric ID,
+  // use a canonical Facebook URL for the official video plugin.
+  if (videoId && /^\d+$/.test(String(videoId))) {
+    canonical = "https://www.facebook.com/video.php?v=" + videoId;
+  }
+
+  return "https://www.facebook.com/plugins/video.php?href=" +
+    encodeURIComponent(canonical) + "&show_text=0&width=560";
 }
 
 function fallbackEmbed(rawUrl) {
   const info = identifyPlatform(rawUrl);
   const p = info.parsed;
+
   if (info.platform === "youtube") {
     let id = p.searchParams.get("v") || "";
-    if (!id && p.hostname.toLowerCase().includes("youtu.be")) id = p.pathname.split("/").filter(Boolean)[0] || "";
+    if (!id && p.hostname.toLowerCase().includes("youtu.be")) {
+      id = p.pathname.split("/").filter(Boolean)[0] || "";
+    }
     if (!id) {
       const match = p.pathname.match(/^\/(?:embed|shorts|live|v)\/([A-Za-z0-9_-]{11})/i);
       id = match ? match[1] : "";
     }
-    if (!/^[A-Za-z0-9_-]{11}$/.test(id)) throw new Error("لم أستطع تحديد معرف فيديو YouTube من الرابط.");
-    return { platform: "youtube", embed_url: "https://www.youtube.com/embed/" + id + "?playsinline=1&rel=0" };
+    if (!/^[A-Za-z0-9_-]{11}$/.test(id)) {
+      throw new Error("لم أستطع تحديد معرف فيديو YouTube من الرابط.");
+    }
+    return {
+      platform: "youtube",
+      video_id: id,
+      embed_url: "https://www.youtube.com/embed/" + id + "?playsinline=1&rel=0"
+    };
   }
+
   if (info.platform === "tiktok") {
     const match = p.pathname.match(/\/video\/(\d+)/i);
-    if (!match) throw new Error("استخدم رابط TikTok الكامل الذي يحتوي على /video/ ورقم الفيديو.");
-    return { platform: "tiktok", embed_url: "https://www.tiktok.com/player/v1/" + match[1] + "?music_info=1&description=1" };
+    if (match) {
+      return {
+        platform: "tiktok",
+        video_id: match[1],
+        embed_url: "https://www.tiktok.com/player/v1/" + match[1] + "?music_info=1&description=1"
+      };
+    }
+
+    // vt.tiktok.com / vm.tiktok.com short share links do not contain
+    // the numeric video ID; the backend transcriber resolves them.
+    const host = p.hostname.toLowerCase();
+    const isTikTokShort =
+      host === "vt.tiktok.com" ||
+      host === "vm.tiktok.com" ||
+      host === "v.tiktok.com" ||
+      /^\/[A-Za-z0-9_-]+\/?$/.test(p.pathname);
+
+    if (isTikTokShort) {
+      return { platform: "tiktok", video_id: null, embed_url: "", unresolved: true };
+    }
+
+    throw new Error("رابط TikTok غير مكتمل. استخدم رابط الفيديو أو رابط المشاركة القصير من التطبيق.");
   }
+
   return {
     platform: "facebook",
-    embed_url: "https://www.facebook.com/plugins/video.php?href=" + encodeURIComponent(rawUrl) + "&show_text=0&width=560"
+    embed_url: facebookEmbedUrl(info.cleaned)
   };
 }
 
 function setPlayer(data, originalUrl) {
-  let playerData = data || {};
+  const playerData = data || {};
   let fallback = null;
-  try { fallback = fallbackEmbed(originalUrl); } catch (error) { /* The backend may resolve short links. */ }
+  try { fallback = fallbackEmbed(originalUrl); } catch (error) { /* Use backend video metadata where available. */ }
+
   const platform = playerData.platform || (fallback && fallback.platform) || "";
-  const embedUrl = playerData.embed_url || (fallback && fallback.embed_url) || "";
-  if (!embedUrl) return;
+  let embedUrl = playerData.embed_url || (fallback && fallback.embed_url) || "";
+
+  // TikTok short links are resolved by RapidAPI; use the returned video ID
+  // if the backend response did not provide an embed URL.
+  const resolvedId = String(playerData.video_id || (fallback && fallback.video_id) || "");
+  if (!embedUrl && platform === "tiktok" && /^\d+$/.test(resolvedId)) {
+    embedUrl = "https://www.tiktok.com/player/v1/" + resolvedId + "?music_info=1&description=1";
+  }
+  if (!embedUrl && platform === "facebook") {
+    embedUrl = facebookEmbedUrl(originalUrl, resolvedId);
+  }
 
   const frame = document.getElementById("videoFrame");
   const wrap = document.getElementById("playerWrap");
-  if (frame.src !== embedUrl) frame.src = embedUrl;
-  wrap.className = "player-wrap" + (platform === "tiktok" ? " tiktok" : platform === "facebook" ? " facebook" : "");
-  document.getElementById("videoBox").style.display = "block";
-
+  const videoBox = document.getElementById("videoBox");
+  const sourceLink = document.getElementById("openOriginalVideo");
+  const note = document.getElementById("platformNote");
   const names = { youtube: "YouTube", tiktok: "TikTok", facebook: "Facebook" };
-  document.getElementById("platformNote").textContent = "المصدر: " + (names[platform] || platform) + ". قد لا تعمل الفيديوهات الخاصة أو المحذوفة أو المقيدة جغرافياً داخل التضمين.";
+
+  wrap.className = "player-wrap" + (platform === "tiktok" ? " tiktok" : platform === "facebook" ? " facebook" : "");
+  videoBox.style.display = "block";
+
+  if (embedUrl) {
+    if (frame.src !== embedUrl) frame.src = embedUrl;
+    frame.style.display = "block";
+    const placeholder = wrap.querySelector(".player-placeholder");
+    if (placeholder) placeholder.remove();
+    note.textContent = platform === "facebook"
+      ? "المصدر: Facebook. إذا منع فيسبوك عرض الفيديو داخل الصفحة، استخدم زر فتح الفيديو الأصلي أسفل المشغّل؛ بعض المنشورات لا تسمح بالتضمين الخارجي."
+      : "المصدر: " + (names[platform] || platform) + ". قد لا تعمل الفيديوهات الخاصة أو المقيدة داخل التضمين.";
+  } else {
+    frame.removeAttribute("src");
+    frame.style.display = "none";
+    let placeholder = wrap.querySelector(".player-placeholder");
+    if (!placeholder) {
+      placeholder = document.createElement("div");
+      placeholder.className = "player-placeholder";
+      wrap.appendChild(placeholder);
+    }
+    placeholder.replaceChildren();
+    const heading = document.createElement("strong");
+    heading.textContent = platform === "tiktok" ? "جارٍ تجهيز فيديو TikTok..." : "جارٍ تجهيز مشغّل الفيديو...";
+    const detail = document.createElement("span");
+    detail.textContent = platform === "tiktok"
+      ? "هذا رابط مشاركة قصير. سيُجهّز المشغّل بعد أن يحلّ الخادم الرابط إلى رقم الفيديو."
+      : "سيظهر الفيديو بعد استلام بياناته من الخادم.";
+    placeholder.append(heading, detail);
+    note.textContent = "يتم الآن تجهيز رابط العرض الأصلي.";
+  }
+
+  if (sourceLink) {
+    sourceLink.href = cleanPastedUrl(originalUrl);
+    sourceLink.style.display = "inline-flex";
+    sourceLink.textContent = platform === "facebook"
+      ? "↗ فتح الفيديو الأصلي على Facebook"
+      : platform === "tiktok"
+        ? "↗ فتح الفيديو الأصلي على TikTok"
+        : "↗ فتح الفيديو الأصلي على YouTube";
+  }
 }
 
 function speak(text) {
@@ -734,6 +855,11 @@ function resetForNextVideo() {
   currentVideoUrl = "";
   document.getElementById("result").replaceChildren();
   document.getElementById("videoFrame").src = "about:blank";
+  document.getElementById("videoFrame").style.display = "block";
+  const sourceLink = document.getElementById("openOriginalVideo");
+  if (sourceLink) { sourceLink.href = "#"; sourceLink.style.display = "none"; }
+  const placeholder = document.querySelector("#playerWrap .player-placeholder");
+  if (placeholder) placeholder.remove();
   document.getElementById("videoBox").style.display = "none";
   document.getElementById("url").value = "";
   document.getElementById("status").style.display = "none";
@@ -831,7 +957,9 @@ async function pollJobResult(jobId, timeoutMs = 20 * 60 * 1000) {
 }
 
 async function sendUrl() {
-  const url = document.getElementById("url").value.trim();
+  const urlField = document.getElementById("url");
+  const url = cleanPastedUrl(urlField.value);
+  urlField.value = url;
   if (!url) {
     alert("الصق رابط الفيديو أولاً.");
     return;

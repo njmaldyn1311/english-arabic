@@ -64,11 +64,19 @@ button:disabled{opacity:.6;cursor:wait}
 .note-item p{margin:0 0 8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
 .note-meta{font-size:11px;color:#94a3b8}
 .note-delete{background:#7f1d1d;padding:6px 10px;font-size:12px;margin-top:8px}
-.dictionary-result{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:10px;margin-top:10px;color:#cbd5e1;line-height:1.7;font-size:13px;direction:ltr;text-align:left;white-space:pre-wrap}
+.dictionary-result{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:10px;margin-top:10px;color:#cbd5e1;line-height:1.7;font-size:14px;direction:rtl;text-align:right;display:flex;flex-direction:column;gap:8px}
+.meaning-option{width:100%;background:#243449;border:1px solid #475569;border-radius:11px;padding:13px 14px;color:#fff;text-align:right;direction:rtl;font-size:15px;line-height:1.8;white-space:normal}
+.meaning-option:active{background:#0f766e}
+.meaning-option:disabled{opacity:.55}
+.meaning-help{color:#cbd5e1;font-size:12px;line-height:1.7;margin:8px 2px}
+.saved-meaning{background:#064e3b;border:1px solid #10b981;color:#d1fae5;border-radius:12px;padding:12px;line-height:1.8;text-align:center;direction:rtl}
+.whatsapp-float{position:fixed;right:18px;bottom:18px;z-index:950;background:#25D366;color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:25px;box-shadow:0 8px 24px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25)}
+.whatsapp-float:focus{outline:3px solid #bbf7d0;outline-offset:3px}
 @media(max-width:520px){
  .floating-tools{left:10px;bottom:12px;gap:8px}
  .float-btn{padding:11px 13px;font-size:13px}
  .modal-panel{padding:14px}
+ .whatsapp-float{right:12px;bottom:14px;width:52px;height:52px}
 }
 
 </style>
@@ -100,6 +108,7 @@ button:disabled{opacity:.6;cursor:wait}
     <button class="float-btn float-note" id="openNotesBtn" type="button">📝 ملاحظاتي</button>
     <button class="float-btn float-word" id="openWordBtn" type="button">🔎 إضافة مفردة</button>
   </div>
+  <a id="whatsappFloat" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="اسألني عبر واتساب" title="اسألني عبر واتساب">💬</a>
 
   <div class="modal-backdrop" id="notesModal" role="dialog" aria-modal="true" aria-labelledby="notesTitle">
     <div class="modal-panel">
@@ -125,28 +134,15 @@ button:disabled{opacity:.6;cursor:wait}
         <h3 id="wordTitle">🔎 البحث عن مفردة وإضافتها</h3>
         <button class="close-modal" type="button" data-close="wordModal">إغلاق ✕</button>
       </div>
-      <label for="newWordEnglish">المفردة بالإنجليزية</label>
+      <label for="newWordEnglish">اكتب المفردة بالإنجليزية</label>
       <input id="newWordEnglish" type="text" dir="ltr" placeholder="Enter an English word" autocomplete="off">
       <div class="modal-actions">
-        <button id="searchWordBtn" type="button" class="secondary-btn">بحث عن الكلمة</button>
+        <button id="searchWordBtn" type="button" class="secondary-btn">بحث عن المعاني</button>
       </div>
-      <div id="dictionaryResult" class="dictionary-result" style="display:none"></div>
-      <label for="newWordArabic">المعنى بالعربية</label>
-      <input id="newWordArabic" type="text" placeholder="اكتب الترجمة العربية" autocomplete="off">
-      <label for="newWordCategory">القسم</label>
-      <select id="newWordCategory">
-        <option value="verbs">verbs — أفعال</option>
-        <option value="nouns">nouns — أسماء</option>
-        <option value="adjectives">adjectives — صفات</option>
-        <option value="phrasal_verbs">phrasal verbs — أفعال مركبة</option>
-        <option value="idioms">idioms — تعبيرات اصطلاحية</option>
-        <option value="adverbs">adverbs — ظروف</option>
-      </select>
-      <div class="modal-actions">
-        <button id="addWordBtn" type="button">إضافة إلى مفرداتي ⭐</button>
-      </div>
+      <div class="meaning-help">ستظهر المعاني باللغة العربية فقط. اختر المعنى الأنسب لاستخدام الكلمة في السياق، وسيُحدَّد نوعها تلقائياً ثم تُحفظ في مفرداتك.</div>
+      <div id="dictionaryResult" class="dictionary-result" style="display:none" aria-live="polite"></div>
       <div id="wordMessage" class="modal-message" aria-live="polite"></div>
-      <div class="hint">سيتم حفظ المفردة في قائمة مفردات الطالب في Supabase، ولن تُضاف مرة أخرى إذا كانت موجودة.</div>
+      <div class="hint">بعد اختيار المعنى سيتم حفظ المفردة مع نوعها تلقائياً في قائمة مفرداتك.</div>
     </div>
   </div>
 </div>
@@ -171,6 +167,13 @@ if (!user_id) {
   localStorage.setItem("user_id", user_id);
 }
 let currentVideoUrl = "";
+
+// WhatsApp floating contact: same contact link and greeting used on the home page.
+const whatsappName = localStorage.getItem("user") || "طالب";
+const whatsappMessage = encodeURIComponent("السلام عليكم أنا " + whatsappName);
+const whatsappLink = "https://wa.me/message/735SJORMFI74H1?text=" + whatsappMessage;
+const whatsappFloat = document.getElementById("whatsappFloat");
+if (whatsappFloat) whatsappFloat.href = whatsappLink;
 
 const labels = {
   verbs: "verbs",
@@ -441,9 +444,47 @@ function renderNotes() {
   });
 }
 
+const categoryForPartOfSpeech = {
+  noun: { value: "nouns", label: "اسم" },
+  verb: { value: "verbs", label: "فعل" },
+  adjective: { value: "adjectives", label: "صفة" },
+  adverb: { value: "adverbs", label: "ظرف" },
+  "phrasal verb": { value: "phrasal_verbs", label: "فعل مركب" },
+  idiom: { value: "idioms", label: "تعبير اصطلاحي" }
+};
+
+let searchedWordCandidates = [];
+
+async function translateDefinitionToArabic(definition) {
+  const query = String(definition || "").trim().slice(0, 450);
+  if (!query) return "";
+  const endpoint = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(query) + "&langpair=en|ar";
+  const response = await fetch(endpoint, { method: "GET", cache: "no-store" });
+  if (!response.ok) throw new Error("تعذر الاتصال بخدمة ترجمة المعاني.");
+  const payload = await response.json();
+  const translated = String(payload?.responseData?.translatedText || "").trim();
+  // Never show the English definition: only accept a result that contains Arabic text.
+  if (!translated || !/[\u0600-\u06FF]/.test(translated)) return "";
+  return translated.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+}
+
+function showMeaningCandidates(candidates, root) {
+  root.replaceChildren();
+  candidates.forEach((candidate, index) => {
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "meaning-option";
+    option.textContent = candidate.arabic; // Arabic meaning only; no English definition or POS shown.
+    option.setAttribute("aria-label", "اختيار المعنى: " + candidate.arabic);
+    option.addEventListener("click", () => chooseAndSaveMeaning(candidate, option));
+    root.appendChild(option);
+  });
+  root.style.display = candidates.length ? "flex" : "none";
+}
+
 async function searchDictionaryWord() {
   const input = document.getElementById("newWordEnglish");
-  const word = input.value.trim();
+  const word = input.value.trim().toLowerCase();
   const result = document.getElementById("dictionaryResult");
   const button = document.getElementById("searchWordBtn");
   const message = document.getElementById("wordMessage");
@@ -452,35 +493,80 @@ async function searchDictionaryWord() {
     message.className = "modal-message error";
     return;
   }
+
   button.disabled = true;
   button.textContent = "جارٍ البحث...";
   message.textContent = "";
+  result.replaceChildren();
   result.style.display = "none";
+  searchedWordCandidates = [];
+
   try {
-    const response = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(word));
+    const response = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(word), { cache: "no-store" });
     const data = await response.json();
     if (!response.ok || !Array.isArray(data) || !data.length) {
-      throw new Error("لم نعثر على تعريف لهذه المفردة. يمكنك إضافتها يدوياً مع ترجمتها.");
+      throw new Error("لم نعثر على معانٍ لهذه المفردة. تحقق من كتابتها وحاول مرة أخرى.");
     }
-    const entry = data[0];
-    const phonetic = entry.phonetic || entry.phonetics?.find(x => x.text)?.text || "";
-    const definitions = [];
-    for (const meaning of (entry.meanings || []).slice(0, 3)) {
-      const first = meaning.definitions?.[0];
-      if (first?.definition) definitions.push((meaning.partOfSpeech ? meaning.partOfSpeech + ": " : "") + first.definition);
+
+    const rawCandidates = [];
+    const seenDefinitions = new Set();
+    for (const entry of data) {
+      for (const meaning of (entry.meanings || [])) {
+        const pos = String(meaning.partOfSpeech || "").toLowerCase().trim();
+        const mapped = categoryForPartOfSpeech[pos];
+        if (!mapped) continue; // keep only the six supported vocabulary categories.
+        for (const definition of (meaning.definitions || []).slice(0, 3)) {
+          const text = String(definition.definition || "").trim();
+          const key = pos + "|" + text.toLowerCase();
+          if (!text || seenDefinitions.has(key)) continue;
+          seenDefinitions.add(key);
+          rawCandidates.push({ definition: text, category: mapped.value, typeLabel: mapped.label });
+          if (rawCandidates.length >= 8) break;
+        }
+        if (rawCandidates.length >= 8) break;
+      }
+      if (rawCandidates.length >= 8) break;
     }
-    result.textContent = [entry.word || word, phonetic, ...definitions].filter(Boolean).join("\n\n");
-    result.style.display = "block";
-    message.textContent = "تم العثور على تعريف إنجليزي. اكتب المعنى العربي ثم أضف المفردة إلى قائمتك.";
+
+    if (!rawCandidates.length) {
+      throw new Error("وجدنا تعريفات، لكن نوع الكلمة لا يندرج ضمن الأقسام الستة في المنصة.");
+    }
+
+    message.textContent = "جارٍ تجهيز المعاني العربية...";
+    const translated = await Promise.all(rawCandidates.map(async candidate => {
+      try {
+        const arabic = await translateDefinitionToArabic(candidate.definition);
+        return arabic ? { ...candidate, arabic } : null;
+      } catch (error) {
+        console.warn("Meaning translation failed", error);
+        return null;
+      }
+    }));
+
+    const unique = [];
+    const seenArabic = new Set();
+    for (const candidate of translated.filter(Boolean)) {
+      const key = candidate.category + "|" + candidate.arabic.replace(/\s+/g, " ").trim();
+      if (seenArabic.has(key)) continue;
+      seenArabic.add(key);
+      unique.push(candidate);
+    }
+
+    if (!unique.length) {
+      throw new Error("تعذر جلب المعاني بالعربية حالياً. حاول البحث مرة أخرى بعد قليل.");
+    }
+
+    searchedWordCandidates = unique.map(candidate => ({ ...candidate, word }));
+    showMeaningCandidates(searchedWordCandidates, result);
+    message.textContent = "اختر المعنى العربي الأنسب للسياق؛ سيتم تحديد نوع الكلمة وحفظها تلقائياً.";
     message.className = "modal-message";
   } catch (error) {
-    result.textContent = error.message || "تعذر البحث حالياً. يمكنك إدخال المفردة وترجمتها يدوياً.";
-    result.style.display = "block";
-    message.textContent = "يمكنك المتابعة بالإضافة اليدوية.";
+    result.style.display = "none";
+    message.textContent = error.message || "تعذر البحث عن المفردة حالياً.";
     message.className = "modal-message error";
   } finally {
     button.disabled = false;
-    button.textContent = "بحث عن الكلمة";
+    button.textContent = "بحث عن المعاني";
   }
 }
 
@@ -503,20 +589,17 @@ function addWordToVisibleResults(en, ar, category) {
   }
 }
 
-async function addStudentWord() {
-  const en = document.getElementById("newWordEnglish").value.trim();
-  const ar = document.getElementById("newWordArabic").value.trim();
-  const category = document.getElementById("newWordCategory").value;
-  const button = document.getElementById("addWordBtn");
+async function chooseAndSaveMeaning(candidate, chosenButton) {
+  const result = document.getElementById("dictionaryResult");
   const message = document.getElementById("wordMessage");
-  if (!en || !ar) {
-    message.textContent = "أدخل المفردة الإنجليزية ومعناها بالعربية.";
-    message.className = "modal-message error";
-    return;
-  }
-  button.disabled = true;
-  button.textContent = "جارٍ الحفظ...";
+  const buttons = Array.from(result.querySelectorAll("button.meaning-option"));
+  buttons.forEach(button => button.disabled = true);
+  chosenButton.textContent = "جارٍ الحفظ...";
   message.textContent = "";
+  const en = candidate.word;
+  const ar = candidate.arabic;
+  const category = candidate.category;
+
   try {
     const { data: existing, error: lookupError } = await client
       .from("user_star_words")
@@ -525,28 +608,60 @@ async function addStudentWord() {
       .ilike("word", en)
       .limit(1);
     if (lookupError) throw lookupError;
+
+    let saveError = null;
     if (existing && existing.length) {
-      message.textContent = "هذه المفردة موجودة بالفعل في قائمة مفرداتك.";
-      message.className = "modal-message";
-      return;
+      const updateResult = await client.from("user_star_words")
+        .update({ translation: ar, category })
+        .eq("user_id", user_id)
+        .ilike("word", en);
+      saveError = updateResult.error;
+    } else {
+      const insertResult = await client.from("user_star_words")
+        .insert({ user_id, word: en, translation: ar, category });
+      saveError = insertResult.error;
     }
-    const { error } = await client.from("user_star_words").insert({ user_id, word: en, translation: ar });
-    if (error) throw error;
+    if (saveError) {
+      if (/category|column/i.test(saveError.message || "")) {
+        throw new Error("تم تحديد النوع تلقائياً، لكن جدول user_star_words يحتاج إضافة عمود category. نفّذ أمر SQL المرفق ثم أعد المحاولة.");
+      }
+      throw saveError;
+    }
+
     addWordToVisibleResults(en, ar, category);
-    track("إضافة مفردة يدوياً: " + en);
-    message.textContent = "تمت إضافة المفردة إلى مفرداتك بنجاح.";
+    track("إضافة مفردة بالبحث: " + en + " — " + category);
+    result.replaceChildren();
+    const saved = document.createElement("div");
+    saved.className = "saved-meaning";
+    const meaning = document.createElement("div");
+    meaning.textContent = ar;
+    const type = document.createElement("div");
+    type.style.fontSize = "12px";
+    type.style.marginTop = "6px";
+    type.textContent = "تم تحديد النوع تلقائياً: " + candidate.typeLabel;
+    const done = document.createElement("div");
+    done.style.marginTop = "6px";
+    done.style.fontWeight = "bold";
+    done.textContent = "⭐ تم حفظ المفردة في قائمة مفرداتك";
+    saved.append(meaning, type, done);
+    result.appendChild(saved);
+    result.style.display = "block";
+    message.textContent = "يمكنك إغلاق النافذة أو البحث عن مفردة أخرى.";
     message.className = "modal-message";
-    document.getElementById("newWordEnglish").value = "";
-    document.getElementById("newWordArabic").value = "";
-    document.getElementById("dictionaryResult").style.display = "none";
+    inputResetAfterSave(en);
   } catch (error) {
     console.error(error);
-    message.textContent = "تعذرت الإضافة. تحقق من صلاحيات القراءة والإضافة في جدول user_star_words.";
+    buttons.forEach(button => button.disabled = false);
+    chosenButton.textContent = candidate.arabic;
+    message.textContent = error.message || "تعذر حفظ المفردة. تحقق من صلاحيات جدول user_star_words.";
     message.className = "modal-message error";
-  } finally {
-    button.disabled = false;
-    button.textContent = "إضافة إلى مفرداتي ⭐";
   }
+}
+
+function inputResetAfterSave(savedWord) {
+  const input = document.getElementById("newWordEnglish");
+  input.value = "";
+  input.placeholder = "تم حفظ " + savedWord + " — اكتب كلمة أخرى";
 }
 
 function resetForNextVideo() {
@@ -710,6 +825,9 @@ document.getElementById("openNotesBtn").addEventListener("click", () => {
 });
 document.getElementById("openWordBtn").addEventListener("click", () => {
   document.getElementById("wordMessage").textContent = "";
+  document.getElementById("dictionaryResult").replaceChildren();
+  document.getElementById("dictionaryResult").style.display = "none";
+  document.getElementById("newWordEnglish").value = "";
   openModal("wordModal");
   document.getElementById("newWordEnglish").focus();
 });
@@ -736,7 +854,9 @@ document.getElementById("saveNoteBtn").addEventListener("click", () => {
   renderNotes();
 });
 document.getElementById("searchWordBtn").addEventListener("click", searchDictionaryWord);
-document.getElementById("addWordBtn").addEventListener("click", addStudentWord);
+document.getElementById("newWordEnglish").addEventListener("keydown", event => {
+  if (event.key === "Enter") searchDictionaryWord();
+});
 document.querySelectorAll("[data-close]").forEach(button => {
   button.addEventListener("click", () => closeModal(button.dataset.close));
 });

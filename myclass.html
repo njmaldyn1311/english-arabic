@@ -66,14 +66,23 @@ h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
 .read-btn.stop{background:#7f1d1d;border-color:#991b1b;color:#fee2e2}
 .read-btn.pause{background:#164e63;border-color:#0e7490;color:#cffafe}
 .read-note{font-size:11px;color:#94a3b8}
-.meaning-toast{position:fixed;z-index:9999;left:50%;bottom:18px;transform:translateX(-50%);width:min(92%,430px);display:none;background:#1e293b;border:1px solid #38bdf8;border-radius:15px;padding:13px 15px;box-shadow:0 12px 36px rgba(0,0,0,.38);direction:rtl;text-align:right;}
+.meaning-toast{position:fixed;z-index:10001;left:50%;bottom:calc(108px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(88%,360px);display:none;background:#1e293b;border:1px solid #38bdf8;border-radius:13px;padding:10px 12px;box-shadow:0 12px 30px rgba(0,0,0,.34);direction:rtl;text-align:right;}
 .meaning-toast.show{display:block;animation:meaningIn .18s ease-out;}
 .meaning-toast-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px;}
-.meaning-toast-word{direction:ltr;text-align:left;color:#38bdf8;font-weight:bold;font-size:16px;}
+.meaning-toast-word{direction:ltr;text-align:left;color:#38bdf8;font-weight:bold;font-size:15px;}
 .meaning-toast-close{background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:9px;padding:4px 9px;cursor:pointer;font-size:16px;}
-.meaning-toast-ar{color:#facc15;font-size:17px;line-height:1.8;}
-.meaning-toast-meta{color:#94a3b8;font-size:11px;margin-top:4px;}
+.meaning-toast-ar{color:#facc15;font-size:16px;line-height:1.65;font-weight:600;}
+.meaning-toast-meta{color:#94a3b8;font-size:10px;margin-top:3px;}
 .meaning-toast-loading{color:#cbd5e1;font-size:14px;animation:meaningPulse 1s ease-in-out infinite alternate;}
+.reading-dock{position:fixed;z-index:10000;left:50%;bottom:calc(8px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(96%,760px);display:none;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 10px;background:rgba(15,23,42,.97);border:1px solid #475569;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.4);backdrop-filter:blur(10px);}
+.reading-dock-lessons{flex:0 0 auto;background:#0e7490;border:1px solid #155e75;color:#fff;border-radius:10px;padding:9px 11px;font-size:12px;font-weight:bold;cursor:pointer;}
+.reading-dock-controls{flex:1;min-width:0;}
+.reading-dock .read-controls{gap:6px;justify-content:center;}
+.reading-dock .read-btn{padding:8px 10px;font-size:12px;white-space:nowrap;}
+.reading-dock .read-speed{padding:6px 8px;gap:6px;}
+.reading-dock .read-speed input{width:95px;}
+.reading-dock .read-note{display:none;}
+body.has-reading-dock{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
 @keyframes meaningPulse{from{opacity:.55}to{opacity:1}}
 .points{color:#facc15;font-size:14px;font-weight:bold;background:transparent;border:0;padding:4px;cursor:pointer}
 .word-en.clickable-word{cursor:pointer;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;}
@@ -94,6 +103,18 @@ h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
 .profile-note{color:#a7f3d0;background:#064e3b55;border:1px solid #065f46;padding:10px;border-radius:10px;font-size:13px;line-height:1.8}
 .footer-note{text-align:center;color:#94a3b8;font-size:12px;padding:6px}
 @media(max-width:520px){.container{width:94%;max-width:100%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.story-en{width:100%;max-width:100%;direction:ltr!important;text-align:left!important;overflow-wrap:break-word}.story-ar{width:100%;max-width:100%;direction:rtl!important;text-align:right!important;overflow-wrap:break-word}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}.read-controls{gap:6px}.read-btn{font-size:12px;padding:8px 10px}.meaning-toast{bottom:12px}.read-speed{width:100%;justify-content:space-between}.read-speed input{flex:1;min-width:90px}.saved-lesson-item{align-items:flex-start}.saved-lesson-actions{width:100%}}
+
+@media(max-width:520px){
+  .reading-dock{width:96%;gap:6px;padding:8px 7px;border-radius:13px;align-items:stretch;}
+  .reading-dock-lessons{padding:8px 9px;font-size:11px;}
+  .reading-dock-controls{width:100%;flex-basis:100%;order:2;}
+  .reading-dock .read-controls{justify-content:space-between;gap:5px;}
+  .reading-dock .read-btn{padding:7px 8px;font-size:11px;flex:1;justify-content:center;}
+  .reading-dock .read-speed{width:100%;justify-content:space-between;}
+  .reading-dock .read-speed input{flex:1;width:auto;min-width:70px;}
+  .meaning-toast{bottom:calc(128px + env(safe-area-inset-bottom));width:min(88%,340px);}
+  body.has-reading-dock{padding-bottom:calc(150px + env(safe-area-inset-bottom));}
+}
 </style>
 </head>
 <body>
@@ -101,7 +122,7 @@ h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
   <div class="top">
     <div class="user" id="username">👤</div>
     <button class="points" id="wordCountBtn" type="button" title="فتح مفرداتي">⭐ كلماتك: <span id="savedWordCount">0</span></button>
-    <button class="review saved-lessons-btn" id="openSavedLessonsBtn" type="button">📚 دروسي المحفوظة <span id="savedLessonCount">0</span></button>
+    <button class="review saved-lessons-btn" id="openSavedLessonsBtn" type="button">📚 دروسي <span id="savedLessonCount">0</span></button>
     <button class="review" id="profileBtn" type="button">👤 حسابي</button>
   </div>
 
@@ -117,13 +138,18 @@ h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
 
   <section id="savedLessonsPanel" class="card saved-lessons-panel" aria-live="polite">
     <div class="section-head">
-      <h2 class="section-title">📚 دروسي المحفوظة</h2>
+      <h2 class="section-title">📚 دروسي</h2>
       <button id="closeSavedLessonsBtn" class="small-action" type="button">إغلاق ✕</button>
     </div>
-    <div id="savedLessonsList" class="hint">اضغط على «دروسي المحفوظة» لعرض الدروس السابقة.</div>
+    <div id="savedLessonsList" class="hint">اضغط على «دروسي» لعرض الدروس السابقة.</div>
   </section>
 
   <div id="lesson" aria-live="polite"></div>
+</div>
+
+<div id="readingDock" class="reading-dock" aria-label="أدوات القراءة الثابتة">
+  <button id="dockLessonsBtn" class="reading-dock-lessons" type="button">📚 دروسي <span id="dockSavedLessonCount">0</span></button>
+  <div id="readingDockControls" class="reading-dock-controls"></div>
 </div>
 
 <div id="wordMeaningCard" class="meaning-toast" role="status" aria-live="polite">
@@ -172,6 +198,9 @@ let currentMeaningCategory = "story";
 let currentLessonData = null;
 let currentLessonTitle = "";
 let currentSavedLessonId = null;
+let lessonSaveQueue = Promise.resolve();
+const pendingLessonSaveKeys = new Set();
+let activeHighlightSpan = null;
 const savedStoryRateKey = "class_story_rate_" + user_id;
 let storyRate = Number(localStorage.getItem(savedStoryRateKey) || "0.80");
 if (!Number.isFinite(storyRate)) storyRate = 0.80;
@@ -212,6 +241,9 @@ document.getElementById("wordCountBtn").addEventListener("click", () => {
   window.location.href = "review.html";
 });
 document.getElementById("openSavedLessonsBtn").addEventListener("click", toggleSavedLessonsPanel);
+document.getElementById("dockLessonsBtn").addEventListener("click", toggleSavedLessonsPanel);
+document.getElementById("readingDock").style.display = "none";
+document.body.classList.remove("has-reading-dock");
 document.getElementById("closeSavedLessonsBtn").addEventListener("click", () => {
   document.getElementById("savedLessonsPanel").style.display = "none";
 });
@@ -238,6 +270,7 @@ track("دخول الفصل");
 
 function clearStoryHighlight() {
   storyWordSpans.forEach(span => span.classList.remove("is-speaking"));
+  activeHighlightSpan = null;
 }
 
 function resetStoryControls() {
@@ -432,7 +465,16 @@ function highlightStoryAt(charIndex) {
     active = storyWordSpans.find(span => Number(span.dataset.end) > charIndex) || null;
   }
   storyWordSpans.forEach(span => span.classList.toggle("is-speaking", span === active));
-  // لا نحرك الصفحة أفقياً أثناء القراءة؛ نكتفي بتمييز الكلمة حتى تبقى أسطر القصة ثابتة.
+  if (active && active !== activeHighlightSpan) {
+    activeHighlightSpan = active;
+    // متابعة الكلمة المقروءة عمودياً فقط، مع إبقاء أدوات القراءة الثابتة ظاهرة أسفل الشاشة.
+    const rect = active.getBoundingClientRect();
+    const safeTop = 72;
+    const safeBottom = window.innerHeight - (document.getElementById("readingDock")?.offsetHeight || 0) - 24;
+    if (rect.top < safeTop || rect.bottom > safeBottom) {
+      active.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+    }
+  }
 }
 
 function startStoryReading(fromBeginning = false, startAt = 0, shouldPause = false) {
@@ -688,7 +730,8 @@ function renderWords(words) {
 
 async function refreshSavedLessonCount() {
   const countEl = document.getElementById("savedLessonCount");
-  if (!countEl) return;
+  const dockCountEl = document.getElementById("dockSavedLessonCount");
+  if (!countEl && !dockCountEl) return;
   try {
     const url = SUPABASE_URL + "/rest/v1/user_saved_lessons?select=id&user_id=eq." + encodeURIComponent(user_id);
     const response = await fetch(url, {
@@ -697,10 +740,13 @@ async function refreshSavedLessonCount() {
     });
     if (!response.ok) throw new Error(await response.text());
     const rows = await response.json();
-    countEl.textContent = String(Array.isArray(rows) ? rows.length : 0);
+    const count = String(Array.isArray(rows) ? rows.length : 0);
+    if (countEl) countEl.textContent = count;
+    if (dockCountEl) dockCountEl.textContent = count;
   } catch (error) {
     console.debug("Saved lesson count unavailable", error);
-    countEl.textContent = "—";
+    if (countEl) countEl.textContent = "—";
+    if (dockCountEl) dockCountEl.textContent = "—";
   }
 }
 
@@ -716,7 +762,7 @@ async function toggleSavedLessonsPanel() {
 
 async function loadSavedLessons() {
   const list = document.getElementById("savedLessonsList");
-  list.textContent = "جارٍ تحميل دروسك المحفوظة...";
+  list.textContent = "جارٍ تحميل دروسك...";
   try {
     const url = SUPABASE_URL + "/rest/v1/user_saved_lessons?select=id,lesson_title,student_level,story,translation,words,created_at&user_id=eq." + encodeURIComponent(user_id) + "&order=created_at.desc&limit=100";
     const response = await fetch(url, {
@@ -727,7 +773,7 @@ async function loadSavedLessons() {
     const rows = await response.json();
     list.replaceChildren();
     if (!Array.isArray(rows) || !rows.length) {
-      list.textContent = "لا توجد دروس محفوظة حتى الآن. أنشئ درساً ثم اضغط «حفظ الدرس».";
+      list.textContent = "لا توجد دروس في قائمتك حتى الآن. سيتم حفظ الدروس الجديدة تلقائياً هنا.";
       return;
     }
 
@@ -772,12 +818,12 @@ async function loadSavedLessons() {
     }
   } catch (error) {
     console.error(error);
-    list.textContent = "تعذر تحميل الدروس. تأكد من إنشاء جدول user_saved_lessons وتشغيل SQL المرفق.";
+    list.textContent = "تعذر تحميل دروسك. تحقق من الاتصال بقاعدة البيانات وصلاحيات جدول الدروس.";
   }
 }
 
 async function deleteSavedLesson(id) {
-  if (!confirm("هل تريد حذف هذا الدرس من دروسك المحفوظة؟")) return;
+  if (!confirm("هل تريد حذف هذا الدرس من دروسك؟")) return;
   try {
     const url = SUPABASE_URL + "/rest/v1/user_saved_lessons?id=eq." + encodeURIComponent(id) + "&user_id=eq." + encodeURIComponent(user_id);
     const response = await fetch(url, {
@@ -794,24 +840,28 @@ async function deleteSavedLesson(id) {
   }
 }
 
-async function saveCurrentLesson(button) {
-  if (!currentLessonData?.story) return;
-  if (currentSavedLessonId) {
-    button.textContent = "✅ الدرس محفوظ";
-    return;
+async function saveCurrentLessonAutomatically() {
+  if (!currentLessonData?.story) return null;
+  if (currentSavedLessonId) return currentSavedLessonId;
+
+  const lessonSnapshot = {
+    user_id,
+    lesson_title: currentLessonTitle || "درس جديد",
+    student_level: currentLessonData.student_level || storedLevel || "A1",
+    story: currentLessonData.story,
+    translation: currentLessonData.translation || "",
+    words: currentLessonData.words || {}
+  };
+  const saveKey = lessonSnapshot.lesson_title + "::" + lessonSnapshot.story;
+  if (pendingLessonSaveKeys.has(saveKey)) return null;
+  pendingLessonSaveKeys.add(saveKey);
+
+  const status = document.getElementById("lessonSaveStatus");
+  if (status && currentLessonData?.story === lessonSnapshot.story) {
+    status.textContent = "💾 يتم حفظ الدرس تلقائياً في دروسك...";
   }
-  const oldText = button.textContent;
-  button.disabled = true;
-  button.textContent = "⏳ جارٍ الحفظ...";
-  try {
-    const payload = {
-      user_id,
-      lesson_title: currentLessonTitle || "درس جديد",
-      student_level: currentLessonData.student_level || storedLevel || "A1",
-      story: currentLessonData.story,
-      translation: currentLessonData.translation || "",
-      words: currentLessonData.words || {}
-    };
+
+  const saveOperation = async () => {
     const response = await fetch(SUPABASE_URL + "/rest/v1/user_saved_lessons", {
       method: "POST",
       headers: {
@@ -820,22 +870,36 @@ async function saveCurrentLesson(button) {
         "Content-Type": "application/json",
         Prefer: "return=representation"
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(lessonSnapshot)
     });
     if (!response.ok) throw new Error(await response.text());
     const saved = await response.json();
-    currentSavedLessonId = Array.isArray(saved) ? saved[0]?.id || null : null;
-    button.textContent = "✅ الدرس محفوظ";
-    const status = document.getElementById("lessonSaveStatus");
-    if (status) status.textContent = "تم حفظ الدرس. يمكنك الرجوع إليه من «دروسي المحفوظة» في أي وقت.";
-    track("حفظ درس: " + payload.lesson_title);
+    const newId = Array.isArray(saved) ? saved[0]?.id || null : null;
+
+    if (currentLessonData?.story === lessonSnapshot.story && currentLessonTitle === lessonSnapshot.lesson_title) {
+      currentSavedLessonId = newId;
+      const currentStatus = document.getElementById("lessonSaveStatus");
+      if (currentStatus) currentStatus.textContent = "✅ تم حفظ الدرس تلقائياً في «دروسي».";
+    }
+    track("حفظ تلقائي لدرس: " + lessonSnapshot.lesson_title);
     await refreshSavedLessonCount();
+    return newId;
+  };
+
+  const queuedOperation = lessonSaveQueue.then(saveOperation, saveOperation);
+  lessonSaveQueue = queuedOperation.catch(() => null);
+
+  try {
+    return await queuedOperation;
   } catch (error) {
-    console.error(error);
-    button.textContent = oldText;
-    alert("تعذر حفظ الدرس. تأكد من إنشاء جدول user_saved_lessons وتشغيل SQL المرفق.");
+    console.error("Automatic lesson save failed", error);
+    if (currentLessonData?.story === lessonSnapshot.story && currentLessonTitle === lessonSnapshot.lesson_title) {
+      const currentStatus = document.getElementById("lessonSaveStatus");
+      if (currentStatus) currentStatus.textContent = "⚠️ تعذر الحفظ التلقائي. تحقق من الاتصال بقاعدة البيانات.";
+    }
+    return null;
   } finally {
-    button.disabled = false;
+    pendingLessonSaveKeys.delete(saveKey);
   }
 }
 
@@ -894,14 +958,6 @@ function renderLesson(data, options = {}) {
   stopButton.textContent = "⏹ إيقاف";
   stopButton.addEventListener("click", stopStoryReading);
 
-  const saveLessonButton = document.createElement("button");
-  saveLessonButton.type = "button";
-  saveLessonButton.className = "read-btn";
-  saveLessonButton.id = "saveLessonBtn";
-  saveLessonButton.textContent = currentSavedLessonId ? "✅ الدرس محفوظ" : "💾 حفظ الدرس";
-  saveLessonButton.disabled = !!currentSavedLessonId;
-  saveLessonButton.addEventListener("click", () => saveCurrentLesson(saveLessonButton));
-
   const speedWrap = document.createElement("label");
   speedWrap.className = "read-speed";
   speedWrap.htmlFor = "storySpeedRange";
@@ -928,13 +984,18 @@ function renderLesson(data, options = {}) {
   const readNote = document.createElement("span");
   readNote.className = "read-note";
   readNote.textContent = "اضغط على أي كلمة لسماعها ومعرفة معناها";
-  readControls.append(readButton, pauseButton, restartButton, stopButton, saveLessonButton, speedWrap, readNote);
-  storyHead.append(storyTitle, level, readControls);
+  readControls.append(readButton, pauseButton, restartButton, stopButton, speedWrap, readNote);
+  storyHead.append(storyTitle, level);
+  const dockControls = document.getElementById("readingDockControls");
+  dockControls.replaceChildren(readControls);
+  document.getElementById("readingDock").style.display = "flex";
+  document.body.classList.add("has-reading-dock");
   lessonCard.appendChild(storyHead);
   const saveStatus = document.createElement("div");
   saveStatus.id = "lessonSaveStatus";
   saveStatus.className = "lesson-save-status";
-  if (currentSavedLessonId) saveStatus.textContent = "هذا الدرس محفوظ في قائمتك.";
+  if (currentSavedLessonId) saveStatus.textContent = "✅ هذا الدرس محفوظ في دروسك.";
+  else saveStatus.textContent = "💾 سيتم حفظ هذا الدرس تلقائياً في دروسك.";
   lessonCard.appendChild(saveStatus);
 
   const englishPanel = document.createElement("div");
@@ -982,6 +1043,10 @@ function renderLesson(data, options = {}) {
 
   root.appendChild(lessonCard);
   track("اكتمال إنشاء الدرس");
+  if (!options.savedId && options.autoSave !== false) {
+    // حفظ تلقائي بعد عرض الدرس؛ لا يتطلب من الطالب الضغط على زر.
+    saveCurrentLessonAutomatically();
+  }
 }
 
 async function generateLesson() {

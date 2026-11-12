@@ -39,6 +39,38 @@ button:disabled{opacity:.6;cursor:wait}
 .empty-result{text-align:center;color:#cbd5e1;line-height:1.8;padding:15px}
 .transcript-box{direction:ltr;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;color:#cbd5e1;font-size:14px;line-height:1.8;max-height:260px;overflow:auto}
 @media(max-width:520px){.container{width:94%;padding-top:12px}.player-wrap{min-height:190px}.player-wrap.tiktok{max-width:100%;min-height:530px}.word-top{grid-template-columns:minmax(0,1fr) 96px minmax(0,1fr);gap:3px}.actions{width:96px;gap:4px}.icon-btn{width:44px;height:44px;font-size:20px}.en,.ar{font-size:16px}.card{padding:11px}}
+
+/* أدوات الطالب العائمة */
+#newVideoBtn{display:none;width:100%;margin-top:12px;background:#0ea5e9}
+.floating-tools{position:fixed;z-index:900;left:16px;bottom:18px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.float-btn{box-shadow:0 8px 24px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:12px 16px;display:flex;align-items:center;gap:8px;font-size:14px}
+.float-note{background:#7c3aed}.float-word{background:#0369a1}
+.modal-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,.78);display:none;align-items:center;justify-content:center;padding:16px}
+.modal-backdrop.open{display:flex}
+.modal-panel{width:min(100%,520px);max-height:88vh;overflow:auto;background:#1e293b;border:1px solid #475569;border-radius:18px;padding:18px;text-align:right;box-shadow:0 18px 55px rgba(0,0,0,.45)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.modal-head h3{margin:0;color:#fff}
+.close-modal{background:#334155;padding:8px 12px}
+.modal-panel label{display:block;color:#cbd5e1;font-weight:bold;font-size:13px;margin:12px 0 6px}
+.modal-panel input,.modal-panel textarea,.modal-panel select{width:100%;padding:12px;border:1px solid #475569;border-radius:10px;background:#f8fafc;color:#0f172a;font:15px Arial;}
+.modal-panel textarea{min-height:110px;resize:vertical;line-height:1.7}
+.modal-panel select{direction:rtl}
+.modal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.modal-actions button{flex:1;min-width:120px}
+.secondary-btn{background:#334155}
+.modal-message{font-size:13px;line-height:1.7;margin-top:10px;color:#bae6fd;overflow-wrap:anywhere}
+.modal-message.error{color:#fecaca}
+.note-item{background:#0f172a;border:1px solid #334155;border-radius:11px;padding:10px;margin-top:9px}
+.note-item p{margin:0 0 8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
+.note-meta{font-size:11px;color:#94a3b8}
+.note-delete{background:#7f1d1d;padding:6px 10px;font-size:12px;margin-top:8px}
+.dictionary-result{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:10px;margin-top:10px;color:#cbd5e1;line-height:1.7;font-size:13px;direction:ltr;text-align:left;white-space:pre-wrap}
+@media(max-width:520px){
+ .floating-tools{left:10px;bottom:12px;gap:8px}
+ .float-btn{padding:11px 13px;font-size:13px}
+ .modal-panel{padding:14px}
+}
+
 </style>
 </head>
 <body>
@@ -61,6 +93,62 @@ button:disabled{opacity:.6;cursor:wait}
   </div>
 
   <div id="result"></div>
+
+  <button id="newVideoBtn" type="button">＋ تحليل فيديو آخر</button>
+
+  <div class="floating-tools" aria-label="أدوات الطالب">
+    <button class="float-btn float-note" id="openNotesBtn" type="button">📝 ملاحظاتي</button>
+    <button class="float-btn float-word" id="openWordBtn" type="button">🔎 إضافة مفردة</button>
+  </div>
+
+  <div class="modal-backdrop" id="notesModal" role="dialog" aria-modal="true" aria-labelledby="notesTitle">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h3 id="notesTitle">📝 ملاحظاتي</h3>
+        <button class="close-modal" type="button" data-close="notesModal">إغلاق ✕</button>
+      </div>
+      <label for="noteText">اكتب ملاحظتك</label>
+      <textarea id="noteText" placeholder="اكتب ملاحظة عن الفيديو أو الكلمات التي تعلمتها..."></textarea>
+      <div class="modal-actions">
+        <button id="saveNoteBtn" type="button">حفظ الملاحظة</button>
+        <button class="secondary-btn" type="button" data-close="notesModal">إلغاء</button>
+      </div>
+      <div id="notesMessage" class="modal-message" aria-live="polite"></div>
+      <div id="notesList"></div>
+      <div class="hint">تُحفظ الملاحظات على هذا الجهاز وضمن حساب الطالب المحلي في هذا المتصفح.</div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="wordModal" role="dialog" aria-modal="true" aria-labelledby="wordTitle">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h3 id="wordTitle">🔎 البحث عن مفردة وإضافتها</h3>
+        <button class="close-modal" type="button" data-close="wordModal">إغلاق ✕</button>
+      </div>
+      <label for="newWordEnglish">المفردة بالإنجليزية</label>
+      <input id="newWordEnglish" type="text" dir="ltr" placeholder="Enter an English word" autocomplete="off">
+      <div class="modal-actions">
+        <button id="searchWordBtn" type="button" class="secondary-btn">بحث عن الكلمة</button>
+      </div>
+      <div id="dictionaryResult" class="dictionary-result" style="display:none"></div>
+      <label for="newWordArabic">المعنى بالعربية</label>
+      <input id="newWordArabic" type="text" placeholder="اكتب الترجمة العربية" autocomplete="off">
+      <label for="newWordCategory">القسم</label>
+      <select id="newWordCategory">
+        <option value="verbs">verbs — أفعال</option>
+        <option value="nouns">nouns — أسماء</option>
+        <option value="adjectives">adjectives — صفات</option>
+        <option value="phrasal_verbs">phrasal verbs — أفعال مركبة</option>
+        <option value="idioms">idioms — تعبيرات اصطلاحية</option>
+        <option value="adverbs">adverbs — ظروف</option>
+      </select>
+      <div class="modal-actions">
+        <button id="addWordBtn" type="button">إضافة إلى مفرداتي ⭐</button>
+      </div>
+      <div id="wordMessage" class="modal-message" aria-live="polite"></div>
+      <div class="hint">سيتم حفظ المفردة في قائمة مفردات الطالب في Supabase، ولن تُضاف مرة أخرى إذا كانت موجودة.</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -82,6 +170,7 @@ if (!user_id) {
     : "user_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
   localStorage.setItem("user_id", user_id);
 }
+let currentVideoUrl = "";
 
 const labels = {
   verbs: "verbs",
@@ -256,37 +345,7 @@ function show(data) {
       const ar = String((item && (item.ar || item.translation)) || "").trim();
       if (!en) continue;
 
-      const row = document.createElement("div");
-      row.className = "word-box";
-      const top = document.createElement("div");
-      top.className = "word-top";
-
-      const enEl = document.createElement("span");
-      enEl.className = "en";
-      enEl.textContent = en;
-      const arEl = document.createElement("span");
-      arEl.className = "ar";
-      arEl.textContent = ar;
-
-      const actions = document.createElement("div");
-      actions.className = "actions";
-      const save = document.createElement("button");
-      save.className = "icon-btn";
-      save.type = "button";
-      save.textContent = "⭐";
-      save.title = "حفظ الكلمة";
-      save.addEventListener("click", () => saveWord(save, en, ar));
-      const sound = document.createElement("button");
-      sound.className = "icon-btn";
-      sound.type = "button";
-      sound.textContent = "🔊";
-      sound.title = "نطق الكلمة";
-      sound.addEventListener("click", () => speak(en));
-
-      actions.append(save, sound);
-      top.append(enEl, actions, arEl);
-      row.appendChild(top);
-      section.appendChild(row);
+      section.appendChild(makeWordRow(en, ar));
       total++;
     }
     root.appendChild(section);
@@ -297,6 +356,211 @@ function show(data) {
   footer.style.textAlign = "center";
   footer.textContent = "إجمالي المفردات المستخرجة: " + total;
   root.appendChild(footer);
+}
+
+
+function makeWordRow(en, ar) {
+  const row = document.createElement("div");
+  row.className = "word-box";
+  const top = document.createElement("div");
+  top.className = "word-top";
+  const enEl = document.createElement("span");
+  enEl.className = "en";
+  enEl.textContent = en;
+  const arEl = document.createElement("span");
+  arEl.className = "ar";
+  arEl.textContent = ar;
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  const save = document.createElement("button");
+  save.className = "icon-btn";
+  save.type = "button";
+  save.textContent = "⭐";
+  save.title = "حفظ الكلمة";
+  save.addEventListener("click", () => saveWord(save, en, ar));
+  const sound = document.createElement("button");
+  sound.className = "icon-btn";
+  sound.type = "button";
+  sound.textContent = "🔊";
+  sound.title = "نطق الكلمة";
+  sound.addEventListener("click", () => speak(en));
+  actions.append(save, sound);
+  top.append(enEl, actions, arEl);
+  row.appendChild(top);
+  return row;
+}
+
+function openModal(id) {
+  const modal = document.getElementById(id);
+  modal.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove("open");
+  if (!document.querySelector(".modal-backdrop.open")) document.body.style.overflow = "";
+}
+
+function notesStorageKey() { return "video_notes_" + user_id; }
+function readNotes() {
+  try {
+    const notes = JSON.parse(localStorage.getItem(notesStorageKey()) || "[]");
+    return Array.isArray(notes) ? notes : [];
+  } catch { return []; }
+}
+function renderNotes() {
+  const root = document.getElementById("notesList");
+  root.replaceChildren();
+  const notes = readNotes();
+  if (!notes.length) {
+    const empty = document.createElement("p");
+    empty.className = "hint";
+    empty.textContent = "لا توجد ملاحظات محفوظة حتى الآن.";
+    root.appendChild(empty);
+    return;
+  }
+  notes.slice().reverse().forEach(note => {
+    const box = document.createElement("div");
+    box.className = "note-item";
+    const body = document.createElement("p");
+    body.textContent = note.text || "";
+    const meta = document.createElement("div");
+    meta.className = "note-meta";
+    const date = note.createdAt ? new Date(note.createdAt).toLocaleString("ar-SA") : "";
+    meta.textContent = (date ? date + " — " : "") + (note.videoUrl || "ملاحظة عامة");
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "note-delete";
+    del.textContent = "حذف الملاحظة";
+    del.addEventListener("click", () => {
+      const next = readNotes().filter(x => x.id !== note.id);
+      localStorage.setItem(notesStorageKey(), JSON.stringify(next));
+      renderNotes();
+    });
+    box.append(body, meta, del);
+    root.appendChild(box);
+  });
+}
+
+async function searchDictionaryWord() {
+  const input = document.getElementById("newWordEnglish");
+  const word = input.value.trim();
+  const result = document.getElementById("dictionaryResult");
+  const button = document.getElementById("searchWordBtn");
+  const message = document.getElementById("wordMessage");
+  if (!word) {
+    message.textContent = "اكتب المفردة الإنجليزية أولاً.";
+    message.className = "modal-message error";
+    return;
+  }
+  button.disabled = true;
+  button.textContent = "جارٍ البحث...";
+  message.textContent = "";
+  result.style.display = "none";
+  try {
+    const response = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(word));
+    const data = await response.json();
+    if (!response.ok || !Array.isArray(data) || !data.length) {
+      throw new Error("لم نعثر على تعريف لهذه المفردة. يمكنك إضافتها يدوياً مع ترجمتها.");
+    }
+    const entry = data[0];
+    const phonetic = entry.phonetic || entry.phonetics?.find(x => x.text)?.text || "";
+    const definitions = [];
+    for (const meaning of (entry.meanings || []).slice(0, 3)) {
+      const first = meaning.definitions?.[0];
+      if (first?.definition) definitions.push((meaning.partOfSpeech ? meaning.partOfSpeech + ": " : "") + first.definition);
+    }
+    result.textContent = [entry.word || word, phonetic, ...definitions].filter(Boolean).join("\n\n");
+    result.style.display = "block";
+    message.textContent = "تم العثور على تعريف إنجليزي. اكتب المعنى العربي ثم أضف المفردة إلى قائمتك.";
+    message.className = "modal-message";
+  } catch (error) {
+    result.textContent = error.message || "تعذر البحث حالياً. يمكنك إدخال المفردة وترجمتها يدوياً.";
+    result.style.display = "block";
+    message.textContent = "يمكنك المتابعة بالإضافة اليدوية.";
+    message.className = "modal-message error";
+  } finally {
+    button.disabled = false;
+    button.textContent = "بحث عن الكلمة";
+  }
+}
+
+function addWordToVisibleResults(en, ar, category) {
+  const root = document.getElementById("result");
+  const section = Array.from(root.querySelectorAll(".analysis-category")).find(el => {
+    const heading = el.querySelector("h3");
+    return heading && heading.textContent === labels[category];
+  });
+  if (section) {
+    const empty = section.querySelector(".empty-cat");
+    if (empty) empty.remove();
+    section.appendChild(makeWordRow(en, ar));
+    const footer = root.querySelector(".hint[style*='text-align']");
+    if (footer) {
+      const match = footer.textContent.match(/(\d+)/);
+      const count = match ? Number(match[1]) + 1 : 1;
+      footer.textContent = "إجمالي المفردات المستخرجة والمضافة: " + count;
+    }
+  }
+}
+
+async function addStudentWord() {
+  const en = document.getElementById("newWordEnglish").value.trim();
+  const ar = document.getElementById("newWordArabic").value.trim();
+  const category = document.getElementById("newWordCategory").value;
+  const button = document.getElementById("addWordBtn");
+  const message = document.getElementById("wordMessage");
+  if (!en || !ar) {
+    message.textContent = "أدخل المفردة الإنجليزية ومعناها بالعربية.";
+    message.className = "modal-message error";
+    return;
+  }
+  button.disabled = true;
+  button.textContent = "جارٍ الحفظ...";
+  message.textContent = "";
+  try {
+    const { data: existing, error: lookupError } = await client
+      .from("user_star_words")
+      .select("word")
+      .eq("user_id", user_id)
+      .ilike("word", en)
+      .limit(1);
+    if (lookupError) throw lookupError;
+    if (existing && existing.length) {
+      message.textContent = "هذه المفردة موجودة بالفعل في قائمة مفرداتك.";
+      message.className = "modal-message";
+      return;
+    }
+    const { error } = await client.from("user_star_words").insert({ user_id, word: en, translation: ar });
+    if (error) throw error;
+    addWordToVisibleResults(en, ar, category);
+    track("إضافة مفردة يدوياً: " + en);
+    message.textContent = "تمت إضافة المفردة إلى مفرداتك بنجاح.";
+    message.className = "modal-message";
+    document.getElementById("newWordEnglish").value = "";
+    document.getElementById("newWordArabic").value = "";
+    document.getElementById("dictionaryResult").style.display = "none";
+  } catch (error) {
+    console.error(error);
+    message.textContent = "تعذرت الإضافة. تحقق من صلاحيات القراءة والإضافة في جدول user_star_words.";
+    message.className = "modal-message error";
+  } finally {
+    button.disabled = false;
+    button.textContent = "إضافة إلى مفرداتي ⭐";
+  }
+}
+
+function resetForNextVideo() {
+  currentVideoUrl = "";
+  document.getElementById("result").replaceChildren();
+  document.getElementById("videoFrame").src = "about:blank";
+  document.getElementById("videoBox").style.display = "none";
+  document.getElementById("url").value = "";
+  document.getElementById("status").style.display = "none";
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("analyzeBtn").style.display = "block";
+  document.getElementById("analyzeBtn").disabled = false;
+  document.getElementById("newVideoBtn").style.display = "none";
+  document.getElementById("url").focus();
 }
 
 function createJobId() {
@@ -375,6 +639,7 @@ async function sendUrl() {
   const button = document.getElementById("analyzeBtn");
   const loading = document.getElementById("loading");
   const jobId = createJobId();
+  currentVideoUrl = url;
 
   button.disabled = true;
   loading.style.display = "block";
@@ -392,8 +657,9 @@ async function sendUrl() {
     return;
   }
 
-  // Show the player immediately; do not wait for transcription/analysis.
+  // Show the player immediately; clear the link box after capturing its value.
   setPlayer(immediatePlayer, url);
+  document.getElementById("url").value = "";
 
   try {
     // text/plain avoids the browser's JSON preflight request.
@@ -417,6 +683,10 @@ async function sendUrl() {
 
     if (data.analysis_ready) {
       setStatus(data.message || "اكتمل تفريغ الفيديو وتحليل المفردات.");
+      // Hide the original analyze button after completion.
+      button.style.display = "none";
+      document.getElementById("newVideoBtn").style.display = "block";
+      loading.textContent = "✅ اكتمل التحليل.";
     } else {
       setStatus("وصلت نتيجة المهمة، لكن لم يتم تأكيد اكتمال تحليل المفردات.");
     }
@@ -426,12 +696,60 @@ async function sendUrl() {
     console.error(error);
     setStatus(error.message || "حدث خطأ أثناء تحليل الفيديو.", true);
   } finally {
-    button.disabled = false;
     loading.style.display = "none";
+    if (button.style.display !== "none") button.disabled = false;
   }
 }
 
 document.getElementById("analyzeBtn").addEventListener("click", sendUrl);
+document.getElementById("newVideoBtn").addEventListener("click", resetForNextVideo);
+document.getElementById("openNotesBtn").addEventListener("click", () => {
+  renderNotes();
+  document.getElementById("notesMessage").textContent = "";
+  openModal("notesModal");
+});
+document.getElementById("openWordBtn").addEventListener("click", () => {
+  document.getElementById("wordMessage").textContent = "";
+  openModal("wordModal");
+  document.getElementById("newWordEnglish").focus();
+});
+document.getElementById("saveNoteBtn").addEventListener("click", () => {
+  const field = document.getElementById("noteText");
+  const text = field.value.trim();
+  const message = document.getElementById("notesMessage");
+  if (!text) {
+    message.textContent = "اكتب الملاحظة أولاً.";
+    message.className = "modal-message error";
+    return;
+  }
+  const notes = readNotes();
+  notes.push({
+    id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
+    text,
+    videoUrl: currentVideoUrl,
+    createdAt: new Date().toISOString()
+  });
+  localStorage.setItem(notesStorageKey(), JSON.stringify(notes));
+  field.value = "";
+  message.textContent = "تم حفظ الملاحظة.";
+  message.className = "modal-message";
+  renderNotes();
+});
+document.getElementById("searchWordBtn").addEventListener("click", searchDictionaryWord);
+document.getElementById("addWordBtn").addEventListener("click", addStudentWord);
+document.querySelectorAll("[data-close]").forEach(button => {
+  button.addEventListener("click", () => closeModal(button.dataset.close));
+});
+document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
+  backdrop.addEventListener("click", event => {
+    if (event.target === backdrop) closeModal(backdrop.id);
+  });
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    document.querySelectorAll(".modal-backdrop.open").forEach(modal => closeModal(modal.id));
+  }
+});
 document.getElementById("url").addEventListener("keydown", event => {
   if (event.key === "Enter") sendUrl();
 });

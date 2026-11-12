@@ -50,7 +50,7 @@ button:disabled{opacity:.6;cursor:wait}
   <div class="hint">الصق رابط الفيديو فقط. لا تحتاج إلى تحميل الفيديو على جوالك    </div>
 
   <button id="analyzeBtn" type="button">🔗 تشغيل الفيديو وتحليل الكلام</button>
-  <div id="loading">⏳ جارٍ استخراج الكلام من الفيديو وتحليل المفردات...</div>
+  <div id="loading">⏳ جارٍ استخراج الكلام وتحليل المفردات في الخلفية...</div>
   <div id="status" role="status" aria-live="polite"></div>
 
   <div id="videoBox" class="card">
@@ -73,6 +73,7 @@ const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // هذا هو Webhook متعدد المنصات الموجود في ملف n8n الذي أرسلته.
 // يجب أن يكون n8n هو الذي يستدعي RapidAPI؛ لا تضع مفتاح RapidAPI في هذه الصفحة.
 const WEBHOOK = "https://steelblue-frog-379077.hostingersite.com/webhook/video-ai-multiplatform";
+const STATUS_WEBHOOK = "https://steelblue-frog-379077.hostingersite.com/webhook/video-ai-status";
 
 let user_id = localStorage.getItem("user_id");
 if (!user_id) {
@@ -298,6 +299,64 @@ function show(data) {
   root.appendChild(footer);
 }
 
+function createJobId() {
+  if (window.crypto && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "job_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function pollJobResult(jobId, timeoutMs = 20 * 60 * 1000) {
+  const startedAt = Date.now();
+  let attempt = 0;
+
+  while (Date.now() - startedAt < timeoutMs) {
+    await wait(2500);
+    attempt++;
+
+    const statusUrl = STATUS_WEBHOOK + "?job_id=" + encodeURIComponent(jobId) + "&_=" + Date.now();
+    const response = await fetch(statusUrl, {
+      method: "GET",
+      cache: "no-store"
+    });
+
+    const raw = await response.text();
+    let payload;
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      throw new Error("استجابة حالة المهمة غير مفهومة من n8n: " + raw.slice(0, 220));
+    }
+
+    if (!response.ok || payload.success === false) {
+      throw new Error(payload.error || payload.message || "تعذر جلب حالة التحليل.");
+    }
+
+    if (payload.status === "completed") {
+      if (!payload.result || typeof payload.result !== "object") {
+        throw new Error("اكتمل التحليل، لكن لم تصل نتيجة المفردات المحفوظة.");
+      }
+      return payload.result;
+    }
+
+    if (payload.status === "failed") {
+      throw new Error(payload.error || "تعذر تحليل الفيديو. راجع سجل التنفيذ في n8n.");
+    }
+
+    if (payload.status === "not_found") {
+      setStatus("تم استلام الطلب. جارٍ تسجيل المهمة وتجهيز التحليل...");
+    } else {
+      setStatus("جارٍ تحليل الفيديو واستخراج المفردات... (" + attempt + ")");
+    }
+  }
+
+  throw new Error("استغرق تحليل الفيديو وقتاً أطول من المتوقع. أعد المحاولة لاحقاً أو تحقق من تنفيذ n8n.");
+}
+
 async function sendUrl() {
   const url = document.getElementById("url").value.trim();
   if (!url) {
@@ -305,8 +364,9 @@ async function sendUrl() {
     return;
   }
 
+  let platformInfo;
   try {
-    identifyPlatform(url);
+    platformInfo = identifyPlatform(url);
   } catch (error) {
     setStatus(error.message, true);
     return;
@@ -314,47 +374,54 @@ async function sendUrl() {
 
   const button = document.getElementById("analyzeBtn");
   const loading = document.getElementById("loading");
+  const jobId = createJobId();
+
   button.disabled = true;
   loading.style.display = "block";
   document.getElementById("result").replaceChildren();
-  document.getElementById("videoBox").style.display = "none";
   setStatus("");
 
+  // Validate the platform-specific video ID before starting a background job.
+  let immediatePlayer;
   try {
-    const response = await fetch(WEBHOOK, {
+    immediatePlayer = fallbackEmbed(url);
+  } catch (error) {
+    button.disabled = false;
+    loading.style.display = "none";
+    setStatus(error.message || "رابط الفيديو غير مكتمل.", true);
+    return;
+  }
+
+  // Show the player immediately; do not wait for transcription/analysis.
+  setPlayer(immediatePlayer, url);
+
+  try {
+    // text/plain avoids the browser's JSON preflight request.
+    // Resolve Platform Link parses this JSON string from incoming.body.
+    const startResponse = await fetch(WEBHOOK, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, user_id })
+      headers: { "Content-Type": "text/plain;charset=UTF-8" },
+      body: JSON.stringify({ url, user_id, job_id: jobId })
     });
 
-    const raw = await response.text();
-    let result;
-    try { result = JSON.parse(raw); }
-    catch { throw new Error("استجابة غير مفهومة من n8n: " + raw.slice(0, 250)); }
-
-    if (!response.ok || result.success === false) {
-      throw new Error(result.message || result.error || "تعذرت معالجة الفيديو.");
+    if (!startResponse.ok) {
+      const errorText = await startResponse.text();
+      throw new Error("تعذر بدء مهمة التحليل في n8n: " + errorText.slice(0, 220));
     }
 
-    // دعم الاستجابة المباشرة أو المغلفة داخل data.
-    let data = result;
-    if (result.data && typeof result.data === "object") {
-      data = result.data;
-    }
+    setStatus("تم استلام رابط الفيديو. يجري التفريغ والتحليل في الخلفية...");
+    const data = await pollJobResult(jobId);
 
-    // بعض خدمات التفريغ تعيد transcript داخل data.transcript.text.
-    // يجب أن يقوم n8n بإرسال النص بعد ذلك إلى OpenRouter وإرجاع أقسام التحليل.
     setPlayer(data, url);
     show(data);
 
     if (data.analysis_ready) {
       setStatus(data.message || "اكتمل تفريغ الفيديو وتحليل المفردات.");
-    } else if (data.transcript) {
-      setStatus("تم استلام نص الفيديو. إذا لم تظهر المفردات، فتحقق من أن n8n يرسل النص المستخرج إلى عقدة تحليل OpenRouter.");
     } else {
-      setStatus(data.message || "تم تجهيز الفيديو، لكن لم يصل تحليل المفردات بعد.");
+      setStatus("وصلت نتيجة المهمة، لكن لم يتم تأكيد اكتمال تحليل المفردات.");
     }
-    track("تشغيل وتحليل " + (data.platform || "video"));
+
+    track("تشغيل وتحليل " + (data.platform || platformInfo.platform));
   } catch (error) {
     console.error(error);
     setStatus(error.message || "حدث خطأ أثناء تحليل الفيديو.", true);

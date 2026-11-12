@@ -7,9 +7,9 @@
 <title>الفصل الذكي | إنجلش بالعربي</title>
 <style>
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;font-family:Arial,"Cairo",sans-serif;min-height:100vh}
-.container{width:min(94%,760px);margin:0 auto;padding:14px 0 42px}
+html{-webkit-text-size-adjust:100%;max-width:100%;overflow-x:hidden}
+body{max-width:100%;overflow-x:hidden;margin:0;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;font-family:Arial,"Cairo",sans-serif;min-height:100vh}
+.container{width:min(94%,760px);max-width:100%;min-width:0;margin:0 auto;padding:14px 0 42px;overflow-x:clip}
 .top{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:18px}
 .user{color:#38bdf8;font-size:14px;font-weight:bold}
 .points{color:#facc15;font-size:14px;font-weight:bold}
@@ -30,12 +30,12 @@ h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
 .section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:4px 0 12px}
 .section-title{font-size:20px;font-weight:bold;color:#fff;margin:0}
 .level-pill{background:#0f172a;color:#7dd3fc;border:1px solid #334155;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:bold}
-.story-panel{border:1px solid #334155;border-radius:13px;padding:14px;margin:10px 0 16px;background:#0f172a}
+.story-panel{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden;border:1px solid #334155;border-radius:13px;padding:14px;margin:10px 0 16px;background:#0f172a}
 .story-label{font-size:13px;color:#7dd3fc;font-weight:bold;margin-bottom:9px}
-.story{display:block;width:100%;max-width:100%;font-size:17px;line-height:2;white-space:normal;overflow-wrap:break-word;word-break:normal;margin:0}
-.story-en{direction:ltr!important;text-align:left!important;unicode-bidi:plaintext;line-height:1.95;word-spacing:normal;letter-spacing:normal;overflow-wrap:break-word;}
-.story-ar{direction:rtl!important;text-align:right!important;unicode-bidi:plaintext;color:#e2e8f0;line-height:2.05;}
-.story-word{direction:ltr;unicode-bidi:isolate;display:inline;border-radius:4px;cursor:pointer;padding:1px 0;transition:background .12s,color .12s,box-shadow .12s;}
+.story{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:17px;line-height:2;white-space:normal;overflow-wrap:break-word;word-break:normal;margin:0}
+.story-en{display:block;width:100%;max-width:100%;min-width:0;direction:ltr!important;text-align:left!important;unicode-bidi:plaintext;line-height:1.95;white-space:normal;word-spacing:normal;letter-spacing:normal;word-break:normal;overflow-wrap:break-word;hyphens:auto;}
+.story-ar{display:block;width:100%;max-width:100%;min-width:0;direction:rtl!important;text-align:right!important;unicode-bidi:plaintext;color:#e2e8f0;line-height:2.05;white-space:normal;overflow-wrap:break-word;word-break:normal;}
+.story-word{direction:ltr;unicode-bidi:isolate;display:inline;white-space:normal;border-radius:4px;cursor:pointer;padding:1px 0;transition:background .12s,color .12s,box-shadow .12s;}
 .story-word:hover{background:rgba(56,189,248,.13);}
 .story-word.is-speaking{background:#facc15!important;color:#0f172a!important;border-radius:5px;padding:1px 3px;box-shadow:0 0 0 2px rgba(250,204,21,.18);font-weight:bold;}
 .read-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -52,6 +52,8 @@ h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
 .meaning-toast-close{background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:9px;padding:4px 9px;cursor:pointer;font-size:16px;}
 .meaning-toast-ar{color:#facc15;font-size:17px;line-height:1.8;}
 .meaning-toast-meta{color:#94a3b8;font-size:11px;margin-top:4px;}
+.meaning-toast-loading{color:#cbd5e1;font-size:14px;animation:meaningPulse 1s ease-in-out infinite alternate;}
+@keyframes meaningPulse{from{opacity:.55}to{opacity:1}}
 .points{color:#facc15;font-size:14px;font-weight:bold;background:transparent;border:0;padding:4px;cursor:pointer}
 .word-en.clickable-word{cursor:pointer;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;}
 .word-en.clickable-word:hover{text-decoration-color:#38bdf8;}
@@ -70,7 +72,7 @@ h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
 .empty-cat{text-align:center;color:#94a3b8;font-size:12px;padding:9px 5px 13px}
 .profile-note{color:#a7f3d0;background:#064e3b55;border:1px solid #065f46;padding:10px;border-radius:10px;font-size:13px;line-height:1.8}
 .footer-note{text-align:center;color:#94a3b8;font-size:12px;padding:6px}
-@media(max-width:520px){.container{width:94%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.story-en{direction:ltr!important;text-align:left!important}.story-ar{direction:rtl!important;text-align:right!important}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}.read-controls{gap:6px}.read-btn{font-size:12px;padding:8px 10px}.meaning-toast{bottom:12px}}
+@media(max-width:520px){.container{width:94%;max-width:100%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.story-en{width:100%;max-width:100%;direction:ltr!important;text-align:left!important;overflow-wrap:break-word}.story-ar{width:100%;max-width:100%;direction:rtl!important;text-align:right!important;overflow-wrap:break-word}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}.read-controls{gap:6px}.read-btn{font-size:12px;padding:8px 10px}.meaning-toast{bottom:12px}}
 </style>
 </head>
 <body>
@@ -125,6 +127,7 @@ document.getElementById("username").textContent = "👤 " + (fullName.split(" ")
 document.getElementById("profileBtn").addEventListener("click", () => { window.location.href = "student.html"; });
 
 let currentWordMeanings = new Map();
+const onlineMeaningCache = new Map();
 let meaningCardTimer = null;
 let storyUtterance = null;
 let storyWordSpans = [];
@@ -200,37 +203,114 @@ function resetStoryControls() {
   clearStoryHighlight();
 }
 
-function showWordMeaning(word, options = {}) {
+function showWordMeaning(word, arabicMeaning, metaText = "") {
   const card = document.getElementById("wordMeaningCard");
   const wordEl = document.getElementById("meaningWord");
   const arEl = document.getElementById("meaningArabic");
   const metaEl = document.getElementById("meaningMeta");
   if (!card) return;
-
-  const key = normalizeWord(word);
-  let found = options.entry || currentWordMeanings.get(key);
-  if (!found) {
-    const candidates = [
-      key.replace(/'s$/i, ""),
-      key.replace(/'re$/i, ""),
-      key.replace(/'ve$/i, ""),
-      key.replace(/'ll$/i, ""),
-      key.replace(/ies$/i, "y"),
-      key.replace(/(ing|ed|es|s)$/i, "")
-    ].filter(Boolean);
-    for (const candidate of candidates) {
-      if (currentWordMeanings.has(candidate)) {
-        found = currentWordMeanings.get(candidate);
-        break;
-      }
-    }
-  }
   wordEl.textContent = word;
-  arEl.textContent = found?.ar || "لم يُدرج معنى هذه الكلمة ضمن مفردات الدرس.";
-  metaEl.textContent = found?.category ? "القسم: " + (categoryLabels[found.category] || found.category) : (found ? "من مفردات الدرس" : "المعنى غير متاح في مفردات هذا الدرس");
+  arEl.textContent = arabicMeaning || "جارٍ البحث عن المعنى...";
+  arEl.classList.toggle("meaning-toast-loading", !arabicMeaning);
+  metaEl.textContent = metaText || (arabicMeaning ? "المعنى بالعربية" : "يتم جلب المعنى للكلمة...");
   card.classList.add("show");
   clearTimeout(meaningCardTimer);
-  meaningCardTimer = setTimeout(() => card.classList.remove("show"), 5500);
+  if (arabicMeaning) {
+    meaningCardTimer = setTimeout(() => card.classList.remove("show"), 6500);
+  }
+}
+
+function lookupLocalMeaning(word) {
+  const key = normalizeWord(word);
+  let found = currentWordMeanings.get(key);
+  if (found) return found;
+  const candidates = [
+    key.replace(/'s$/i, ""), key.replace(/'re$/i, ""),
+    key.replace(/'ve$/i, ""), key.replace(/'ll$/i, ""),
+    key.replace(/ies$/i, "y"), key.replace(/(ing|ed|es|s)$/i, "")
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    found = currentWordMeanings.get(candidate);
+    if (found) return found;
+  }
+  return null;
+}
+
+async function fetchJsonWithTimeout(url, timeoutMs = 7000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { method: "GET", mode: "cors", cache: "no-store", signal: controller.signal });
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchArabicMeaning(word) {
+  const key = normalizeWord(word);
+  if (onlineMeaningCache.has(key)) return onlineMeaningCache.get(key);
+
+  // مصدر ترجمة عام أول، ثم بديل في حال عدم توفره.
+  const services = [
+    async () => {
+      const url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ar&dt=t&q=" + encodeURIComponent(word);
+      const data = await fetchJsonWithTimeout(url);
+      const translated = Array.isArray(data?.[0])
+        ? data[0].map(part => Array.isArray(part) ? part[0] : "").join("").trim()
+        : "";
+      if (!translated || normalizeWord(translated) === key) throw new Error("No translation returned");
+      return translated;
+    },
+    async () => {
+      const url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(word) + "&langpair=en|ar";
+      const data = await fetchJsonWithTimeout(url);
+      const translated = String(data?.responseData?.translatedText || "").trim();
+      if (!translated || data?.responseStatus === 429 || /MYMEMORY WARNING/i.test(translated)) throw new Error("No translation returned");
+      return translated.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
+    }
+  ];
+
+  for (const service of services) {
+    try {
+      const meaning = await service();
+      onlineMeaningCache.set(key, meaning);
+      return meaning;
+    } catch (error) {
+      console.debug("Meaning provider unavailable", error);
+    }
+  }
+  throw new Error("تعذر جلب الترجمة من خدمات الترجمة حالياً.");
+}
+
+async function handleStoryWordClick(word) {
+  // انطق الكلمة فور الضغط، ولا تنتظر استجابة خدمة الترجمة.
+  speakWord(word);
+  const local = lookupLocalMeaning(word);
+  if (local?.ar) {
+    showWordMeaning(word, local.ar, local.category ? "القسم: " + (categoryLabels[local.category] || local.category) : "من مفردات الدرس");
+    return;
+  }
+
+  const cached = onlineMeaningCache.get(normalizeWord(word));
+  if (cached) {
+    showWordMeaning(word, cached, "ترجمة عربية تلقائية؛ قد يختلف المعنى بحسب سياق الجملة.");
+    return;
+  }
+
+  showWordMeaning(word, "", "جارٍ جلب المعنى العربي للكلمة...");
+  try {
+    const meaning = await fetchArabicMeaning(word);
+    // لا نحدّث البطاقة إذا كان الطالب قد انتقل إلى كلمة أخرى.
+    if (normalizeWord(document.getElementById("meaningWord")?.textContent) !== normalizeWord(word)) return;
+    showWordMeaning(word, meaning, "ترجمة عربية تلقائية؛ اختر المعنى الأنسب لسياق الجملة.");
+    currentWordMeanings.set(normalizeWord(word), { en: word, ar: meaning, category: "" });
+  } catch (error) {
+    console.warn("Could not resolve word meaning", error);
+    if (normalizeWord(document.getElementById("meaningWord")?.textContent) !== normalizeWord(word)) return;
+    showWordMeaning(word, "لم نتمكن من جلب المعنى الآن. اضغط على الكلمة مرة أخرى للمحاولة.", "تعذر الاتصال بخدمة الترجمة مؤقتاً.");
+  }
 }
 
 function normalizeWord(value) {
@@ -239,19 +319,17 @@ function normalizeWord(value) {
 
 function speakWord(text) {
   if (!text || !("speechSynthesis" in window)) return;
-  // نوقف قراءة القصة قبل نطق الكلمة المفردة، حتى لا يتداخل الصوتان.
   speechSynthesis.cancel();
   storyUtterance = null;
   resetStoryControls();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "en-US";
-  utterance.rate = 0.9;
+  utterance.rate = 0.88;
+  const voices = speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
+  const englishVoice = voices.find(voice => /^en(-|_)/i.test(voice.lang) && /US|UK|English/i.test(voice.name + " " + voice.lang))
+    || voices.find(voice => /^en/i.test(voice.lang));
+  if (englishVoice) utterance.voice = englishVoice;
   speechSynthesis.speak(utterance);
-}
-
-function handleStoryWordClick(word) {
-  showWordMeaning(word);
-  speakWord(word);
 }
 
 function renderClickableStory(text, element) {
@@ -297,7 +375,7 @@ function highlightStoryAt(charIndex) {
     active = storyWordSpans.find(span => Number(span.dataset.end) > charIndex) || null;
   }
   storyWordSpans.forEach(span => span.classList.toggle("is-speaking", span === active));
-  if (active) active.scrollIntoView({ block: "nearest", inline: "nearest" });
+  // لا نحرك الصفحة أفقياً أثناء القراءة؛ نكتفي بتمييز الكلمة حتى تبقى أسطر القصة ثابتة.
 }
 
 function startStoryReading(fromBeginning = false) {

@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<title>الإنجليزية المهنية حسب التخصص | إنجلش بالعربي</title>
+<style>
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;max-width:100%;overflow-x:hidden}
+body{max-width:100%;overflow-x:hidden;margin:0;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;font-family:Arial,"Cairo",sans-serif;min-height:100vh}
+.container{width:min(94%,760px);max-width:100%;min-width:0;margin:0 auto;padding:14px 0 42px;overflow-x:clip}
+.top{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+.user{color:#38bdf8;font-size:14px;font-weight:bold}
+.points{color:#facc15;font-size:14px;font-weight:bold}
+.review{display:inline-flex;align-items:center;justify-content:center;background:#6366f1;color:#fff;padding:10px 14px;border-radius:12px;text-decoration:none;font-size:14px;font-weight:bold;cursor:pointer;border:0}
+.saved-lessons-btn{background:#0e7490}
+.saved-lessons-panel{display:none}
+.saved-lesson-item{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#0f172a;border:1px solid #334155;border-radius:12px;padding:12px;margin:9px 0}
+.saved-lesson-title{font-weight:bold;color:#e2e8f0;line-height:1.6}
+.saved-lesson-meta{font-size:11px;color:#94a3b8;margin-top:4px}
+.saved-lesson-actions{display:flex;gap:7px;flex-wrap:wrap}
+.small-action{border:1px solid #334155;border-radius:9px;padding:8px 11px;background:#1e293b;color:#e2e8f0;font-size:12px;cursor:pointer}
+.small-action.open{background:#0e7490;border-color:#0e7490}
+.small-action.delete{background:#7f1d1d;border-color:#991b1b}
+.read-speed{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#0f172a;border:1px solid #334155;border-radius:11px;padding:8px 10px;color:#cbd5e1;font-size:12px}
+.read-speed input{width:125px;accent-color:#38bdf8;cursor:pointer}
+.read-speed output{color:#facc15;font-weight:bold;min-width:42px;text-align:center}
+.lesson-save-status{font-size:12px;color:#a7f3d0;margin-top:7px;min-height:18px}
+.meaning-toast{padding:16px 17px 14px}
+.meaning-toast-word{font-size:18px;font-weight:800;letter-spacing:.2px}
+.meaning-toast-ar{font-family:Arial,"Cairo",sans-serif;font-size:20px;font-weight:700;line-height:1.9;color:#fde68a;letter-spacing:0}
+.meaning-toast-meta{font-size:12px;line-height:1.7}
+.meaning-toast-actions{display:flex;justify-content:flex-start;gap:9px;margin-top:11px;padding-top:10px;border-top:1px solid #334155}
+.meaning-save-btn{background:#0f172a;border:1px solid #475569;color:#facc15;border-radius:10px;padding:8px 13px;font-size:13px;font-weight:bold;cursor:pointer}
+.meaning-save-btn:disabled{opacity:.65;cursor:wait}
+.notice-line{font-size:12px;line-height:1.7;margin-top:7px;color:#a7f3d0}
+h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
+.subtitle{text-align:center;color:#94a3b8;font-size:14px;margin:0 0 18px}
+.card{background:#1e293b;border:1px solid #334155;margin:16px 0;padding:16px;border-radius:16px;min-width:0;box-shadow:0 5px 18px rgba(0,0,0,.08)}
+.field-label{display:block;color:#cbd5e1;font-size:14px;font-weight:bold;margin:4px 2px 8px}
+.input{display:block;width:100%;padding:14px;border:1px solid #334155;border-radius:12px;background:#f8fafc;color:#0f172a;font:16px Arial,sans-serif;direction:auto;text-align:right;outline:none}
+.input:focus{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.16)}
+.hint{font-size:12px;color:#94a3b8;line-height:1.8;margin:8px 2px}
+.btn{border:0;border-radius:12px;padding:13px 18px;background:#22c55e;color:#fff;font-size:15px;font-weight:bold;cursor:pointer}
+.btn:disabled{opacity:.6;cursor:wait}
+#generateBtn{width:100%;margin-top:12px}
+.loading{text-align:center;margin:18px 0;color:#facc15;line-height:1.8}
+.error{color:#fee2e2;background:#7f1d1d;padding:13px;border-radius:12px;line-height:1.8}
+.lesson-card{padding:14px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:4px 0 12px}
+.section-title{font-size:20px;font-weight:bold;color:#fff;margin:0}
+.level-pill{background:#0f172a;color:#7dd3fc;border:1px solid #334155;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:bold}
+.story-panel{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden;border:1px solid #334155;border-radius:13px;padding:14px;margin:10px 0 16px;background:#0f172a}
+.story-label{font-size:13px;color:#7dd3fc;font-weight:bold;margin-bottom:9px}
+.story{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:17px;line-height:2;white-space:normal;overflow-wrap:break-word;word-break:normal;margin:0}
+.story-en{display:block;width:100%;max-width:100%;min-width:0;direction:ltr!important;text-align:left!important;unicode-bidi:plaintext;line-height:1.95;white-space:normal;word-spacing:normal;letter-spacing:normal;word-break:normal;overflow-wrap:break-word;hyphens:auto;}
+.story-ar{display:block;width:100%;max-width:100%;min-width:0;direction:rtl!important;text-align:right!important;unicode-bidi:plaintext;color:#e2e8f0;line-height:2.05;white-space:normal;overflow-wrap:break-word;word-break:normal;}
+.story-word{direction:ltr;unicode-bidi:isolate;display:inline;white-space:normal;border-radius:4px;cursor:pointer;padding:1px 0;transition:background .12s,color .12s,box-shadow .12s;}
+.story-word:hover{background:rgba(56,189,248,.13);}
+.story-word.is-speaking{background:#facc15!important;color:#0f172a!important;border-radius:5px;padding:1px 3px;box-shadow:0 0 0 2px rgba(250,204,21,.18);font-weight:bold;}
+.read-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.read-btn{display:inline-flex;align-items:center;gap:7px;background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:9px 13px;border-radius:11px;font-size:13px;font-weight:bold;cursor:pointer}
+.read-btn:hover{border-color:#38bdf8}
+.read-btn:disabled{opacity:.5;cursor:not-allowed}
+.read-btn.stop{background:#7f1d1d;border-color:#991b1b;color:#fee2e2}
+.read-btn.pause{background:#164e63;border-color:#0e7490;color:#cffafe}
+.read-note{font-size:11px;color:#94a3b8}
+.meaning-toast{position:fixed;z-index:10001;left:50%;bottom:calc(108px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(88%,360px);display:none;background:#1e293b;border:1px solid #38bdf8;border-radius:13px;padding:10px 12px;box-shadow:0 12px 30px rgba(0,0,0,.34);direction:rtl;text-align:right;}
+.meaning-toast.show{display:block;animation:meaningIn .18s ease-out;}
+.meaning-toast-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px;}
+.meaning-toast-word{direction:ltr;text-align:left;color:#38bdf8;font-weight:bold;font-size:15px;}
+.meaning-toast-close{background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:9px;padding:4px 9px;cursor:pointer;font-size:16px;}
+.meaning-toast-ar{color:#facc15;font-size:16px;line-height:1.65;font-weight:600;}
+.meaning-toast-meta{color:#94a3b8;font-size:10px;margin-top:3px;}
+.meaning-toast-loading{color:#cbd5e1;font-size:14px;animation:meaningPulse 1s ease-in-out infinite alternate;}
+.reading-dock{position:fixed;z-index:10000;left:50%;bottom:calc(8px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(96%,760px);display:none;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 10px;background:rgba(15,23,42,.97);border:1px solid #475569;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.4);backdrop-filter:blur(10px);}
+.reading-dock-lessons{flex:0 0 auto;background:#0e7490;border:1px solid #155e75;color:#fff;border-radius:10px;padding:9px 11px;font-size:12px;font-weight:bold;cursor:pointer;}
+.reading-dock-controls{flex:1;min-width:0;}
+.reading-dock .read-controls{gap:6px;justify-content:center;}
+.reading-dock .read-btn{padding:8px 10px;font-size:12px;white-space:nowrap;}
+.reading-dock .read-speed{padding:6px 8px;gap:6px;}
+.reading-dock .read-speed input{width:95px;}
+.reading-dock .read-note{display:none;}
+body.has-reading-dock{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
+@keyframes meaningPulse{from{opacity:.55}to{opacity:1}}
+.points{color:#facc15;font-size:14px;font-weight:bold;background:transparent;border:0;padding:4px;cursor:pointer}
+.word-en.clickable-word{cursor:pointer;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;}
+.word-en.clickable-word:hover{text-decoration-color:#38bdf8;}
+@keyframes meaningIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+.divider{border:0;border-top:1px solid #334155;margin:17px 0}
+.category-card{background:#1e293b;border:1px solid #334155;border-radius:15px;padding:13px;margin:13px 0}
+.category-title{color:#fff;text-align:center;direction:ltr;font-size:21px;margin:4px 0 12px;font-weight:bold}
+.word-row{display:grid;grid-template-columns:minmax(0,1fr) 108px minmax(0,1fr);gap:6px;align-items:center;padding:13px 0;border-bottom:1px solid #334155;direction:ltr;min-width:0}
+.word-row:last-child{border-bottom:0}
+.word-en{grid-column:1;color:#38bdf8;font-size:17px;font-weight:bold;text-align:left;direction:ltr;overflow-wrap:anywhere;padding-left:6px}
+.word-actions{grid-column:2;display:flex;justify-content:center;align-items:center;gap:8px;width:108px}
+.word-ar{grid-column:3;color:#facc15;font-size:17px;text-align:right;direction:rtl;overflow-wrap:anywhere;padding-right:6px}
+.icon-btn{width:42px;height:42px;display:grid;place-items:center;padding:0;border:1px solid #334155;border-radius:12px;background:#0f172a;color:#fff;font-size:19px;cursor:pointer}
+.icon-btn:hover{border-color:#38bdf8}
+.icon-btn:disabled{opacity:.65;cursor:wait}
+.empty-cat{text-align:center;color:#94a3b8;font-size:12px;padding:9px 5px 13px}
+.profile-note{color:#a7f3d0;background:#064e3b55;border:1px solid #065f46;padding:10px;border-radius:10px;font-size:13px;line-height:1.8}
+.footer-note{text-align:center;color:#94a3b8;font-size:12px;padding:6px}
+@media(max-width:520px){.container{width:94%;max-width:100%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.story-en{width:100%;max-width:100%;direction:ltr!important;text-align:left!important;overflow-wrap:break-word}.story-ar{width:100%;max-width:100%;direction:rtl!important;text-align:right!important;overflow-wrap:break-word}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}.read-controls{gap:6px}.read-btn{font-size:12px;padding:8px 10px}.meaning-toast{bottom:12px}.read-speed{width:100%;justify-content:space-between}.read-speed input{flex:1;min-width:90px}.saved-lesson-item{align-items:flex-start}.saved-lesson-actions{width:100%}}
+
+@media(max-width:520px){
+  .reading-dock{width:96%;gap:6px;padding:8px 7px;border-radius:13px;align-items:stretch;}
+  .reading-dock-lessons{padding:8px 9px;font-size:11px;}
+  .reading-dock-controls{width:100%;flex-basis:100%;order:2;}
+  .reading-dock .read-controls{justify-content:space-between;gap:5px;}
+  .reading-dock .read-btn{padding:7px 8px;font-size:11px;flex:1;justify-content:center;}
+  .reading-dock .read-speed{width:100%;justify-content:space-between;}
+  .reading-dock .read-speed input{flex:1;width:auto;min-width:70px;}
+  .meaning-toast{bottom:calc(128px + env(safe-area-inset-bottom));width:min(88%,340px);}
+  body.has-reading-dock{padding-bottom:calc(150px + env(safe-area-inset-bottom));}
+}
+
+.mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;background:#0f172a;border:1px solid #334155;padding:6px;border-radius:14px}
+.mode-tab{border:1px solid transparent;border-radius:10px;padding:11px 9px;background:transparent;color:#cbd5e1;font-weight:bold;font-size:13px;cursor:pointer}
+.mode-tab.active{background:#164e63;border-color:#0e7490;color:#cffafe;box-shadow:0 3px 12px rgba(0,0,0,.18)}
+.mode-panel[hidden]{display:none}
+.story-input{min-height:190px;resize:vertical;line-height:1.8;white-space:pre-wrap}
+.mode-note{margin-top:14px}
+.professional-block{background:#0f172a;border:1px solid #334155;border-radius:14px;padding:14px;margin:14px 0}
+.professional-block h3{font-size:19px;color:#7dd3fc;margin:0 0 12px}
+.professional-item{padding:12px 0;border-bottom:1px solid #334155;line-height:1.8}
+.professional-item:last-child{border-bottom:0}
+.professional-title{font-weight:bold;color:#facc15;margin-bottom:4px}
+.professional-en{direction:ltr;text-align:left;color:#e2e8f0;unicode-bidi:plaintext;margin:4px 0;line-height:1.8}
+.professional-ar{direction:rtl;text-align:right;color:#cbd5e1;margin:4px 0;line-height:1.9}
+.professional-meta{font-size:12px;color:#94a3b8;line-height:1.8}
+.abbr-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.abbr-card{min-width:0;background:#1e293b;border:1px solid #334155;border-radius:11px;padding:11px}
+.abbr-short{font-weight:800;font-size:18px;color:#38bdf8;direction:ltr;text-align:left}
+.abbr-full{font-weight:bold;color:#f8fafc;direction:ltr;text-align:left;line-height:1.6;margin-top:3px}
+.abbr-ar{color:#facc15;line-height:1.7;margin-top:4px}
+.dialogue-line{display:grid;grid-template-columns:76px minmax(0,1fr);gap:9px;padding:8px 0;border-bottom:1px dashed #334155}
+.dialogue-line:last-child{border-bottom:0}
+.dialogue-speaker{color:#38bdf8;font-weight:bold}
+.dialogue-text{min-width:0}
+.word-definition{grid-column:1/-1;color:#94a3b8;font-size:12px;line-height:1.7;padding:0 7px 2px;direction:rtl;text-align:right}
+@media(max-width:520px){.mode-tab{font-size:12px;padding:10px 6px}.abbr-grid{grid-template-columns:1fr}.dialogue-line{grid-template-columns:65px minmax(0,1fr)}}
+
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="top">
+    <div class="user" id="username">👤</div>
+    <button class="points" id="wordCountBtn" type="button" title="فتح مفرداتي">⭐ كلماتك: <span id="savedWordCount">0</span></button>
+    <button class="review saved-lessons-btn" id="openSavedLessonsBtn" type="button">📚 دروسي <span id="savedLessonCount">0</span></button>
+    <button class="review" id="profileBtn" type="button">👤 حسابي</button>
+  </div>
+
+  <h1 class="page-title">💼 الإنجليزية المهنية حسب التخصص</h1>
+  <p class="subtitle">📘 تعلّم الإنجليزية من واقع تخصصك ومواقف العمل اليومية</p>
+
+  <section class="card">
+    <div class="mode-switch" role="tablist" aria-label="اختر طريقة الدراسة">
+      <button class="mode-tab active" id="generateModeBtn" type="button" role="tab" aria-selected="true">💼 دراسة تخصص</button>
+      <button class="mode-tab" id="analyzeModeBtn" type="button" role="tab" aria-selected="false">📝 تحليل نص ألصقه</button>
+    </div>
+    <div id="generatePanel" class="mode-panel">
+      <label class="field-label" for="textInput">🏢 اكتب اسم التخصص أو الوظيفة</label>
+      <input id="textInput" class="input" type="text" placeholder="مثال: التمريض، المحاسبة، الموارد البشرية، تقنية المعلومات..." autocomplete="off">
+      <div class="hint">ستنشأ دراسة مهنية طويلة مقسمة إلى محاور التخصص، مع قصة إنجليزية وترجمتها، واختصارات المجال، وعبارات العمل، وحوارات عملية، والمفردات في الأقسام الستة.</div>
+      <button id="generateBtn" class="btn" type="button">🚀 إنشاء دراسة التخصص</button>
+    </div>
+    <div id="analyzePanel" class="mode-panel" hidden>
+      <label class="field-label" for="storyInput">📄 الصق القصة أو النص الذي تريد تحليله</label>
+      <textarea id="storyInput" class="input story-input" placeholder="الصق هنا قصة أو تقريراً أو محادثة من مجال عملك..." rows="9"></textarea>
+      <div class="hint">سيحلل النظام النص الذي أرسلته نفسه، ويترجمه، ويستخرج منه المفردات والاختصارات والعبارات المهنية الموجودة فيه دون اختراع كلمات غير موجودة في النص.</div>
+      <button id="analyzeBtn" class="btn" type="button">🔍 تحليل النص واستخراج أقسامه</button>
+    </div>
+    <div class="profile-note mode-note">مستوى اللغة المستخدم: <strong id="currentLevelLabel">سيُقرأ من حسابك تلقائياً</strong>. المصطلحات المهنية المهمة ستُحافظ على اسمها الإنجليزي مع شرح عربي واضح.</div>
+  </section>
+
+  <section id="savedLessonsPanel" class="card saved-lessons-panel" aria-live="polite">
+    <div class="section-head">
+      <h2 class="section-title">📚 دروسي</h2>
+      <button id="closeSavedLessonsBtn" class="small-action" type="button">إغلاق ✕</button>
+    </div>
+    <div id="savedLessonsList" class="hint">اضغط على «دروسي» لعرض الدروس السابقة.</div>
+  </section>
+
+  <div id="lesson" aria-live="polite"></div>
+</div>
+
+<div id="readingDock" class="reading-dock" aria-label="أدوات القراءة الثابتة">
+  <button id="dockLessonsBtn" class="reading-dock-lessons" type="button">📚 دروسي <span id="dockSavedLessonCount">0</span></button>
+  <div id="readingDockControls" class="reading-dock-controls"></div>
+</div>
+
+<div id="wordMeaningCard" class="meaning-toast" role="status" aria-live="polite">
+  <div class="meaning-toast-head">
+    <span id="meaningWord" class="meaning-toast-word"></span>
+    <button id="closeMeaningCard" class="meaning-toast-close" type="button" aria-label="إغلاق">×</button>
+  </div>
+  <div id="meaningArabic" class="meaning-toast-ar"></div>
+  <div id="meaningMeta" class="meaning-toast-meta">اضغط على أي كلمة في القصة لسماع نطقها ومعرفة معناها</div>
+  <div class="meaning-toast-actions">
+    <button id="meaningSaveBtn" class="meaning-save-btn" type="button">⭐ حفظ في مفرداتي</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
+const WEBHOOK = "https://steelblue-frog-379077.hostingersite.com/webhook/specialty-learning";
+
+let user_id = localStorage.getItem("user_id");
+if (!user_id) {
+  user_id = (window.crypto && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : "user_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  localStorage.setItem("user_id", user_id);
+}
+
+const phone = localStorage.getItem("phone") || "";
+const storedLevel = localStorage.getItem("student_level") || localStorage.getItem("english_level") || localStorage.getItem("level") || "";
+const fullName = localStorage.getItem("user") || "";
+document.getElementById("username").textContent = "👤 " + (fullName.split(" ").slice(0, 2).join(" ") || "الطالب");
+document.getElementById("currentLevelLabel").textContent = storedLevel || "A1 (افتراضي إذا لم يُحدد مستوى في الحساب)";
+document.getElementById("profileBtn").addEventListener("click", () => { window.location.href = "student.html"; });
+
+let currentWordMeanings = new Map();
+const onlineMeaningCache = new Map();
+let meaningCardTimer = null;
+let storyUtterance = null;
+let storyWordSpans = [];
+let storyReadingState = "idle";
+let storyCurrentCharIndex = 0;
+let currentMeaningWord = "";
+let currentMeaningArabic = "";
+let currentMeaningCategory = "story";
+let currentLessonData = null;
+let currentLessonTitle = "";
+let currentSavedLessonId = null;
+let lessonSaveQueue = Promise.resolve();
+const pendingLessonSaveKeys = new Set();
+let activeHighlightSpan = null;
+const savedStoryRateKey = "class_story_rate_" + user_id;
+let storyRate = Number(localStorage.getItem(savedStoryRateKey) || "0.80");
+if (!Number.isFinite(storyRate)) storyRate = 0.80;
+storyRate = Math.min(1.25, Math.max(0.65, storyRate));
+
+// عدد المفردات المحفوظة للطالب في Supabase
+async function refreshSavedWordCount() {
+  const countEl = document.getElementById("savedWordCount");
+  if (!countEl) return;
+  try {
+    const url = SUPABASE_URL + "/rest/v1/user_star_words?select=user_id&user_id=eq." + encodeURIComponent(user_id);
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        Prefer: "count=exact",
+        Range: "0-0"
+      },
+      cache: "no-store"
+    });
+    if (!response.ok) throw new Error(await response.text());
+    const range = response.headers.get("Content-Range") || "";
+    const match = range.match(/\/(\d+|\*)$/);
+    if (match && match[1] !== "*") {
+      countEl.textContent = match[1];
+    } else {
+      const rows = await response.json();
+      countEl.textContent = Array.isArray(rows) ? String(rows.length) : "0";
+    }
+  } catch (error) {
+    console.debug("Could not load saved word count", error);
+    countEl.textContent = "—";
+  }
+}
+
+document.getElementById("wordCountBtn").addEventListener("click", () => {
+  window.location.href = "review.html";
+});
+document.getElementById("openSavedLessonsBtn").addEventListener("click", toggleSavedLessonsPanel);
+document.getElementById("dockLessonsBtn").addEventListener("click", toggleSavedLessonsPanel);
+document.getElementById("readingDock").style.display = "none";
+document.body.classList.remove("has-reading-dock");
+document.getElementById("closeSavedLessonsBtn").addEventListener("click", () => {
+  document.getElementById("savedLessonsPanel").style.display = "none";
+});
+refreshSavedWordCount();
+refreshSavedLessonCount();
+
+async function track(action) {
+  try {
+    await fetch(SUPABASE_URL + "/rest/v1/user_activity", {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({ user_id, page: "specialty_page", action })
+    });
+  } catch (error) {
+    console.debug("Tracking skipped", error);
+  }
+}
+track("دخول صفحة الإنجليزية المهنية");
+
+function clearStoryHighlight() {
+  storyWordSpans.forEach(span => span.classList.remove("is-speaking"));
+  activeHighlightSpan = null;
+}
+
+function resetStoryControls() {
+  const read = document.getElementById("readStoryBtn");
+  const pause = document.getElementById("pauseStoryBtn");
+  if (read) read.textContent = "🔊 قراءة القصة";
+  if (pause) {
+    pause.textContent = "⏸ إيقاف مؤقت";
+    pause.disabled = true;
+  }
+  storyReadingState = "idle";
+  clearStoryHighlight();
+}
+
+function showWordMeaning(word, arabicMeaning, metaText = "", category = "story") {
+  currentMeaningWord = word;
+  currentMeaningArabic = arabicMeaning || "";
+  currentMeaningCategory = category || "story";
+  const saveButton = document.getElementById("meaningSaveBtn");
+  if (saveButton) {
+    saveButton.disabled = !arabicMeaning;
+    saveButton.textContent = "⭐ حفظ في مفرداتي";
+  }
+  const card = document.getElementById("wordMeaningCard");
+  const wordEl = document.getElementById("meaningWord");
+  const arEl = document.getElementById("meaningArabic");
+  const metaEl = document.getElementById("meaningMeta");
+  if (!card) return;
+  wordEl.textContent = word;
+  arEl.textContent = arabicMeaning || "جارٍ البحث عن المعنى...";
+  arEl.classList.toggle("meaning-toast-loading", !arabicMeaning);
+  metaEl.textContent = metaText || (arabicMeaning ? "المعنى بالعربية" : "يتم جلب المعنى للكلمة...");
+  card.classList.add("show");
+  clearTimeout(meaningCardTimer);
+  if (arabicMeaning) {
+    meaningCardTimer = setTimeout(() => card.classList.remove("show"), 6500);
+  }
+}
+
+function lookupLocalMeaning(word) {
+  const key = normalizeWord(word);
+  let found = currentWordMeanings.get(key);
+  if (found) return found;
+  const candidates = [
+    key.replace(/'s$/i, ""), key.replace(/'re$/i, ""),
+    key.replace(/'ve$/i, ""), key.replace(/'ll$/i, ""),
+    key.replace(/ies$/i, "y"), key.replace(/(ing|ed|es|s)$/i, "")
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    found = currentWordMeanings.get(candidate);
+    if (found) return found;
+  }
+  return null;
+}
+
+async function fetchJsonWithTimeout(url, timeoutMs = 7000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { method: "GET", mode: "cors", cache: "no-store", signal: controller.signal });
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchArabicMeaning(word) {
+  const key = normalizeWord(word);
+  if (onlineMeaningCache.has(key)) return onlineMeaningCache.get(key);
+
+  // مصدر ترجمة عام أول، ثم بديل في حال عدم توفره.
+  const services = [
+    async () => {
+      const url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ar&dt=t&q=" + encodeURIComponent(word);
+      const data = await fetchJsonWithTimeout(url);
+      const translated = Array.isArray(data?.[0])
+        ? data[0].map(part => Array.isArray(part) ? part[0] : "").join("").trim()
+        : "";
+      if (!translated || normalizeWord(translated) === key) throw new Error("No translation returned");
+      return translated;
+    },
+    async () => {
+      const url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(word) + "&langpair=en|ar";
+      const data = await fetchJsonWithTimeout(url);
+      const translated = String(data?.responseData?.translatedText || "").trim();
+      if (!translated || data?.responseStatus === 429 || /MYMEMORY WARNING/i.test(translated)) throw new Error("No translation returned");
+      return translated.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
+    }
+  ];
+
+  for (const service of services) {
+    try {
+      const meaning = await service();
+      onlineMeaningCache.set(key, meaning);
+      return meaning;
+    } catch (error) {
+      console.debug("Meaning provider unavailable", error);
+    }
+  }
+  throw new Error("تعذر جلب الترجمة من خدمات الترجمة حالياً.");
+}
+
+async function handleStoryWordClick(word) {
+  // انطق الكلمة فور الضغط، ولا تنتظر استجابة خدمة الترجمة.
+  speakWord(word);
+  const local = lookupLocalMeaning(word);
+  if (local?.ar) {
+    showWordMeaning(word, local.ar, local.category ? "القسم: " + (categoryLabels[local.category] || local.category) : "من مفردات الدرس", local.category || "story");
+    return;
+  }
+
+  const cached = onlineMeaningCache.get(normalizeWord(word));
+  if (cached) {
+    showWordMeaning(word, cached, "ترجمة عربية تلقائية؛ قد يختلف المعنى بحسب سياق الجملة.", lookupLocalMeaning(word)?.category || "story");
+    return;
+  }
+
+  showWordMeaning(word, "", "جارٍ جلب المعنى العربي للكلمة...");
+  try {
+    const meaning = await fetchArabicMeaning(word);
+    // لا نحدّث البطاقة إذا كان الطالب قد انتقل إلى كلمة أخرى.
+    if (normalizeWord(document.getElementById("meaningWord")?.textContent) !== normalizeWord(word)) return;
+    showWordMeaning(word, meaning, "ترجمة عربية تلقائية؛ اختر المعنى الأنسب لسياق الجملة.", "story");
+    currentWordMeanings.set(normalizeWord(word), { en: word, ar: meaning, category: "story" });
+  } catch (error) {
+    console.warn("Could not resolve word meaning", error);
+    if (normalizeWord(document.getElementById("meaningWord")?.textContent) !== normalizeWord(word)) return;
+    showWordMeaning(word, "لم نتمكن من جلب المعنى الآن. اضغط على الكلمة مرة أخرى للمحاولة.", "تعذر الاتصال بخدمة الترجمة مؤقتاً.");
+  }
+}
+
+function normalizeWord(value) {
+  return String(value || "").toLowerCase().replace(/[’‘]/g, "'").replace(/^[^a-z]+|[^a-z']+$/gi, "").trim();
+}
+
+function speakWord(text) {
+  if (!text || !("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  storyUtterance = null;
+  resetStoryControls();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "en-US";
+  utterance.rate = 0.88;
+  const voices = speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
+  const englishVoice = voices.find(voice => /^en(-|_)/i.test(voice.lang) && /US|UK|English/i.test(voice.name + " " + voice.lang))
+    || voices.find(voice => /^en/i.test(voice.lang));
+  if (englishVoice) utterance.voice = englishVoice;
+  speechSynthesis.speak(utterance);
+}
+
+function renderClickableStory(text, element) {
+  const source = String(text || "");
+  element.replaceChildren();
+  storyWordSpans = [];
+  const regex = /[A-Za-z]+(?:[’'][A-Za-z]+)*(?:-[A-Za-z]+)*/g;
+  let cursor = 0;
+  let match;
+  while ((match = regex.exec(source)) !== null) {
+    if (match.index > cursor) {
+      element.appendChild(document.createTextNode(source.slice(cursor, match.index)));
+    }
+    const wordText = match[0];
+    const wordStart = match.index;
+    const span = document.createElement("span");
+    span.className = "story-word";
+    span.textContent = wordText;
+    span.dataset.start = String(wordStart);
+    span.dataset.end = String(wordStart + wordText.length);
+    span.title = "اضغط لسماع الكلمة ومعرفة معناها";
+    span.addEventListener("click", () => handleStoryWordClick(wordText));
+    element.appendChild(span);
+    storyWordSpans.push(span);
+    cursor = wordStart + wordText.length;
+  }
+  if (cursor < source.length) element.appendChild(document.createTextNode(source.slice(cursor)));
+}
+
+function highlightStoryAt(charIndex) {
+  if (!Number.isFinite(charIndex)) return;
+  let active = null;
+  for (const span of storyWordSpans) {
+    const start = Number(span.dataset.start);
+    const end = Number(span.dataset.end);
+    if (charIndex >= start && charIndex < end) {
+      active = span;
+      break;
+    }
+  }
+  // بعض المتصفحات ترسل موضعاً قبل أول حرف من الكلمة؛ نختار أقرب كلمة تالية.
+  if (!active) {
+    active = storyWordSpans.find(span => Number(span.dataset.end) > charIndex) || null;
+  }
+  storyWordSpans.forEach(span => span.classList.toggle("is-speaking", span === active));
+  if (active && active !== activeHighlightSpan) {
+    activeHighlightSpan = active;
+    // متابعة الكلمة المقروءة عمودياً فقط، مع إبقاء أدوات القراءة الثابتة ظاهرة أسفل الشاشة.
+    const rect = active.getBoundingClientRect();
+    const safeTop = 72;
+    const safeBottom = window.innerHeight - (document.getElementById("readingDock")?.offsetHeight || 0) - 24;
+    if (rect.top < safeTop || rect.bottom > safeBottom) {
+      active.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+    }
+  }
+}
+
+function startStoryReading(fromBeginning = false, startAt = 0, shouldPause = false) {
+  const storyEl = document.getElementById("storyEnglishText");
+  const readButton = document.getElementById("readStoryBtn");
+  const pauseButton = document.getElementById("pauseStoryBtn");
+  const storyText = storyEl?.dataset.rawText || storyEl?.textContent?.trim();
+  if (!storyText) return;
+  if (!("speechSynthesis" in window)) {
+    alert("ميزة القراءة الصوتية غير مدعومة في هذا المتصفح.");
+    return;
+  }
+
+  const offset = fromBeginning ? 0 : Math.max(0, Math.min(Number(startAt) || 0, storyText.length));
+  const remainingText = storyText.slice(offset).trimStart();
+  const leadingTrim = storyText.slice(offset).length - remainingText.length;
+  const actualOffset = offset + leadingTrim;
+  if (!remainingText) return;
+
+  speechSynthesis.cancel();
+  clearStoryHighlight();
+  storyCurrentCharIndex = actualOffset;
+  const utterance = new SpeechSynthesisUtterance(remainingText);
+  storyUtterance = utterance;
+  utterance.lang = "en-US";
+  utterance.rate = storyRate;
+  utterance.pitch = 1;
+  const voices = speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
+  const englishVoice = voices.find(voice => /^en(-|_)/i.test(voice.lang) && /US|UK|English/i.test(voice.name + " " + voice.lang))
+    || voices.find(voice => /^en/i.test(voice.lang));
+  if (englishVoice) utterance.voice = englishVoice;
+
+  storyReadingState = "speaking";
+  if (readButton) readButton.textContent = "🔄 إعادة من البداية";
+  if (pauseButton) {
+    pauseButton.disabled = false;
+    pauseButton.textContent = "⏸ إيقاف مؤقت";
+  }
+
+  utterance.onboundary = event => {
+    if (storyUtterance !== utterance) return;
+    if (event.name === "word" || Number.isFinite(event.charIndex)) {
+      storyCurrentCharIndex = actualOffset + event.charIndex;
+      highlightStoryAt(storyCurrentCharIndex);
+    }
+  };
+  utterance.onend = () => {
+    if (storyUtterance !== utterance) return;
+    storyUtterance = null;
+    storyCurrentCharIndex = 0;
+    resetStoryControls();
+  };
+  utterance.onerror = event => {
+    if (storyUtterance !== utterance || event.error === "canceled" || event.error === "interrupted") return;
+    storyUtterance = null;
+    resetStoryControls();
+  };
+  speechSynthesis.speak(utterance);
+
+  if (shouldPause) {
+    setTimeout(() => {
+      if (storyUtterance === utterance && speechSynthesis.speaking) {
+        speechSynthesis.pause();
+        storyReadingState = "paused";
+        if (pauseButton) pauseButton.textContent = "▶ استكمال القراءة";
+      }
+    }, 120);
+  }
+}
+
+function currentWordStartForResume() {
+  const active = storyWordSpans.find(span => span.classList.contains("is-speaking"));
+  return active ? Number(active.dataset.start) : storyCurrentCharIndex;
+}
+
+function updateStoryRate(value, applyImmediately = false) {
+  const parsed = Math.min(1.25, Math.max(0.65, Number(value) || 0.8));
+  storyRate = parsed;
+  localStorage.setItem(savedStoryRateKey, String(storyRate));
+  const output = document.getElementById("storyRateValue");
+  if (output) output.textContent = storyRate.toFixed(2) + "×";
+  if (applyImmediately && storyUtterance && (storyReadingState === "speaking" || storyReadingState === "paused")) {
+    const wasPaused = storyReadingState === "paused" || speechSynthesis.paused;
+    const resumeAt = currentWordStartForResume();
+    startStoryReading(false, resumeAt, wasPaused);
+  }
+}
+
+function toggleStoryPause() {
+  if (!("speechSynthesis" in window) || !storyUtterance) return;
+  if (speechSynthesis.paused || storyReadingState === "paused") {
+    speechSynthesis.resume();
+    storyReadingState = "speaking";
+    const pause = document.getElementById("pauseStoryBtn");
+    if (pause) pause.textContent = "⏸ إيقاف مؤقت";
+  } else if (speechSynthesis.speaking) {
+    speechSynthesis.pause();
+    storyReadingState = "paused";
+    const pause = document.getElementById("pauseStoryBtn");
+    if (pause) pause.textContent = "▶ استكمال القراءة";
+  }
+}
+
+function stopStoryReading() {
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  storyUtterance = null;
+  resetStoryControls();
+}
+
+async function saveWord(button, en, ar, category) {
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = "…";
+  try {
+    const query = SUPABASE_URL + "/rest/v1/user_star_words?select=word&user_id=eq." + encodeURIComponent(user_id) + "&word=eq." + encodeURIComponent(en);
+    const check = await fetch(query, {
+      headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
+      cache: "no-store"
+    });
+    if (!check.ok) throw new Error(await check.text());
+    const existing = await check.json();
+    if (Array.isArray(existing) && existing.length) {
+      button.textContent = "✅";
+      button.title = "المفردة محفوظة مسبقاً";
+      return;
+    }
+
+    const response = await fetch(SUPABASE_URL + "/rest/v1/user_star_words", {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({ user_id, word: en, translation: ar, category: category || "story" })
+    });
+    if (!response.ok) throw new Error(await response.text());
+    button.textContent = "✅";
+    button.title = "تم حفظ المفردة";
+    track("حفظ كلمة: " + en);
+    await refreshSavedWordCount();
+  } catch (error) {
+    console.error(error);
+    button.textContent = original;
+    alert("تعذر حفظ المفردة. تحقق من صلاحيات جدول user_star_words ووجود عمود category.");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function saveMeaningCardWord() {
+  if (!currentMeaningWord || !currentMeaningArabic) return;
+  const button = document.getElementById("meaningSaveBtn");
+  await saveWord(button, currentMeaningWord, currentMeaningArabic, currentMeaningCategory || "story");
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
+
+const categoryLabels = {
+  verbs: "verbs",
+  nouns: "nouns",
+  adjectives: "adjectives",
+  phrasal_verbs: "phrasal verbs",
+  idioms: "idioms",
+  adverbs: "adverbs"
+};
+
+function buildWordMeanings(words) {
+  currentWordMeanings = new Map();
+  for (const key of Object.keys(categoryLabels)) {
+    const entries = Array.isArray(words?.[key]) ? words[key] : [];
+    for (const entry of entries) {
+      const en = String(entry?.en || "").trim();
+      const ar = String(entry?.ar || "").trim();
+      if (!en || !ar) continue;
+      const normalized = normalizeWord(en);
+      if (normalized && !currentWordMeanings.has(normalized)) {
+        currentWordMeanings.set(normalized, { en, ar, category: key });
+      }
+    }
+  }
+}
+
+function renderWords(words) {
+  buildWordMeanings(words);
+  const fragment = document.createElement("div");
+  for (const key of Object.keys(categoryLabels)) {
+    const entries = Array.isArray(words?.[key]) ? words[key] : [];
+    const category = document.createElement("section");
+    category.className = "category-card";
+    const heading = document.createElement("h3");
+    heading.className = "category-title";
+    heading.textContent = categoryLabels[key];
+    category.appendChild(heading);
+
+    if (!entries.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-cat";
+      empty.textContent = "لا توجد مفردات في هذا القسم.";
+      category.appendChild(empty);
+    }
+
+    for (const entry of entries) {
+      const en = String(entry?.en || "").trim();
+      const ar = String(entry?.ar || "").trim();
+      if (!en) continue;
+      const row = document.createElement("div");
+      row.className = "word-row";
+
+      const english = document.createElement("span");
+      english.className = "word-en clickable-word";
+      english.textContent = en;
+      english.title = "اضغط لسماع الكلمة ومعرفة معناها";
+      english.addEventListener("click", () => handleStoryWordClick(en));
+
+      const actions = document.createElement("div");
+      actions.className = "word-actions";
+
+      const save = document.createElement("button");
+      save.className = "icon-btn";
+      save.type = "button";
+      save.textContent = "⭐";
+      save.title = "حفظ المفردة";
+      save.setAttribute("aria-label", "حفظ " + en);
+      save.addEventListener("click", () => saveWord(save, en, ar, key));
+
+      const sound = document.createElement("button");
+      sound.className = "icon-btn";
+      sound.type = "button";
+      sound.textContent = "🔊";
+      sound.title = "استمع إلى النطق";
+      sound.setAttribute("aria-label", "نطق " + en);
+      sound.addEventListener("click", () => speakWord(en));
+
+      actions.append(save, sound);
+
+      const arabic = document.createElement("span");
+      arabic.className = "word-ar";
+      arabic.textContent = ar;
+
+      row.append(english, actions, arabic);
+      category.appendChild(row);
+      const definition = String(entry?.definition_ar || "").trim();
+      if (definition) {
+        const definitionEl = document.createElement("div");
+        definitionEl.className = "word-definition";
+        definitionEl.textContent = "المعنى في السياق: " + definition;
+        category.appendChild(definitionEl);
+      }
+    }
+    fragment.appendChild(category);
+  }
+  return fragment;
+}
+
+function renderProfessionalExtras(words) {
+  const wrap = document.createElement("div");
+  const topics = Array.isArray(words?.professional_topics) ? words.professional_topics : [];
+  const abbreviations = Array.isArray(words?.abbreviations) ? words.abbreviations : [];
+  const phrases = Array.isArray(words?.workplace_phrases) ? words.workplace_phrases : [];
+  const dialogues = Array.isArray(words?.dialogues) ? words.dialogues : [];
+
+  function block(title, icon) {
+    const section = document.createElement("section");
+    section.className = "professional-block";
+    const h = document.createElement("h3");
+    h.textContent = icon + " " + title;
+    section.appendChild(h);
+    wrap.appendChild(section);
+    return section;
+  }
+  function addText(parent, className, value) {
+    if (!value) return;
+    const p = document.createElement("div");
+    p.className = className;
+    p.textContent = String(value);
+    parent.appendChild(p);
+  }
+
+  if (topics.length) {
+    const section = block("محاور التخصص", "🧭");
+    topics.forEach((item, i) => {
+      const row = document.createElement("div"); row.className = "professional-item";
+      addText(row, "professional-title", (i + 1) + ". " + (item.title_en || item.title || "Professional topic") + (item.title_ar ? " — " + item.title_ar : ""));
+      addText(row, "professional-en", item.explanation_en || item.description_en || "");
+      addText(row, "professional-ar", item.explanation_ar || item.description_ar || "");
+      section.appendChild(row);
+    });
+  }
+  if (abbreviations.length) {
+    const section = block("الاختصارات والمصطلحات المختصرة", "🔤");
+    const grid = document.createElement("div"); grid.className = "abbr-grid";
+    abbreviations.forEach(item => {
+      const card = document.createElement("div"); card.className = "abbr-card";
+      addText(card, "abbr-short", item.short || item.abbreviation || item.acronym || "");
+      addText(card, "abbr-full", item.full_en || item.expansion || "");
+      addText(card, "abbr-ar", item.full_ar || item.meaning_ar || "");
+      addText(card, "professional-meta", item.usage_en || item.example_en || "");
+      addText(card, "professional-meta", item.usage_ar || item.example_ar || "");
+      grid.appendChild(card);
+    });
+    section.appendChild(grid);
+  }
+  if (phrases.length) {
+    const section = block("عبارات وجمل شائعة في بيئة العمل", "💬");
+    phrases.forEach(item => {
+      const row = document.createElement("div"); row.className = "professional-item";
+      addText(row, "professional-en", item.en || item.phrase || "");
+      addText(row, "professional-ar", item.ar || item.translation || "");
+      addText(row, "professional-meta", item.context_en || item.when_to_use || "");
+      addText(row, "professional-meta", item.context_ar || item.situation_ar || "");
+      section.appendChild(row);
+    });
+  }
+  if (dialogues.length) {
+    const section = block("حوارات ومواقف عملية", "🗣️");
+    dialogues.forEach((dialogue, i) => {
+      const group = document.createElement("div"); group.className = "professional-item";
+      addText(group, "professional-title", (dialogue.title_en || dialogue.situation_en || "Workplace situation") + (dialogue.title_ar || dialogue.situation_ar ? " — " + (dialogue.title_ar || dialogue.situation_ar) : ""));
+      (Array.isArray(dialogue.lines) ? dialogue.lines : []).forEach(line => {
+        const lineWrap = document.createElement("div"); lineWrap.className = "dialogue-line";
+        addText(lineWrap, "dialogue-speaker", line.speaker || "Speaker");
+        const textWrap = document.createElement("div"); textWrap.className = "dialogue-text";
+        addText(textWrap, "professional-en", line.en || "");
+        addText(textWrap, "professional-ar", line.ar || "");
+        lineWrap.appendChild(textWrap); group.appendChild(lineWrap);
+      });
+      section.appendChild(group);
+    });
+  }
+  return wrap;
+}
+
+async function refreshSavedLessonCount() {
+  const countEl = document.getElementById("savedLessonCount");
+  const dockCountEl = document.getElementById("dockSavedLessonCount");
+  if (!countEl && !dockCountEl) return;
+  try {
+    const url = SUPABASE_URL + "/rest/v1/user_saved_lessons?select=id&user_id=eq." + encodeURIComponent(user_id);
+    const response = await fetch(url, {
+      headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY, Prefer: "count=exact" },
+      cache: "no-store"
+    });
+    if (!response.ok) throw new Error(await response.text());
+    const rows = await response.json();
+    const count = String(Array.isArray(rows) ? rows.length : 0);
+    if (countEl) countEl.textContent = count;
+    if (dockCountEl) dockCountEl.textContent = count;
+  } catch (error) {
+    console.debug("Saved lesson count unavailable", error);
+    if (countEl) countEl.textContent = "—";
+    if (dockCountEl) dockCountEl.textContent = "—";
+  }
+}
+
+async function toggleSavedLessonsPanel() {
+  const panel = document.getElementById("savedLessonsPanel");
+  const opening = panel.style.display !== "block";
+  panel.style.display = opening ? "block" : "none";
+  if (opening) {
+    await loadSavedLessons();
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+async function loadSavedLessons() {
+  const list = document.getElementById("savedLessonsList");
+  list.textContent = "جارٍ تحميل دروسك...";
+  try {
+    const url = SUPABASE_URL + "/rest/v1/user_saved_lessons?select=id,lesson_title,student_level,story,translation,words,created_at&user_id=eq." + encodeURIComponent(user_id) + "&order=created_at.desc&limit=100";
+    const response = await fetch(url, {
+      headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
+      cache: "no-store"
+    });
+    if (!response.ok) throw new Error(await response.text());
+    const rows = await response.json();
+    list.replaceChildren();
+    if (!Array.isArray(rows) || !rows.length) {
+      list.textContent = "لا توجد دروس في قائمتك حتى الآن. سيتم حفظ الدروس الجديدة تلقائياً هنا.";
+      return;
+    }
+
+    for (const row of rows) {
+      const item = document.createElement("div");
+      item.className = "saved-lesson-item";
+      const info = document.createElement("div");
+      const title = document.createElement("div");
+      title.className = "saved-lesson-title";
+      title.textContent = row.lesson_title || "درس بدون عنوان";
+      const meta = document.createElement("div");
+      meta.className = "saved-lesson-meta";
+      const date = row.created_at ? new Date(row.created_at).toLocaleDateString("ar-SA") : "";
+      meta.textContent = "المستوى: " + (row.student_level || "—") + (date ? " · " + date : "");
+      info.append(title, meta);
+
+      const actions = document.createElement("div");
+      actions.className = "saved-lesson-actions";
+      const open = document.createElement("button");
+      open.className = "small-action open";
+      open.type = "button";
+      open.textContent = "📖 فتح الدرس";
+      open.addEventListener("click", () => {
+        currentLessonTitle = row.lesson_title || "درس محفوظ";
+        currentSavedLessonId = row.id;
+        renderLesson({
+          story: row.story,
+          translation: row.translation,
+          words: row.words || {},
+          student_level: row.student_level || storedLevel || "A1"
+        }, { savedId: row.id, title: currentLessonTitle });
+        document.getElementById("lesson").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      const remove = document.createElement("button");
+      remove.className = "small-action delete";
+      remove.type = "button";
+      remove.textContent = "حذف";
+      remove.addEventListener("click", () => deleteSavedLesson(row.id));
+      actions.append(open, remove);
+      item.append(info, actions);
+      list.appendChild(item);
+    }
+  } catch (error) {
+    console.error(error);
+    list.textContent = "تعذر تحميل دروسك. تحقق من الاتصال بقاعدة البيانات وصلاحيات جدول الدروس.";
+  }
+}
+
+async function deleteSavedLesson(id) {
+  if (!confirm("هل تريد حذف هذا الدرس من دروسك؟")) return;
+  try {
+    const url = SUPABASE_URL + "/rest/v1/user_saved_lessons?id=eq." + encodeURIComponent(id) + "&user_id=eq." + encodeURIComponent(user_id);
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY, Prefer: "return=minimal" }
+    });
+    if (!response.ok) throw new Error(await response.text());
+    if (currentSavedLessonId === id) currentSavedLessonId = null;
+    await loadSavedLessons();
+    await refreshSavedLessonCount();
+  } catch (error) {
+    console.error(error);
+    alert("تعذر حذف الدرس. تحقق من صلاحيات جدول user_saved_lessons.");
+  }
+}
+
+async function saveCurrentLessonAutomatically() {
+  if (!currentLessonData?.story) return null;
+  if (currentSavedLessonId) return currentSavedLessonId;
+
+  const lessonSnapshot = {
+    user_id,
+    lesson_title: currentLessonTitle || "درس جديد",
+    student_level: currentLessonData.student_level || storedLevel || "A1",
+    story: currentLessonData.story,
+    translation: currentLessonData.translation || "",
+    words: currentLessonData.words || {}
+  };
+  const saveKey = lessonSnapshot.lesson_title + "::" + lessonSnapshot.story;
+  if (pendingLessonSaveKeys.has(saveKey)) return null;
+  pendingLessonSaveKeys.add(saveKey);
+
+  const status = document.getElementById("lessonSaveStatus");
+  if (status && currentLessonData?.story === lessonSnapshot.story) {
+    status.textContent = "💾 يتم حفظ الدرس تلقائياً في دروسك...";
+  }
+
+  const saveOperation = async () => {
+    const response = await fetch(SUPABASE_URL + "/rest/v1/user_saved_lessons", {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        Prefer: "return=representation"
+      },
+      body: JSON.stringify(lessonSnapshot)
+    });
+    if (!response.ok) throw new Error(await response.text());
+    const saved = await response.json();
+    const newId = Array.isArray(saved) ? saved[0]?.id || null : null;
+
+    if (currentLessonData?.story === lessonSnapshot.story && currentLessonTitle === lessonSnapshot.lesson_title) {
+      currentSavedLessonId = newId;
+      const currentStatus = document.getElementById("lessonSaveStatus");
+      if (currentStatus) currentStatus.textContent = "✅ تم حفظ الدرس تلقائياً في «دروسي».";
+    }
+    track("حفظ تلقائي لدرس: " + lessonSnapshot.lesson_title);
+    await refreshSavedLessonCount();
+    return newId;
+  };
+
+  const queuedOperation = lessonSaveQueue.then(saveOperation, saveOperation);
+  lessonSaveQueue = queuedOperation.catch(() => null);
+
+  try {
+    return await queuedOperation;
+  } catch (error) {
+    console.error("Automatic lesson save failed", error);
+    if (currentLessonData?.story === lessonSnapshot.story && currentLessonTitle === lessonSnapshot.lesson_title) {
+      const currentStatus = document.getElementById("lessonSaveStatus");
+      if (currentStatus) currentStatus.textContent = "⚠️ تعذر الحفظ التلقائي. تحقق من الاتصال بقاعدة البيانات.";
+    }
+    return null;
+  } finally {
+    pendingLessonSaveKeys.delete(saveKey);
+  }
+}
+
+function renderLesson(data, options = {}) {
+  const root = document.getElementById("lesson");
+  root.replaceChildren();
+  stopStoryReading();
+  currentLessonData = {
+    story: String(data.story || ""),
+    translation: String(data.translation || ""),
+    words: data.words && typeof data.words === "object" ? data.words : {},
+    student_level: data.student_level || storedLevel || "A1",
+    specialty: String(data.specialty || data.words?.specialty || "").trim(),
+    mode: String(data.mode || data.words?.mode || "generate").trim()
+  };
+  if (currentLessonData.specialty) currentLessonData.words.specialty = currentLessonData.specialty;
+  currentLessonData.words.mode = currentLessonData.mode;
+  if (options.title) currentLessonTitle = options.title;
+  currentSavedLessonId = options.savedId || null;
+
+  const lessonCard = document.createElement("section");
+  lessonCard.className = "card lesson-card";
+
+  const storyHead = document.createElement("div");
+  storyHead.className = "section-head";
+  const storyTitle = document.createElement("h2");
+  storyTitle.className = "section-title";
+  storyTitle.textContent = "📖 القصة";
+  const level = document.createElement("span");
+  level.className = "level-pill";
+  level.textContent = "المستوى: " + (data.student_level || storedLevel || "A1");
+
+  const readControls = document.createElement("div");
+  readControls.className = "read-controls";
+  const readButton = document.createElement("button");
+  readButton.type = "button";
+  readButton.id = "readStoryBtn";
+  readButton.className = "read-btn";
+  readButton.textContent = "🔊 قراءة القصة";
+  readButton.addEventListener("click", () => startStoryReading(false));
+
+  const pauseButton = document.createElement("button");
+  pauseButton.type = "button";
+  pauseButton.id = "pauseStoryBtn";
+  pauseButton.className = "read-btn pause";
+  pauseButton.textContent = "⏸ إيقاف مؤقت";
+  pauseButton.disabled = true;
+  pauseButton.addEventListener("click", toggleStoryPause);
+
+  const restartButton = document.createElement("button");
+  restartButton.type = "button";
+  restartButton.id = "restartStoryBtn";
+  restartButton.className = "read-btn";
+  restartButton.textContent = "↻ من البداية";
+  restartButton.addEventListener("click", () => startStoryReading(true));
+
+  const stopButton = document.createElement("button");
+  stopButton.type = "button";
+  stopButton.className = "read-btn stop";
+  stopButton.textContent = "⏹ إيقاف";
+  stopButton.addEventListener("click", stopStoryReading);
+
+  const speedWrap = document.createElement("label");
+  speedWrap.className = "read-speed";
+  speedWrap.htmlFor = "storySpeedRange";
+  const speedLabel = document.createElement("span");
+  speedLabel.textContent = "سرعة القراءة";
+  const speedRange = document.createElement("input");
+  speedRange.type = "range";
+  speedRange.id = "storySpeedRange";
+  speedRange.min = "0.65";
+  speedRange.max = "1.25";
+  speedRange.step = "0.05";
+  speedRange.value = String(storyRate);
+  speedRange.setAttribute("aria-label", "سرعة قراءة القصة");
+  const speedValue = document.createElement("output");
+  speedValue.id = "storyRateValue";
+  speedValue.textContent = storyRate.toFixed(2) + "×";
+  speedRange.addEventListener("input", () => {
+    const value = Number(speedRange.value);
+    speedValue.textContent = value.toFixed(2) + "×";
+  });
+  speedRange.addEventListener("change", () => updateStoryRate(speedRange.value, true));
+  speedWrap.append(speedLabel, speedRange, speedValue);
+
+  const readNote = document.createElement("span");
+  readNote.className = "read-note";
+  readNote.textContent = "اضغط على أي كلمة لسماعها ومعرفة معناها";
+  readControls.append(readButton, pauseButton, restartButton, stopButton, speedWrap, readNote);
+  storyHead.append(storyTitle, level);
+  const dockControls = document.getElementById("readingDockControls");
+  dockControls.replaceChildren(readControls);
+  document.getElementById("readingDock").style.display = "flex";
+  document.body.classList.add("has-reading-dock");
+  lessonCard.appendChild(storyHead);
+  const saveStatus = document.createElement("div");
+  saveStatus.id = "lessonSaveStatus";
+  saveStatus.className = "lesson-save-status";
+  if (currentSavedLessonId) saveStatus.textContent = "✅ هذا الدرس محفوظ في دروسك.";
+  else saveStatus.textContent = "💾 سيتم حفظ هذا الدرس تلقائياً في دروسك.";
+  lessonCard.appendChild(saveStatus);
+
+  const englishPanel = document.createElement("div");
+  englishPanel.className = "story-panel";
+  const englishLabel = document.createElement("div");
+  englishLabel.className = "story-label";
+  englishLabel.textContent = "English Story";
+  const englishText = document.createElement("p");
+  englishPanel.dir = "ltr";
+  englishPanel.lang = "en";
+  englishText.className = "story story-en";
+  englishText.id = "storyEnglishText";
+  englishText.setAttribute("dir", "ltr");
+  englishText.setAttribute("lang", "en");
+  englishText.dataset.rawText = String(data.story || "لم تصل القصة.");
+  renderClickableStory(data.story || "لم تصل القصة.", englishText);
+  englishPanel.append(englishLabel, englishText);
+  lessonCard.appendChild(englishPanel);
+
+  const arabicPanel = document.createElement("div");
+  arabicPanel.className = "story-panel";
+  const arabicLabel = document.createElement("div");
+  arabicLabel.className = "story-label";
+  arabicLabel.textContent = "الترجمة العربية";
+  const arabicText = document.createElement("p");
+  arabicPanel.dir = "rtl";
+  arabicPanel.lang = "ar";
+  arabicText.className = "story story-ar";
+  arabicText.setAttribute("dir", "rtl");
+  arabicText.setAttribute("lang", "ar");
+  arabicText.textContent = data.translation || "⚠️ لا توجد ترجمة";
+  arabicPanel.append(arabicLabel, arabicText);
+  lessonCard.appendChild(arabicPanel);
+
+  if (data.words && typeof data.words === "object") {
+    const specialtyHeading = document.createElement("div");
+    specialtyHeading.className = "profile-note";
+    specialtyHeading.textContent = currentLessonData.specialty
+      ? "المجال المهني: " + currentLessonData.specialty
+      : (currentLessonData.mode === "analyze" ? "تحليل النص المقدم" : "دراسة مهنية");
+    lessonCard.appendChild(specialtyHeading);
+    lessonCard.appendChild(renderProfessionalExtras(data.words));
+    lessonCard.appendChild(renderWords(data.words));
+  }
+
+  if (data.profile_notice) {
+    const notice = document.createElement("p");
+    notice.className = "profile-note";
+    notice.textContent = data.profile_notice;
+    lessonCard.appendChild(notice);
+  }
+
+  root.appendChild(lessonCard);
+  track("اكتمال إنشاء الدرس");
+  if (!options.savedId && options.autoSave !== false) {
+    // حفظ تلقائي بعد عرض الدرس؛ لا يتطلب من الطالب الضغط على زر.
+    saveCurrentLessonAutomatically();
+  }
+}
+
+let specialtyMode = "generate";
+function setSpecialtyMode(mode) {
+  specialtyMode = mode === "analyze" ? "analyze" : "generate";
+  const generate = specialtyMode === "generate";
+  document.getElementById("generatePanel").hidden = !generate;
+  document.getElementById("analyzePanel").hidden = generate;
+  document.getElementById("generateModeBtn").classList.toggle("active", generate);
+  document.getElementById("analyzeModeBtn").classList.toggle("active", !generate);
+  document.getElementById("generateModeBtn").setAttribute("aria-selected", String(generate));
+  document.getElementById("analyzeModeBtn").setAttribute("aria-selected", String(!generate));
+}
+
+async function submitSpecialtyRequest(mode) {
+  const isAnalyze = mode === "analyze";
+  const specialty = document.getElementById("textInput").value.trim();
+  const storyText = document.getElementById("storyInput").value.trim();
+  const input = isAnalyze ? storyText : specialty;
+  if (!input) {
+    alert(isAnalyze ? "الصق النص الذي تريد تحليله أولاً." : "اكتب اسم التخصص أو الوظيفة أولاً.");
+    return;
+  }
+  if (isAnalyze && storyText.length > 30000) {
+    alert("النص طويل جداً. قسّمه إلى أجزاء، ثم حلّل كل جزء على حدة (الحد 30,000 حرف).");
+    return;
+  }
+
+  const button = document.getElementById(isAnalyze ? "analyzeBtn" : "generateBtn");
+  const root = document.getElementById("lesson");
+  currentLessonTitle = isAnalyze ? "تحليل نص مهني" : "الإنجليزية المهنية: " + specialty;
+  currentSavedLessonId = null;
+  button.disabled = true;
+  const oldText = button.textContent;
+  button.textContent = isAnalyze ? "⏳ جارٍ تحليل النص..." : "⏳ جارٍ بناء دراسة التخصص...";
+  root.innerHTML = '<div class="card loading">' + (isAnalyze
+    ? '⏳ تتم قراءة النص وترجمته واستخراج أقسام المفردات والاختصارات والعبارات منه...'
+    : '⏳ يتم إعداد دراسة طويلة لمحاور التخصص ومواقفه المهنية ومصطلحاته...') + '</div>';
+  track(isAnalyze ? "تحليل نص مهني" : "إنشاء دراسة تخصصية: " + specialty);
+
+  try {
+    const response = await fetch(WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: mode,
+        specialty: isAnalyze ? "" : specialty,
+        storyText: isAnalyze ? storyText : "",
+        inputPart: input,
+        type: isAnalyze ? "analyze" : "specialty",
+        user_id,
+        phone,
+        student_level: storedLevel
+      })
+    });
+    const raw = await response.text();
+    let data;
+    try { data = JSON.parse(raw); }
+    catch { throw new Error("استجابة غير مفهومة من n8n: " + raw.slice(0, 300)); }
+    if (!response.ok || data.success === false) throw new Error(data.message || data.error || "تعذر تنفيذ الطلب.");
+    if (!data.words || typeof data.words !== "object") data.words = {};
+    data.words.specialty = data.specialty || specialty || "";
+    data.words.mode = mode;
+    currentLessonTitle = isAnalyze ? "تحليل نص مهني" : "الإنجليزية المهنية: " + (data.specialty || specialty);
+    if (isAnalyze) document.getElementById("storyInput").value = "";
+    else document.getElementById("textInput").value = "";
+    renderLesson(data);
+    track(isAnalyze ? "اكتمال تحليل نص مهني" : "اكتمال دراسة تخصصية");
+  } catch (error) {
+    console.error(error);
+    root.innerHTML = '<div class="card error">❌ ' + escapeHTML(error.message || "حدث خطأ أثناء المعالجة") + '</div>';
+  } finally {
+    button.disabled = false;
+    button.textContent = oldText;
+  }
+}
+
+function generateLesson() { return submitSpecialtyRequest("generate"); }
+function analyzePastedStory() { return submitSpecialtyRequest("analyze"); }
+
+document.getElementById("closeMeaningCard").addEventListener("click", () => {
+  clearTimeout(meaningCardTimer);
+  document.getElementById("wordMeaningCard").classList.remove("show");
+});
+document.getElementById("meaningSaveBtn").addEventListener("click", saveMeaningCardWord);
+document.getElementById("generateBtn").addEventListener("click", generateLesson);
+document.getElementById("analyzeBtn").addEventListener("click", analyzePastedStory);
+document.getElementById("generateModeBtn").addEventListener("click", () => setSpecialtyMode("generate"));
+document.getElementById("analyzeModeBtn").addEventListener("click", () => setSpecialtyMode("analyze"));
+document.getElementById("textInput").addEventListener("keydown", event => {
+  if (event.key === "Enter") generateLesson();
+});
+setSpecialtyMode("generate");
+window.addEventListener("beforeunload", () => {
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+});
+</script>
+</body>
+</html>

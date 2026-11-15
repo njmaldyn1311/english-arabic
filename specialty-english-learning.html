@@ -215,6 +215,7 @@ body.has-reading-dock{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
 const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
 const WEBHOOK = "https://steelblue-frog-379077.hostingersite.com/webhook/specialty-learning";
+const STATUS_WEBHOOK = "https://steelblue-frog-379077.hostingersite.com/webhook/specialty-learning-status";
 
 let user_id = localStorage.getItem("user_id");
 if (!user_id) {
@@ -1263,12 +1264,12 @@ async function submitSpecialtyRequest(mode) {
   button.disabled = true;
   const oldText = button.textContent;
   button.textContent = isAnalyze ? "⏳ جارٍ تحليل النص..." : "⏳ جارٍ بناء دراسة التخصص...";
-  root.innerHTML = '<div class="card loading">' + (isAnalyze
-    ? '⏳ تتم قراءة النص وترجمته واستخراج أقسام المفردات والاختصارات والعبارات منه...'
-    : '⏳ يتم إعداد دراسة طويلة لمحاور التخصص ومواقفه المهنية ومصطلحاته...') + '</div>';
+  root.innerHTML = '<div class="card loading"><div id="specialtyJobStatus">⏳ يتم استلام الطلب وتجهيز المهمة...</div><div class="hint">يمكن أن يستغرق إعداد الدراسة وتدقيق مفرداتها عدة دقائق. لا تغلق الصفحة حتى تظهر النتيجة.</div></div>';
   track(isAnalyze ? "تحليل نص مهني" : "إنشاء دراسة تخصصية: " + specialty);
 
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
   try {
+    // The POST returns immediately with a job_id; the heavy AI work continues in n8n.
     const response = await fetch(WEBHOOK, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=UTF-8" },
@@ -1283,11 +1284,61 @@ async function submitSpecialtyRequest(mode) {
         student_level: storedLevel
       })
     });
-    const raw = await response.text();
-    let data;
-    try { data = JSON.parse(raw); }
-    catch { throw new Error("استجابة غير مفهومة من n8n: " + raw.slice(0, 300)); }
-    if (!response.ok || data.success === false) throw new Error(data.message || data.error || "تعذر تنفيذ الطلب.");
+    const initialText = await response.text();
+    let accepted;
+    try { accepted = JSON.parse(initialText); }
+    catch { throw new Error("استجابة بدء المهمة غير مفهومة من n8n: " + initialText.slice(0, 250)); }
+    if (!response.ok || accepted.success === false || !accepted.job_id) {
+      throw new Error(accepted.message || accepted.error || "تعذر بدء المهمة في n8n.");
+    }
+
+    const jobId = String(accepted.job_id);
+    const startedAt = Date.now();
+    const maxWaitMs = 12 * 60 * 1000;
+    let completedData = null;
+    let lastStatusText = "تم استلام الطلب. يجري إعداد الدراسة الآن...";
+    let consecutivePollErrors = 0;
+
+    while (Date.now() - startedAt < maxWaitMs) {
+      await wait(2500);
+      const statusUrl = STATUS_WEBHOOK + "?job_id=" + encodeURIComponent(jobId);
+      let statusResponse, statusData;
+      try {
+        statusResponse = await fetch(statusUrl, { method: "GET", cache: "no-store" });
+        const statusText = await statusResponse.text();
+        try { statusData = JSON.parse(statusText); }
+        catch { throw new Error("استجابة متابعة المهمة غير مفهومة: " + statusText.slice(0, 180)); }
+        if (!statusResponse.ok) throw new Error(statusData.message || "تعذر متابعة حالة المهمة.");
+        consecutivePollErrors = 0;
+      } catch (pollError) {
+        consecutivePollErrors += 1;
+        if (consecutivePollErrors >= 5) throw new Error("تعذر الاتصال بخدمة متابعة المهمة عدة مرات. آخر خطأ: " + pollError.message);
+        continue;
+      }
+
+      if (statusData.status === "completed") {
+        completedData = statusData.result;
+        break;
+      }
+      if (statusData.status === "failed") {
+        throw new Error(statusData.error || "تعذر إكمال الدراسة. افتح سجل التنفيذ في n8n لمعرفة السبب.");
+      }
+      if (statusData.status === "not_found") {
+        throw new Error("لم يتم العثور على المهمة في جدول التخزين. تأكد من تشغيل SQL وربط اعتماد Supabase في n8n.");
+      }
+
+      const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+      if (elapsedSeconds < 30) lastStatusText = "✅ تم استلام الطلب. يجري إعداد القصة والمحاور المهنية...";
+      else if (elapsedSeconds < 90) lastStatusText = "📖 القصة والترجمة قيد الإعداد. نراجع أيضاً المحاور والاختصارات...";
+      else if (elapsedSeconds < 180) lastStatusText = "🔎 يجري استخراج الأفعال والأسماء والصفات والأفعال المركبة والتعبيرات والظروف...";
+      else lastStatusText = "🧠 التدقيق التفصيلي ما زال يعمل. ننتظر حفظ النتيجة النهائية...";
+      const statusEl = document.getElementById("specialtyJobStatus");
+      if (statusEl) statusEl.textContent = lastStatusText + " (" + elapsedSeconds + " ثانية)";
+    }
+
+    if (!completedData) throw new Error("استغرق إعداد الدراسة أكثر من 12 دقيقة. راجع سجل n8n؛ قد تكون إحدى عقد OpenRouter متوقفة أو بطيئة.");
+    const data = completedData;
+    if (!data || data.success === false) throw new Error(data?.message || data?.error || "لم تصل نتيجة مكتملة.");
     if (!data.words || typeof data.words !== "object") data.words = {};
     data.words.specialty = data.specialty || specialty || "";
     data.words.mode = mode;

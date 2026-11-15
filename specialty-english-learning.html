@@ -142,6 +142,11 @@ body.has-reading-dock{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
 .word-definition{grid-column:1/-1;color:#94a3b8;font-size:12px;line-height:1.7;padding:0 7px 2px;direction:rtl;text-align:right}
 @media(max-width:520px){.mode-tab{font-size:12px;padding:10px 6px}.abbr-grid{grid-template-columns:1fr}.dialogue-line{grid-template-columns:65px minmax(0,1fr)}}
 
+
+.vocab-counts{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.vocab-count-chip{display:inline-flex;align-items:center;padding:6px 9px;border-radius:999px;background:#0f172a;border:1px solid #334155;color:#bae6fd;font-size:11px;font-weight:bold}
+.vocab-audit-note{margin-top:8px;color:#94a3b8;font-size:11px;line-height:1.7}
+
 </style>
 </head>
 <body>
@@ -1031,11 +1036,15 @@ async function saveCurrentLessonAutomatically() {
 
 function cleanLearningText(value) {
   return String(value ?? "").replace(/\r\n?/g, "\n")
-    .replace(/(^|\n)\s{0,3}#{1,6}\s*/g, "$1")
-    .replace(/(^|\s)#{1,6}\s+(?=[\p{L}\p{N}])/gu, "$1")
+    // Remove Markdown heading tokens wherever the model accidentally places them.
+    .replace(/(^|[\s([{])#{1,6}(?=$|[\s.,;:!?)}\]])/g, "$1")
+    .replace(/(^|[\s([{])#{1,6}(?=[\p{L}\p{N}])/gu, "$1")
     .replace(/\*\*([^*]+)\*\*/g, "$1")
     .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1$2")
     .replace(/^\s*```[a-z0-9_-]*\s*$/gmi, "")
+    .replace(/(^|\n)\s*[-+]\s+(?=\S)/g, "$1")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
@@ -1180,10 +1189,27 @@ function renderLesson(data, options = {}) {
       : (currentLessonData.mode === "analyze" ? "تحليل النص المقدم" : "دراسة مهنية");
     lessonCard.appendChild(specialtyHeading);
     const vocabKeys = ["verbs","nouns","adjectives","phrasal_verbs","idioms","adverbs"];
+    const vocabLabels = {verbs:"أفعال",nouns:"أسماء",adjectives:"صفات",phrasal_verbs:"أفعال مركبة",idioms:"تعبيرات",adverbs:"ظروف"};
     const vocabTotal = vocabKeys.reduce((sum, key) => sum + (Array.isArray(data.words[key]) ? data.words[key].length : 0), 0);
     const vocabSummary = document.createElement("div");
-    vocabSummary.className = "profile-note";
-    vocabSummary.textContent = "📚 إجمالي المفردات والتعبيرات المستخرجة: " + vocabTotal + " — تمت مراجعتها في مرحلة استخراج مستقلة.";
+    vocabSummary.className = "profile-note vocab-summary";
+    const summaryTitle = document.createElement("div");
+    summaryTitle.textContent = "📚 إجمالي المفردات والتعبيرات: " + (Number(data.vocabulary_total) || vocabTotal);
+    summaryTitle.style.fontWeight = "bold";
+    vocabSummary.appendChild(summaryTitle);
+    const counts = document.createElement("div");
+    counts.className = "vocab-counts";
+    vocabKeys.forEach(key => {
+      const chip = document.createElement("span");
+      chip.className = "vocab-count-chip";
+      chip.textContent = vocabLabels[key] + ": " + (Array.isArray(data.words[key]) ? data.words[key].length : 0);
+      counts.appendChild(chip);
+    });
+    vocabSummary.appendChild(counts);
+    const auditNote = document.createElement("div");
+    auditNote.className = "vocab-audit-note";
+    auditNote.textContent = "تم تدقيق المفردات على أجزاء من النص والتحقق من وجودها فيه.";
+    vocabSummary.appendChild(auditNote);
     lessonCard.appendChild(vocabSummary);
     lessonCard.appendChild(renderProfessionalExtras(data.words));
     lessonCard.appendChild(renderWords(data.words));
@@ -1245,7 +1271,7 @@ async function submitSpecialtyRequest(mode) {
   try {
     const response = await fetch(WEBHOOK, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=UTF-8" },
       body: JSON.stringify({
         mode: mode,
         specialty: isAnalyze ? "" : specialty,

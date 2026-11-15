@@ -53,9 +53,9 @@ h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
 .level-pill{background:#0f172a;color:#7dd3fc;border:1px solid #334155;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:bold}
 .story-panel{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden;border:1px solid #334155;border-radius:13px;padding:14px;margin:10px 0 16px;background:#0f172a}
 .story-label{font-size:13px;color:#7dd3fc;font-weight:bold;margin-bottom:9px}
-.story{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:17px;line-height:2;white-space:normal;overflow-wrap:break-word;word-break:normal;margin:0}
-.story-en{display:block;width:100%;max-width:100%;min-width:0;direction:ltr!important;text-align:left!important;unicode-bidi:plaintext;line-height:1.95;white-space:normal;word-spacing:normal;letter-spacing:normal;word-break:normal;overflow-wrap:break-word;hyphens:auto;}
-.story-ar{display:block;width:100%;max-width:100%;min-width:0;direction:rtl!important;text-align:right!important;unicode-bidi:plaintext;color:#e2e8f0;line-height:2.05;white-space:normal;overflow-wrap:break-word;word-break:normal;}
+.story{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:17px;line-height:2;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;margin:0}
+.story-en{display:block;width:100%;max-width:100%;min-width:0;direction:ltr!important;text-align:left!important;unicode-bidi:plaintext;line-height:1.95;white-space:pre-wrap;word-spacing:normal;letter-spacing:normal;word-break:normal;overflow-wrap:break-word;hyphens:auto;}
+.story-ar{display:block;width:100%;max-width:100%;min-width:0;direction:rtl!important;text-align:right!important;unicode-bidi:plaintext;color:#e2e8f0;line-height:2.05;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;}
 .story-word{direction:ltr;unicode-bidi:isolate;display:inline;white-space:normal;border-radius:4px;cursor:pointer;padding:1px 0;transition:background .12s,color .12s,box-shadow .12s;}
 .story-word:hover{background:rgba(56,189,248,.13);}
 .story-word.is-speaking{background:#facc15!important;color:#0f172a!important;border-radius:5px;padding:1px 3px;box-shadow:0 0 0 2px rgba(250,204,21,.18);font-weight:bold;}
@@ -102,7 +102,7 @@ body.has-reading-dock{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
 .empty-cat{text-align:center;color:#94a3b8;font-size:12px;padding:9px 5px 13px}
 .profile-note{color:#a7f3d0;background:#064e3b55;border:1px solid #065f46;padding:10px;border-radius:10px;font-size:13px;line-height:1.8}
 .footer-note{text-align:center;color:#94a3b8;font-size:12px;padding:6px}
-@media(max-width:520px){.container{width:94%;max-width:100%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.story-en{width:100%;max-width:100%;direction:ltr!important;text-align:left!important;overflow-wrap:break-word}.story-ar{width:100%;max-width:100%;direction:rtl!important;text-align:right!important;overflow-wrap:break-word}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}.read-controls{gap:6px}.read-btn{font-size:12px;padding:8px 10px}.meaning-toast{bottom:12px}.read-speed{width:100%;justify-content:space-between}.read-speed input{flex:1;min-width:90px}.saved-lesson-item{align-items:flex-start}.saved-lesson-actions{width:100%}}
+@media(max-width:520px){.container{width:94%;max-width:100%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.story-en{width:100%;max-width:100%;direction:ltr!important;text-align:left!important;white-space:pre-wrap;overflow-wrap:break-word}.story-ar{width:100%;max-width:100%;direction:rtl!important;text-align:right!important;white-space:pre-wrap;overflow-wrap:break-word}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}.read-controls{gap:6px}.read-btn{font-size:12px;padding:8px 10px}.meaning-toast{bottom:12px}.read-speed{width:100%;justify-content:space-between}.read-speed input{flex:1;min-width:90px}.saved-lesson-item{align-items:flex-start}.saved-lesson-actions{width:100%}}
 
 @media(max-width:520px){
   .reading-dock{width:96%;gap:6px;padding:8px 7px;border-radius:13px;align-items:stretch;}
@@ -680,12 +680,12 @@ function escapeHTML(value) {
 }
 
 const categoryLabels = {
-  verbs: "verbs",
-  nouns: "nouns",
-  adjectives: "adjectives",
-  phrasal_verbs: "phrasal verbs",
-  idioms: "idioms",
-  adverbs: "adverbs"
+  verbs: "الأفعال | Verbs",
+  nouns: "الأسماء | Nouns",
+  adjectives: "الصفات | Adjectives",
+  phrasal_verbs: "الأفعال المركبة | Phrasal Verbs",
+  idioms: "التعبيرات الاصطلاحية | Idioms",
+  adverbs: "الظروف | Adverbs"
 };
 
 function buildWordMeanings(words) {
@@ -713,7 +713,7 @@ function renderWords(words) {
     category.className = "category-card";
     const heading = document.createElement("h3");
     heading.className = "category-title";
-    heading.textContent = categoryLabels[key];
+    heading.textContent = categoryLabels[key] + " (" + entries.length + ")";
     category.appendChild(heading);
 
     if (!entries.length) {
@@ -1029,13 +1029,25 @@ async function saveCurrentLessonAutomatically() {
   }
 }
 
+function cleanLearningText(value) {
+  return String(value ?? "").replace(/\r\n?/g, "\n")
+    .replace(/(^|\n)\s{0,3}#{1,6}\s*/g, "$1")
+    .replace(/(^|\s)#{1,6}\s+(?=[\p{L}\p{N}])/gu, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1$2")
+    .replace(/^\s*```[a-z0-9_-]*\s*$/gmi, "")
+    .trim();
+}
+
 function renderLesson(data, options = {}) {
   const root = document.getElementById("lesson");
   root.replaceChildren();
   stopStoryReading();
+  const cleanStoryText = cleanLearningText(data.story || "");
+  const cleanTranslationText = cleanLearningText(data.translation || "");
   currentLessonData = {
-    story: String(data.story || ""),
-    translation: String(data.translation || ""),
+    story: cleanStoryText,
+    translation: cleanTranslationText,
     words: data.words && typeof data.words === "object" ? data.words : {},
     student_level: data.student_level || storedLevel || "A1",
     specialty: String(data.specialty || data.words?.specialty || "").trim(),
@@ -1140,8 +1152,8 @@ function renderLesson(data, options = {}) {
   englishText.id = "storyEnglishText";
   englishText.setAttribute("dir", "ltr");
   englishText.setAttribute("lang", "en");
-  englishText.dataset.rawText = String(data.story || "لم تصل القصة.");
-  renderClickableStory(data.story || "لم تصل القصة.", englishText);
+  englishText.dataset.rawText = cleanStoryText || "لم تصل القصة.";
+  renderClickableStory(cleanStoryText || "لم تصل القصة.", englishText);
   englishPanel.append(englishLabel, englishText);
   lessonCard.appendChild(englishPanel);
 
@@ -1156,7 +1168,7 @@ function renderLesson(data, options = {}) {
   arabicText.className = "story story-ar";
   arabicText.setAttribute("dir", "rtl");
   arabicText.setAttribute("lang", "ar");
-  arabicText.textContent = data.translation || "⚠️ لا توجد ترجمة";
+  arabicText.textContent = cleanTranslationText || "⚠️ لا توجد ترجمة";
   arabicPanel.append(arabicLabel, arabicText);
   lessonCard.appendChild(arabicPanel);
 
@@ -1167,6 +1179,12 @@ function renderLesson(data, options = {}) {
       ? "المجال المهني: " + currentLessonData.specialty
       : (currentLessonData.mode === "analyze" ? "تحليل النص المقدم" : "دراسة مهنية");
     lessonCard.appendChild(specialtyHeading);
+    const vocabKeys = ["verbs","nouns","adjectives","phrasal_verbs","idioms","adverbs"];
+    const vocabTotal = vocabKeys.reduce((sum, key) => sum + (Array.isArray(data.words[key]) ? data.words[key].length : 0), 0);
+    const vocabSummary = document.createElement("div");
+    vocabSummary.className = "profile-note";
+    vocabSummary.textContent = "📚 إجمالي المفردات والتعبيرات المستخرجة: " + vocabTotal + " — تمت مراجعتها في مرحلة استخراج مستقلة.";
+    lessonCard.appendChild(vocabSummary);
     lessonCard.appendChild(renderProfessionalExtras(data.words));
     lessonCard.appendChild(renderWords(data.words));
   }

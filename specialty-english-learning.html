@@ -1,1380 +1,936 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0f172a">
-<title>الإنجليزية المهنية حسب التخصص | إنجلش بالعربي</title>
-<style>
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;max-width:100%;overflow-x:hidden}
-body{max-width:100%;overflow-x:hidden;margin:0;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;font-family:Arial,"Cairo",sans-serif;min-height:100vh}
-.container{width:min(94%,760px);max-width:100%;min-width:0;margin:0 auto;padding:14px 0 42px;overflow-x:clip}
-.top{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:18px}
-.user{color:#38bdf8;font-size:14px;font-weight:bold}
-.points{color:#facc15;font-size:14px;font-weight:bold}
-.review{display:inline-flex;align-items:center;justify-content:center;background:#6366f1;color:#fff;padding:10px 14px;border-radius:12px;text-decoration:none;font-size:14px;font-weight:bold;cursor:pointer;border:0}
-.saved-lessons-btn{background:#0e7490}
-.saved-lessons-panel{display:none}
-.saved-lesson-item{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#0f172a;border:1px solid #334155;border-radius:12px;padding:12px;margin:9px 0}
-.saved-lesson-title{font-weight:bold;color:#e2e8f0;line-height:1.6}
-.saved-lesson-meta{font-size:11px;color:#94a3b8;margin-top:4px}
-.saved-lesson-actions{display:flex;gap:7px;flex-wrap:wrap}
-.small-action{border:1px solid #334155;border-radius:9px;padding:8px 11px;background:#1e293b;color:#e2e8f0;font-size:12px;cursor:pointer}
-.small-action.open{background:#0e7490;border-color:#0e7490}
-.small-action.delete{background:#7f1d1d;border-color:#991b1b}
-.read-speed{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#0f172a;border:1px solid #334155;border-radius:11px;padding:8px 10px;color:#cbd5e1;font-size:12px}
-.read-speed input{width:125px;accent-color:#38bdf8;cursor:pointer}
-.read-speed output{color:#facc15;font-weight:bold;min-width:42px;text-align:center}
-.lesson-save-status{font-size:12px;color:#a7f3d0;margin-top:7px;min-height:18px}
-.meaning-toast{padding:16px 17px 14px}
-.meaning-toast-word{font-size:18px;font-weight:800;letter-spacing:.2px}
-.meaning-toast-ar{font-family:Arial,"Cairo",sans-serif;font-size:20px;font-weight:700;line-height:1.9;color:#fde68a;letter-spacing:0}
-.meaning-toast-meta{font-size:12px;line-height:1.7}
-.meaning-toast-actions{display:flex;justify-content:flex-start;gap:9px;margin-top:11px;padding-top:10px;border-top:1px solid #334155}
-.meaning-save-btn{background:#0f172a;border:1px solid #475569;color:#facc15;border-radius:10px;padding:8px 13px;font-size:13px;font-weight:bold;cursor:pointer}
-.meaning-save-btn:disabled{opacity:.65;cursor:wait}
-.notice-line{font-size:12px;line-height:1.7;margin-top:7px;color:#a7f3d0}
-h1.page-title{text-align:center;font-size:25px;margin:12px 0 6px}
-.subtitle{text-align:center;color:#94a3b8;font-size:14px;margin:0 0 18px}
-.card{background:#1e293b;border:1px solid #334155;margin:16px 0;padding:16px;border-radius:16px;min-width:0;box-shadow:0 5px 18px rgba(0,0,0,.08)}
-.field-label{display:block;color:#cbd5e1;font-size:14px;font-weight:bold;margin:4px 2px 8px}
-.input{display:block;width:100%;padding:14px;border:1px solid #334155;border-radius:12px;background:#f8fafc;color:#0f172a;font:16px Arial,sans-serif;direction:auto;text-align:right;outline:none}
-.input:focus{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.16)}
-.hint{font-size:12px;color:#94a3b8;line-height:1.8;margin:8px 2px}
-.btn{border:0;border-radius:12px;padding:13px 18px;background:#22c55e;color:#fff;font-size:15px;font-weight:bold;cursor:pointer}
-.btn:disabled{opacity:.6;cursor:wait}
-#generateBtn{width:100%;margin-top:12px}
-.loading{text-align:center;margin:18px 0;color:#facc15;line-height:1.8}
-.error{color:#fee2e2;background:#7f1d1d;padding:13px;border-radius:12px;line-height:1.8}
-.lesson-card{padding:14px}
-.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:4px 0 12px}
-.section-title{font-size:20px;font-weight:bold;color:#fff;margin:0}
-.level-pill{background:#0f172a;color:#7dd3fc;border:1px solid #334155;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:bold}
-.story-panel{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden;border:1px solid #334155;border-radius:13px;padding:14px;margin:10px 0 16px;background:#0f172a}
-.story-label{font-size:13px;color:#7dd3fc;font-weight:bold;margin-bottom:9px}
-.story{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:17px;line-height:2;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;margin:0}
-.story-en{display:block;width:100%;max-width:100%;min-width:0;direction:ltr!important;text-align:left!important;unicode-bidi:plaintext;line-height:1.95;white-space:pre-wrap;word-spacing:normal;letter-spacing:normal;word-break:normal;overflow-wrap:break-word;hyphens:auto;}
-.story-ar{display:block;width:100%;max-width:100%;min-width:0;direction:rtl!important;text-align:right!important;unicode-bidi:plaintext;color:#e2e8f0;line-height:2.05;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;}
-.story-word{direction:ltr;unicode-bidi:isolate;display:inline;white-space:normal;border-radius:4px;cursor:pointer;padding:1px 0;transition:background .12s,color .12s,box-shadow .12s;}
-.story-word:hover{background:rgba(56,189,248,.13);}
-.story-word.is-speaking{background:#facc15!important;color:#0f172a!important;border-radius:5px;padding:1px 3px;box-shadow:0 0 0 2px rgba(250,204,21,.18);font-weight:bold;}
-.read-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.read-btn{display:inline-flex;align-items:center;gap:7px;background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:9px 13px;border-radius:11px;font-size:13px;font-weight:bold;cursor:pointer}
-.read-btn:hover{border-color:#38bdf8}
-.read-btn:disabled{opacity:.5;cursor:not-allowed}
-.read-btn.stop{background:#7f1d1d;border-color:#991b1b;color:#fee2e2}
-.read-btn.pause{background:#164e63;border-color:#0e7490;color:#cffafe}
-.read-note{font-size:11px;color:#94a3b8}
-.meaning-toast{position:fixed;z-index:10001;left:50%;bottom:calc(108px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(88%,360px);display:none;background:#1e293b;border:1px solid #38bdf8;border-radius:13px;padding:10px 12px;box-shadow:0 12px 30px rgba(0,0,0,.34);direction:rtl;text-align:right;}
-.meaning-toast.show{display:block;animation:meaningIn .18s ease-out;}
-.meaning-toast-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px;}
-.meaning-toast-word{direction:ltr;text-align:left;color:#38bdf8;font-weight:bold;font-size:15px;}
-.meaning-toast-close{background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:9px;padding:4px 9px;cursor:pointer;font-size:16px;}
-.meaning-toast-ar{color:#facc15;font-size:16px;line-height:1.65;font-weight:600;}
-.meaning-toast-meta{color:#94a3b8;font-size:10px;margin-top:3px;}
-.meaning-toast-loading{color:#cbd5e1;font-size:14px;animation:meaningPulse 1s ease-in-out infinite alternate;}
-.reading-dock{position:fixed;z-index:10000;left:50%;bottom:calc(8px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(96%,760px);display:none;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 10px;background:rgba(15,23,42,.97);border:1px solid #475569;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.4);backdrop-filter:blur(10px);}
-.reading-dock-lessons{flex:0 0 auto;background:#0e7490;border:1px solid #155e75;color:#fff;border-radius:10px;padding:9px 11px;font-size:12px;font-weight:bold;cursor:pointer;}
-.reading-dock-controls{flex:1;min-width:0;}
-.reading-dock .read-controls{gap:6px;justify-content:center;}
-.reading-dock .read-btn{padding:8px 10px;font-size:12px;white-space:nowrap;}
-.reading-dock .read-speed{padding:6px 8px;gap:6px;}
-.reading-dock .read-speed input{width:95px;}
-.reading-dock .read-note{display:none;}
-body.has-reading-dock{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
-@keyframes meaningPulse{from{opacity:.55}to{opacity:1}}
-.points{color:#facc15;font-size:14px;font-weight:bold;background:transparent;border:0;padding:4px;cursor:pointer}
-.word-en.clickable-word{cursor:pointer;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;}
-.word-en.clickable-word:hover{text-decoration-color:#38bdf8;}
-@keyframes meaningIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
-.divider{border:0;border-top:1px solid #334155;margin:17px 0}
-.category-card{background:#1e293b;border:1px solid #334155;border-radius:15px;padding:13px;margin:13px 0}
-.category-title{color:#fff;text-align:center;direction:ltr;font-size:21px;margin:4px 0 12px;font-weight:bold}
-.word-row{display:grid;grid-template-columns:minmax(0,1fr) 108px minmax(0,1fr);gap:6px;align-items:center;padding:13px 0;border-bottom:1px solid #334155;direction:ltr;min-width:0}
-.word-row:last-child{border-bottom:0}
-.word-en{grid-column:1;color:#38bdf8;font-size:17px;font-weight:bold;text-align:left;direction:ltr;overflow-wrap:anywhere;padding-left:6px}
-.word-actions{grid-column:2;display:flex;justify-content:center;align-items:center;gap:8px;width:108px}
-.word-ar{grid-column:3;color:#facc15;font-size:17px;text-align:right;direction:rtl;overflow-wrap:anywhere;padding-right:6px}
-.icon-btn{width:42px;height:42px;display:grid;place-items:center;padding:0;border:1px solid #334155;border-radius:12px;background:#0f172a;color:#fff;font-size:19px;cursor:pointer}
-.icon-btn:hover{border-color:#38bdf8}
-.icon-btn:disabled{opacity:.65;cursor:wait}
-.empty-cat{text-align:center;color:#94a3b8;font-size:12px;padding:9px 5px 13px}
-.profile-note{color:#a7f3d0;background:#064e3b55;border:1px solid #065f46;padding:10px;border-radius:10px;font-size:13px;line-height:1.8}
-.footer-note{text-align:center;color:#94a3b8;font-size:12px;padding:6px}
-@media(max-width:520px){.container{width:94%;max-width:100%;padding-top:10px}.top{gap:7px}.user,.points{font-size:12px}.review{font-size:12px;padding:9px 11px}h1.page-title{font-size:22px}.card{padding:12px}.story{font-size:16px}.story-en{width:100%;max-width:100%;direction:ltr!important;text-align:left!important;white-space:pre-wrap;overflow-wrap:break-word}.story-ar{width:100%;max-width:100%;direction:rtl!important;text-align:right!important;white-space:pre-wrap;overflow-wrap:break-word}.word-row{grid-template-columns:minmax(0,1fr) 94px minmax(0,1fr);gap:3px}.word-actions{width:94px;gap:7px}.icon-btn{width:40px;height:40px;font-size:18px}.word-en,.word-ar{font-size:15px}.category-title{font-size:20px}.read-controls{gap:6px}.read-btn{font-size:12px;padding:8px 10px}.meaning-toast{bottom:12px}.read-speed{width:100%;justify-content:space-between}.read-speed input{flex:1;min-width:90px}.saved-lesson-item{align-items:flex-start}.saved-lesson-actions{width:100%}}
-
-@media(max-width:520px){
-  .reading-dock{width:96%;gap:6px;padding:8px 7px;border-radius:13px;align-items:stretch;}
-  .reading-dock-lessons{padding:8px 9px;font-size:11px;}
-  .reading-dock-controls{width:100%;flex-basis:100%;order:2;}
-  .reading-dock .read-controls{justify-content:space-between;gap:5px;}
-  .reading-dock .read-btn{padding:7px 8px;font-size:11px;flex:1;justify-content:center;}
-  .reading-dock .read-speed{width:100%;justify-content:space-between;}
-  .reading-dock .read-speed input{flex:1;width:auto;min-width:70px;}
-  .meaning-toast{bottom:calc(128px + env(safe-area-inset-bottom));width:min(88%,340px);}
-  body.has-reading-dock{padding-bottom:calc(150px + env(safe-area-inset-bottom));}
-}
-
-.mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;background:#0f172a;border:1px solid #334155;padding:6px;border-radius:14px}
-.mode-tab{border:1px solid transparent;border-radius:10px;padding:11px 9px;background:transparent;color:#cbd5e1;font-weight:bold;font-size:13px;cursor:pointer}
-.mode-tab.active{background:#164e63;border-color:#0e7490;color:#cffafe;box-shadow:0 3px 12px rgba(0,0,0,.18)}
-.mode-panel[hidden]{display:none}
-.story-input{min-height:190px;resize:vertical;line-height:1.8;white-space:pre-wrap}
-.mode-note{margin-top:14px}
-.professional-block{background:#0f172a;border:1px solid #334155;border-radius:14px;padding:14px;margin:14px 0}
-.professional-block h3{font-size:19px;color:#7dd3fc;margin:0 0 12px}
-.professional-item{padding:12px 0;border-bottom:1px solid #334155;line-height:1.8}
-.professional-item:last-child{border-bottom:0}
-.professional-title{font-weight:bold;color:#facc15;margin-bottom:4px}
-.professional-en{direction:ltr;text-align:left;color:#e2e8f0;unicode-bidi:plaintext;margin:4px 0;line-height:1.8}
-.professional-ar{direction:rtl;text-align:right;color:#cbd5e1;margin:4px 0;line-height:1.9}
-.professional-meta{font-size:12px;color:#94a3b8;line-height:1.8}
-.abbr-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.abbr-card{min-width:0;background:#1e293b;border:1px solid #334155;border-radius:11px;padding:11px}
-.abbr-short{font-weight:800;font-size:18px;color:#38bdf8;direction:ltr;text-align:left}
-.abbr-full{font-weight:bold;color:#f8fafc;direction:ltr;text-align:left;line-height:1.6;margin-top:3px}
-.abbr-ar{color:#facc15;line-height:1.7;margin-top:4px}
-.dialogue-line{display:grid;grid-template-columns:76px minmax(0,1fr);gap:9px;padding:8px 0;border-bottom:1px dashed #334155}
-.dialogue-line:last-child{border-bottom:0}
-.dialogue-speaker{color:#38bdf8;font-weight:bold}
-.dialogue-text{min-width:0}
-.word-definition{grid-column:1/-1;color:#94a3b8;font-size:12px;line-height:1.7;padding:0 7px 2px;direction:rtl;text-align:right}
-@media(max-width:520px){.mode-tab{font-size:12px;padding:10px 6px}.abbr-grid{grid-template-columns:1fr}.dialogue-line{grid-template-columns:65px minmax(0,1fr)}}
-
-
-.vocab-counts{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
-.vocab-count-chip{display:inline-flex;align-items:center;padding:6px 9px;border-radius:999px;background:#0f172a;border:1px solid #334155;color:#bae6fd;font-size:11px;font-weight:bold}
-.vocab-audit-note{margin-top:8px;color:#94a3b8;font-size:11px;line-height:1.7}
-
-</style>
-</head>
-<body>
-<div class="container">
-  <div class="top">
-    <div class="user" id="username">👤</div>
-    <button class="points" id="wordCountBtn" type="button" title="فتح مفرداتي">⭐ كلماتك: <span id="savedWordCount">0</span></button>
-    <button class="review saved-lessons-btn" id="openSavedLessonsBtn" type="button">📚 دروسي <span id="savedLessonCount">0</span></button>
-    <button class="review" id="profileBtn" type="button">👤 حسابي</button>
-  </div>
-
-  <h1 class="page-title">💼 الإنجليزية المهنية حسب التخصص</h1>
-  <p class="subtitle">📘 تعلّم الإنجليزية من واقع تخصصك ومواقف العمل اليومية</p>
-
-  <section class="card">
-    <div class="mode-switch" role="tablist" aria-label="اختر طريقة الدراسة">
-      <button class="mode-tab active" id="generateModeBtn" type="button" role="tab" aria-selected="true">💼 دراسة تخصص</button>
-      <button class="mode-tab" id="analyzeModeBtn" type="button" role="tab" aria-selected="false">📝 تحليل نص ألصقه</button>
-    </div>
-    <div id="generatePanel" class="mode-panel">
-      <label class="field-label" for="textInput">🏢 اكتب اسم التخصص أو الوظيفة</label>
-      <input id="textInput" class="input" type="text" placeholder="مثال: التمريض، المحاسبة، الموارد البشرية، تقنية المعلومات..." autocomplete="off">
-      <div class="hint">ستنشأ دراسة مهنية طويلة مقسمة إلى محاور التخصص، مع قصة إنجليزية وترجمتها، واختصارات المجال، وعبارات العمل، وحوارات عملية، والمفردات في الأقسام الستة.</div>
-      <button id="generateBtn" class="btn" type="button">🚀 إنشاء دراسة التخصص</button>
-    </div>
-    <div id="analyzePanel" class="mode-panel" hidden>
-      <label class="field-label" for="storyInput">📄 الصق القصة أو النص الذي تريد تحليله</label>
-      <textarea id="storyInput" class="input story-input" placeholder="الصق هنا قصة أو تقريراً أو محادثة من مجال عملك..." rows="9"></textarea>
-      <div class="hint">سيحلل النظام النص الذي أرسلته نفسه، ويترجمه، ويستخرج منه المفردات والاختصارات والعبارات المهنية الموجودة فيه دون اختراع كلمات غير موجودة في النص.</div>
-      <button id="analyzeBtn" class="btn" type="button">🔍 تحليل النص واستخراج أقسامه</button>
-    </div>
-    <div class="profile-note mode-note">مستوى اللغة المستخدم: <strong id="currentLevelLabel">سيُقرأ من حسابك تلقائياً</strong>. المصطلحات المهنية المهمة ستُحافظ على اسمها الإنجليزي مع شرح عربي واضح.</div>
-  </section>
-
-  <section id="savedLessonsPanel" class="card saved-lessons-panel" aria-live="polite">
-    <div class="section-head">
-      <h2 class="section-title">📚 دروسي</h2>
-      <button id="closeSavedLessonsBtn" class="small-action" type="button">إغلاق ✕</button>
-    </div>
-    <div id="savedLessonsList" class="hint">اضغط على «دروسي» لعرض الدروس السابقة.</div>
-  </section>
-
-  <div id="lesson" aria-live="polite"></div>
-</div>
-
-<div id="readingDock" class="reading-dock" aria-label="أدوات القراءة الثابتة">
-  <button id="dockLessonsBtn" class="reading-dock-lessons" type="button">📚 دروسي <span id="dockSavedLessonCount">0</span></button>
-  <div id="readingDockControls" class="reading-dock-controls"></div>
-</div>
-
-<div id="wordMeaningCard" class="meaning-toast" role="status" aria-live="polite">
-  <div class="meaning-toast-head">
-    <span id="meaningWord" class="meaning-toast-word"></span>
-    <button id="closeMeaningCard" class="meaning-toast-close" type="button" aria-label="إغلاق">×</button>
-  </div>
-  <div id="meaningArabic" class="meaning-toast-ar"></div>
-  <div id="meaningMeta" class="meaning-toast-meta">اضغط على أي كلمة في القصة لسماع نطقها ومعرفة معناها</div>
-  <div class="meaning-toast-actions">
-    <button id="meaningSaveBtn" class="meaning-save-btn" type="button">⭐ حفظ في مفرداتي</button>
-  </div>
-</div>
-
-<script>
-'use strict';
-
-const SUPABASE_URL = "https://ofyugbhplaynjeafdrgx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO";
-const WEBHOOK = "https://steelblue-frog-379077.hostingersite.com/webhook/specialty-learning";
-const STATUS_WEBHOOK = "https://steelblue-frog-379077.hostingersite.com/webhook/specialty-learning-status";
-
-let user_id = localStorage.getItem("user_id");
-if (!user_id) {
-  user_id = (window.crypto && crypto.randomUUID)
-    ? crypto.randomUUID()
-    : "user_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-  localStorage.setItem("user_id", user_id);
-}
-
-const phone = localStorage.getItem("phone") || "";
-const storedLevel = localStorage.getItem("student_level") || localStorage.getItem("english_level") || localStorage.getItem("level") || "";
-const fullName = localStorage.getItem("user") || "";
-document.getElementById("username").textContent = "👤 " + (fullName.split(" ").slice(0, 2).join(" ") || "الطالب");
-document.getElementById("currentLevelLabel").textContent = storedLevel || "A1 (افتراضي إذا لم يُحدد مستوى في الحساب)";
-document.getElementById("profileBtn").addEventListener("click", () => { window.location.href = "student.html"; });
-
-let currentWordMeanings = new Map();
-const onlineMeaningCache = new Map();
-let meaningCardTimer = null;
-let storyUtterance = null;
-let storyWordSpans = [];
-let storyReadingState = "idle";
-let storyCurrentCharIndex = 0;
-let currentMeaningWord = "";
-let currentMeaningArabic = "";
-let currentMeaningCategory = "story";
-let currentLessonData = null;
-let currentLessonTitle = "";
-let currentSavedLessonId = null;
-let lessonSaveQueue = Promise.resolve();
-const pendingLessonSaveKeys = new Set();
-let activeHighlightSpan = null;
-const savedStoryRateKey = "class_story_rate_" + user_id;
-let storyRate = Number(localStorage.getItem(savedStoryRateKey) || "0.80");
-if (!Number.isFinite(storyRate)) storyRate = 0.80;
-storyRate = Math.min(1.25, Math.max(0.65, storyRate));
-
-// عدد المفردات المحفوظة للطالب في Supabase
-async function refreshSavedWordCount() {
-  const countEl = document.getElementById("savedWordCount");
-  if (!countEl) return;
-  try {
-    const url = SUPABASE_URL + "/rest/v1/user_star_words?select=user_id&user_id=eq." + encodeURIComponent(user_id);
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: "Bearer " + SUPABASE_KEY,
-        Prefer: "count=exact",
-        Range: "0-0"
+{
+  "name": "ENGLISH BELARABI - SPECIALTY LEARNING ASYNC + ARABIC VOCAB FIX",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "specialty-learning",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://njmaldyn1311.github.io"
+        }
       },
-      cache: "no-store"
-    });
-    if (!response.ok) throw new Error(await response.text());
-    const range = response.headers.get("Content-Range") || "";
-    const match = range.match(/\/(\d+|\*)$/);
-    if (match && match[1] !== "*") {
-      countEl.textContent = match[1];
-    } else {
-      const rows = await response.json();
-      countEl.textContent = Array.isArray(rows) ? String(rows.length) : "0";
-    }
-  } catch (error) {
-    console.debug("Could not load saved word count", error);
-    countEl.textContent = "—";
-  }
-}
-
-document.getElementById("wordCountBtn").addEventListener("click", () => {
-  window.location.href = "review.html";
-});
-document.getElementById("openSavedLessonsBtn").addEventListener("click", toggleSavedLessonsPanel);
-document.getElementById("dockLessonsBtn").addEventListener("click", toggleSavedLessonsPanel);
-document.getElementById("readingDock").style.display = "none";
-document.body.classList.remove("has-reading-dock");
-document.getElementById("closeSavedLessonsBtn").addEventListener("click", () => {
-  document.getElementById("savedLessonsPanel").style.display = "none";
-});
-refreshSavedWordCount();
-refreshSavedLessonCount();
-
-async function track(action) {
-  try {
-    await fetch(SUPABASE_URL + "/rest/v1/user_activity", {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: "Bearer " + SUPABASE_KEY,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({ user_id, page: "specialty_page", action })
-    });
-  } catch (error) {
-    console.debug("Tracking skipped", error);
-  }
-}
-track("دخول صفحة الإنجليزية المهنية");
-
-function clearStoryHighlight() {
-  storyWordSpans.forEach(span => span.classList.remove("is-speaking"));
-  activeHighlightSpan = null;
-}
-
-function resetStoryControls() {
-  const read = document.getElementById("readStoryBtn");
-  const pause = document.getElementById("pauseStoryBtn");
-  if (read) read.textContent = "🔊 قراءة القصة";
-  if (pause) {
-    pause.textContent = "⏸ إيقاف مؤقت";
-    pause.disabled = true;
-  }
-  storyReadingState = "idle";
-  clearStoryHighlight();
-}
-
-function showWordMeaning(word, arabicMeaning, metaText = "", category = "story") {
-  currentMeaningWord = word;
-  currentMeaningArabic = arabicMeaning || "";
-  currentMeaningCategory = category || "story";
-  const saveButton = document.getElementById("meaningSaveBtn");
-  if (saveButton) {
-    saveButton.disabled = !arabicMeaning;
-    saveButton.textContent = "⭐ حفظ في مفرداتي";
-  }
-  const card = document.getElementById("wordMeaningCard");
-  const wordEl = document.getElementById("meaningWord");
-  const arEl = document.getElementById("meaningArabic");
-  const metaEl = document.getElementById("meaningMeta");
-  if (!card) return;
-  wordEl.textContent = word;
-  arEl.textContent = arabicMeaning || "جارٍ البحث عن المعنى...";
-  arEl.classList.toggle("meaning-toast-loading", !arabicMeaning);
-  metaEl.textContent = metaText || (arabicMeaning ? "المعنى بالعربية" : "يتم جلب المعنى للكلمة...");
-  card.classList.add("show");
-  clearTimeout(meaningCardTimer);
-  if (arabicMeaning) {
-    meaningCardTimer = setTimeout(() => card.classList.remove("show"), 6500);
-  }
-}
-
-function lookupLocalMeaning(word) {
-  const key = normalizeWord(word);
-  let found = currentWordMeanings.get(key);
-  if (found) return found;
-  const candidates = [
-    key.replace(/'s$/i, ""), key.replace(/'re$/i, ""),
-    key.replace(/'ve$/i, ""), key.replace(/'ll$/i, ""),
-    key.replace(/ies$/i, "y"), key.replace(/(ing|ed|es|s)$/i, "")
-  ].filter(Boolean);
-  for (const candidate of candidates) {
-    found = currentWordMeanings.get(candidate);
-    if (found) return found;
-  }
-  return null;
-}
-
-async function fetchJsonWithTimeout(url, timeoutMs = 7000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(url, { method: "GET", mode: "cors", cache: "no-store", signal: controller.signal });
-    if (!response.ok) throw new Error("HTTP " + response.status);
-    return await response.json();
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-async function fetchArabicMeaning(word) {
-  const key = normalizeWord(word);
-  if (onlineMeaningCache.has(key)) return onlineMeaningCache.get(key);
-
-  // مصدر ترجمة عام أول، ثم بديل في حال عدم توفره.
-  const services = [
-    async () => {
-      const url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ar&dt=t&q=" + encodeURIComponent(word);
-      const data = await fetchJsonWithTimeout(url);
-      const translated = Array.isArray(data?.[0])
-        ? data[0].map(part => Array.isArray(part) ? part[0] : "").join("").trim()
-        : "";
-      if (!translated || normalizeWord(translated) === key) throw new Error("No translation returned");
-      return translated;
+      "id": "a23aa9da-b195-4d75-8a87-584706186e35",
+      "name": "Webhook - Specialty Learning",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "webhookId": "specialty-learning-88aebf0abbc3"
     },
-    async () => {
-      const url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(word) + "&langpair=en|ar";
-      const data = await fetchJsonWithTimeout(url);
-      const translated = String(data?.responseData?.translatedText || "").trim();
-      if (!translated || data?.responseStatus === 429 || /MYMEMORY WARNING/i.test(translated)) throw new Error("No translation returned");
-      return translated.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
-    }
-  ];
-
-  for (const service of services) {
-    try {
-      const meaning = await service();
-      onlineMeaningCache.set(key, meaning);
-      return meaning;
-    } catch (error) {
-      console.debug("Meaning provider unavailable", error);
-    }
-  }
-  throw new Error("تعذر جلب الترجمة من خدمات الترجمة حالياً.");
-}
-
-async function handleStoryWordClick(word) {
-  // انطق الكلمة فور الضغط، ولا تنتظر استجابة خدمة الترجمة.
-  speakWord(word);
-  const local = lookupLocalMeaning(word);
-  if (local?.ar) {
-    showWordMeaning(word, local.ar, local.category ? "القسم: " + (categoryLabels[local.category] || local.category) : "من مفردات الدرس", local.category || "story");
-    return;
-  }
-
-  const cached = onlineMeaningCache.get(normalizeWord(word));
-  if (cached) {
-    showWordMeaning(word, cached, "ترجمة عربية تلقائية؛ قد يختلف المعنى بحسب سياق الجملة.", lookupLocalMeaning(word)?.category || "story");
-    return;
-  }
-
-  showWordMeaning(word, "", "جارٍ جلب المعنى العربي للكلمة...");
-  try {
-    const meaning = await fetchArabicMeaning(word);
-    // لا نحدّث البطاقة إذا كان الطالب قد انتقل إلى كلمة أخرى.
-    if (normalizeWord(document.getElementById("meaningWord")?.textContent) !== normalizeWord(word)) return;
-    showWordMeaning(word, meaning, "ترجمة عربية تلقائية؛ اختر المعنى الأنسب لسياق الجملة.", "story");
-    currentWordMeanings.set(normalizeWord(word), { en: word, ar: meaning, category: "story" });
-  } catch (error) {
-    console.warn("Could not resolve word meaning", error);
-    if (normalizeWord(document.getElementById("meaningWord")?.textContent) !== normalizeWord(word)) return;
-    showWordMeaning(word, "لم نتمكن من جلب المعنى الآن. اضغط على الكلمة مرة أخرى للمحاولة.", "تعذر الاتصال بخدمة الترجمة مؤقتاً.");
-  }
-}
-
-function normalizeWord(value) {
-  return String(value || "").toLowerCase().replace(/[’‘]/g, "'").replace(/^[^a-z]+|[^a-z']+$/gi, "").trim();
-}
-
-function speakWord(text) {
-  if (!text || !("speechSynthesis" in window)) return;
-  speechSynthesis.cancel();
-  storyUtterance = null;
-  resetStoryControls();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-US";
-  utterance.rate = 0.88;
-  const voices = speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
-  const englishVoice = voices.find(voice => /^en(-|_)/i.test(voice.lang) && /US|UK|English/i.test(voice.name + " " + voice.lang))
-    || voices.find(voice => /^en/i.test(voice.lang));
-  if (englishVoice) utterance.voice = englishVoice;
-  speechSynthesis.speak(utterance);
-}
-
-function renderClickableStory(text, element) {
-  const source = String(text || "");
-  element.replaceChildren();
-  storyWordSpans = [];
-  const regex = /[A-Za-z]+(?:[’'][A-Za-z]+)*(?:-[A-Za-z]+)*/g;
-  let cursor = 0;
-  let match;
-  while ((match = regex.exec(source)) !== null) {
-    if (match.index > cursor) {
-      element.appendChild(document.createTextNode(source.slice(cursor, match.index)));
-    }
-    const wordText = match[0];
-    const wordStart = match.index;
-    const span = document.createElement("span");
-    span.className = "story-word";
-    span.textContent = wordText;
-    span.dataset.start = String(wordStart);
-    span.dataset.end = String(wordStart + wordText.length);
-    span.title = "اضغط لسماع الكلمة ومعرفة معناها";
-    span.addEventListener("click", () => handleStoryWordClick(wordText));
-    element.appendChild(span);
-    storyWordSpans.push(span);
-    cursor = wordStart + wordText.length;
-  }
-  if (cursor < source.length) element.appendChild(document.createTextNode(source.slice(cursor)));
-}
-
-function highlightStoryAt(charIndex) {
-  if (!Number.isFinite(charIndex)) return;
-  let active = null;
-  for (const span of storyWordSpans) {
-    const start = Number(span.dataset.start);
-    const end = Number(span.dataset.end);
-    if (charIndex >= start && charIndex < end) {
-      active = span;
-      break;
-    }
-  }
-  // بعض المتصفحات ترسل موضعاً قبل أول حرف من الكلمة؛ نختار أقرب كلمة تالية.
-  if (!active) {
-    active = storyWordSpans.find(span => Number(span.dataset.end) > charIndex) || null;
-  }
-  storyWordSpans.forEach(span => span.classList.toggle("is-speaking", span === active));
-  if (active && active !== activeHighlightSpan) {
-    activeHighlightSpan = active;
-    // متابعة الكلمة المقروءة عمودياً فقط، مع إبقاء أدوات القراءة الثابتة ظاهرة أسفل الشاشة.
-    const rect = active.getBoundingClientRect();
-    const safeTop = 72;
-    const safeBottom = window.innerHeight - (document.getElementById("readingDock")?.offsetHeight || 0) - 24;
-    if (rect.top < safeTop || rect.bottom > safeBottom) {
-      active.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-    }
-  }
-}
-
-function startStoryReading(fromBeginning = false, startAt = 0, shouldPause = false) {
-  const storyEl = document.getElementById("storyEnglishText");
-  const readButton = document.getElementById("readStoryBtn");
-  const pauseButton = document.getElementById("pauseStoryBtn");
-  const storyText = storyEl?.dataset.rawText || storyEl?.textContent?.trim();
-  if (!storyText) return;
-  if (!("speechSynthesis" in window)) {
-    alert("ميزة القراءة الصوتية غير مدعومة في هذا المتصفح.");
-    return;
-  }
-
-  const offset = fromBeginning ? 0 : Math.max(0, Math.min(Number(startAt) || 0, storyText.length));
-  const remainingText = storyText.slice(offset).trimStart();
-  const leadingTrim = storyText.slice(offset).length - remainingText.length;
-  const actualOffset = offset + leadingTrim;
-  if (!remainingText) return;
-
-  speechSynthesis.cancel();
-  clearStoryHighlight();
-  storyCurrentCharIndex = actualOffset;
-  const utterance = new SpeechSynthesisUtterance(remainingText);
-  storyUtterance = utterance;
-  utterance.lang = "en-US";
-  utterance.rate = storyRate;
-  utterance.pitch = 1;
-  const voices = speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
-  const englishVoice = voices.find(voice => /^en(-|_)/i.test(voice.lang) && /US|UK|English/i.test(voice.name + " " + voice.lang))
-    || voices.find(voice => /^en/i.test(voice.lang));
-  if (englishVoice) utterance.voice = englishVoice;
-
-  storyReadingState = "speaking";
-  if (readButton) readButton.textContent = "🔄 إعادة من البداية";
-  if (pauseButton) {
-    pauseButton.disabled = false;
-    pauseButton.textContent = "⏸ إيقاف مؤقت";
-  }
-
-  utterance.onboundary = event => {
-    if (storyUtterance !== utterance) return;
-    if (event.name === "word" || Number.isFinite(event.charIndex)) {
-      storyCurrentCharIndex = actualOffset + event.charIndex;
-      highlightStoryAt(storyCurrentCharIndex);
-    }
-  };
-  utterance.onend = () => {
-    if (storyUtterance !== utterance) return;
-    storyUtterance = null;
-    storyCurrentCharIndex = 0;
-    resetStoryControls();
-  };
-  utterance.onerror = event => {
-    if (storyUtterance !== utterance || event.error === "canceled" || event.error === "interrupted") return;
-    storyUtterance = null;
-    resetStoryControls();
-  };
-  speechSynthesis.speak(utterance);
-
-  if (shouldPause) {
-    setTimeout(() => {
-      if (storyUtterance === utterance && speechSynthesis.speaking) {
-        speechSynthesis.pause();
-        storyReadingState = "paused";
-        if (pauseButton) pauseButton.textContent = "▶ استكمال القراءة";
-      }
-    }, 120);
-  }
-}
-
-function currentWordStartForResume() {
-  const active = storyWordSpans.find(span => span.classList.contains("is-speaking"));
-  return active ? Number(active.dataset.start) : storyCurrentCharIndex;
-}
-
-function updateStoryRate(value, applyImmediately = false) {
-  const parsed = Math.min(1.25, Math.max(0.65, Number(value) || 0.8));
-  storyRate = parsed;
-  localStorage.setItem(savedStoryRateKey, String(storyRate));
-  const output = document.getElementById("storyRateValue");
-  if (output) output.textContent = storyRate.toFixed(2) + "×";
-  if (applyImmediately && storyUtterance && (storyReadingState === "speaking" || storyReadingState === "paused")) {
-    const wasPaused = storyReadingState === "paused" || speechSynthesis.paused;
-    const resumeAt = currentWordStartForResume();
-    startStoryReading(false, resumeAt, wasPaused);
-  }
-}
-
-function toggleStoryPause() {
-  if (!("speechSynthesis" in window) || !storyUtterance) return;
-  if (speechSynthesis.paused || storyReadingState === "paused") {
-    speechSynthesis.resume();
-    storyReadingState = "speaking";
-    const pause = document.getElementById("pauseStoryBtn");
-    if (pause) pause.textContent = "⏸ إيقاف مؤقت";
-  } else if (speechSynthesis.speaking) {
-    speechSynthesis.pause();
-    storyReadingState = "paused";
-    const pause = document.getElementById("pauseStoryBtn");
-    if (pause) pause.textContent = "▶ استكمال القراءة";
-  }
-}
-
-function stopStoryReading() {
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
-  storyUtterance = null;
-  resetStoryControls();
-}
-
-async function saveWord(button, en, ar, category) {
-  const original = button.textContent;
-  button.disabled = true;
-  button.textContent = "…";
-  try {
-    const query = SUPABASE_URL + "/rest/v1/user_star_words?select=word&user_id=eq." + encodeURIComponent(user_id) + "&word=eq." + encodeURIComponent(en);
-    const check = await fetch(query, {
-      headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
-      cache: "no-store"
-    });
-    if (!check.ok) throw new Error(await check.text());
-    const existing = await check.json();
-    if (Array.isArray(existing) && existing.length) {
-      button.textContent = "✅";
-      button.title = "المفردة محفوظة مسبقاً";
-      return;
-    }
-
-    const response = await fetch(SUPABASE_URL + "/rest/v1/user_star_words", {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: "Bearer " + SUPABASE_KEY,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
+    {
+      "parameters": {
+        "jsCode": "const incoming = $input.first().json || {};\nlet body = incoming.body && typeof incoming.body === 'object' ? incoming.body : incoming;\nif (typeof incoming.body === 'string') { try { body = JSON.parse(incoming.body); } catch {} }\nconst mode = String(body.mode || body.type || 'generate').toLowerCase() === 'analyze' ? 'analyze' : 'generate';\nconst specialty = String(body.specialty || (mode === 'generate' ? (body.inputPart || body.input || '') : '')).trim();\nconst storyText = String(body.storyText || (mode === 'analyze' ? (body.inputPart || body.input || body.text || '') : '')).trim();\nconst inputPart = mode === 'analyze' ? storyText : specialty;\nif (!inputPart) throw new Error(mode === 'analyze' ? 'الصق النص المطلوب تحليله أولاً.' : 'أدخل اسم التخصص أو الوظيفة أولاً.');\nif (mode === 'analyze' && storyText.length > 30000) throw new Error('النص أطول من الحد المسموح. قسّمه إلى أجزاء لا تتجاوز 30,000 حرف.');\nconst user_id = String(body.user_id || incoming.user_id || '').trim();\nconst phone = String(body.phone || incoming.phone || '').trim();\nconst suppliedLevel = String(body.student_level || body.level || '').trim();\nconst job_id = 'spc_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 14);\nif (!user_id && !phone) throw new Error('لم يصل user_id أو phone؛ أرسل بيانات الطالب من الصفحة.');\nconst SUPABASE_URL = 'https://ofyugbhplaynjeafdrgx.supabase.co';\nconst filterColumn = phone ? 'phone' : 'user_id';\nconst filterValue = phone || user_id;\nconst profile_lookup_url = SUPABASE_URL + '/rest/v1/users?select=*&limit=1&' + filterColumn + '=eq.' + encodeURIComponent(filterValue);\nreturn [{json:{inputPart, mode, specialty, storyText, type:mode, user_id, phone, suppliedLevel, job_id, profile_lookup_url}}];"
       },
-      body: JSON.stringify({ user_id, word: en, translation: ar, category: category || "story" })
-    });
-    if (!response.ok) throw new Error(await response.text());
-    button.textContent = "✅";
-    button.title = "تم حفظ المفردة";
-    track("حفظ كلمة: " + en);
-    await refreshSavedWordCount();
-  } catch (error) {
-    console.error(error);
-    button.textContent = original;
-    alert("تعذر حفظ المفردة. تحقق من صلاحيات جدول user_star_words ووجود عمود category.");
-  } finally {
-    button.disabled = false;
-  }
-}
-
-async function saveMeaningCardWord() {
-  if (!currentMeaningWord || !currentMeaningArabic) return;
-  const button = document.getElementById("meaningSaveBtn");
-  await saveWord(button, currentMeaningWord, currentMeaningArabic, currentMeaningCategory || "story");
-}
-
-function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  })[char]);
-}
-
-const categoryLabels = {
-  verbs: "الأفعال | Verbs",
-  nouns: "الأسماء | Nouns",
-  adjectives: "الصفات | Adjectives",
-  phrasal_verbs: "الأفعال المركبة | Phrasal Verbs",
-  idioms: "التعبيرات الاصطلاحية | Idioms",
-  adverbs: "الظروف | Adverbs"
-};
-
-function buildWordMeanings(words) {
-  currentWordMeanings = new Map();
-  for (const key of Object.keys(categoryLabels)) {
-    const entries = Array.isArray(words?.[key]) ? words[key] : [];
-    for (const entry of entries) {
-      const en = String(entry?.en || "").trim();
-      const ar = String(entry?.ar || "").trim();
-      if (!en || !ar) continue;
-      const normalized = normalizeWord(en);
-      if (normalized && !currentWordMeanings.has(normalized)) {
-        currentWordMeanings.set(normalized, { en, ar, category: key });
-      }
-    }
-  }
-}
-
-function renderWords(words) {
-  buildWordMeanings(words);
-  const fragment = document.createElement("div");
-  for (const key of Object.keys(categoryLabels)) {
-    const entries = Array.isArray(words?.[key]) ? words[key] : [];
-    const category = document.createElement("section");
-    category.className = "category-card";
-    const heading = document.createElement("h3");
-    heading.className = "category-title";
-    heading.textContent = categoryLabels[key] + " (" + entries.length + ")";
-    category.appendChild(heading);
-
-    if (!entries.length) {
-      const empty = document.createElement("div");
-      empty.className = "empty-cat";
-      empty.textContent = "لا توجد مفردات في هذا القسم.";
-      category.appendChild(empty);
-    }
-
-    for (const entry of entries) {
-      const en = String(entry?.en || "").trim();
-      const ar = String(entry?.ar || "").trim();
-      if (!en) continue;
-      const row = document.createElement("div");
-      row.className = "word-row";
-
-      const english = document.createElement("span");
-      english.className = "word-en clickable-word";
-      english.textContent = en;
-      english.title = "اضغط لسماع الكلمة ومعرفة معناها";
-      english.addEventListener("click", () => handleStoryWordClick(en));
-
-      const actions = document.createElement("div");
-      actions.className = "word-actions";
-
-      const save = document.createElement("button");
-      save.className = "icon-btn";
-      save.type = "button";
-      save.textContent = "⭐";
-      save.title = "حفظ المفردة";
-      save.setAttribute("aria-label", "حفظ " + en);
-      save.addEventListener("click", () => saveWord(save, en, ar, key));
-
-      const sound = document.createElement("button");
-      sound.className = "icon-btn";
-      sound.type = "button";
-      sound.textContent = "🔊";
-      sound.title = "استمع إلى النطق";
-      sound.setAttribute("aria-label", "نطق " + en);
-      sound.addEventListener("click", () => speakWord(en));
-
-      actions.append(save, sound);
-
-      const arabic = document.createElement("span");
-      arabic.className = "word-ar";
-      arabic.textContent = ar;
-
-      row.append(english, actions, arabic);
-      category.appendChild(row);
-      const definition = String(entry?.definition_ar || "").trim();
-      if (definition) {
-        const definitionEl = document.createElement("div");
-        definitionEl.className = "word-definition";
-        definitionEl.textContent = "المعنى في السياق: " + definition;
-        category.appendChild(definitionEl);
-      }
-    }
-    fragment.appendChild(category);
-  }
-  return fragment;
-}
-
-function renderProfessionalExtras(words) {
-  const wrap = document.createElement("div");
-  const topics = Array.isArray(words?.professional_topics) ? words.professional_topics : [];
-  const abbreviations = Array.isArray(words?.abbreviations) ? words.abbreviations : [];
-  const phrases = Array.isArray(words?.workplace_phrases) ? words.workplace_phrases : [];
-  const dialogues = Array.isArray(words?.dialogues) ? words.dialogues : [];
-
-  function block(title, icon) {
-    const section = document.createElement("section");
-    section.className = "professional-block";
-    const h = document.createElement("h3");
-    h.textContent = icon + " " + title;
-    section.appendChild(h);
-    wrap.appendChild(section);
-    return section;
-  }
-  function addText(parent, className, value) {
-    if (!value) return;
-    const p = document.createElement("div");
-    p.className = className;
-    p.textContent = String(value);
-    parent.appendChild(p);
-  }
-
-  if (topics.length) {
-    const section = block("محاور التخصص", "🧭");
-    topics.forEach((item, i) => {
-      const row = document.createElement("div"); row.className = "professional-item";
-      addText(row, "professional-title", (i + 1) + ". " + (item.title_en || item.title || "Professional topic") + (item.title_ar ? " — " + item.title_ar : ""));
-      addText(row, "professional-en", item.explanation_en || item.description_en || "");
-      addText(row, "professional-ar", item.explanation_ar || item.description_ar || "");
-      section.appendChild(row);
-    });
-  }
-  if (abbreviations.length) {
-    const section = block("الاختصارات والمصطلحات المختصرة", "🔤");
-    const grid = document.createElement("div"); grid.className = "abbr-grid";
-    abbreviations.forEach(item => {
-      const card = document.createElement("div"); card.className = "abbr-card";
-      addText(card, "abbr-short", item.short || item.abbreviation || item.acronym || "");
-      addText(card, "abbr-full", item.full_en || item.expansion || "");
-      addText(card, "abbr-ar", item.full_ar || item.meaning_ar || "");
-      addText(card, "professional-meta", item.usage_en || item.example_en || "");
-      addText(card, "professional-meta", item.usage_ar || item.example_ar || "");
-      grid.appendChild(card);
-    });
-    section.appendChild(grid);
-  }
-  if (phrases.length) {
-    const section = block("عبارات وجمل شائعة في بيئة العمل", "💬");
-    phrases.forEach(item => {
-      const row = document.createElement("div"); row.className = "professional-item";
-      addText(row, "professional-en", item.en || item.phrase || "");
-      addText(row, "professional-ar", item.ar || item.translation || "");
-      addText(row, "professional-meta", item.context_en || item.when_to_use || "");
-      addText(row, "professional-meta", item.context_ar || item.situation_ar || "");
-      section.appendChild(row);
-    });
-  }
-  if (dialogues.length) {
-    const section = block("حوارات ومواقف عملية", "🗣️");
-    dialogues.forEach((dialogue, i) => {
-      const group = document.createElement("div"); group.className = "professional-item";
-      addText(group, "professional-title", (dialogue.title_en || dialogue.situation_en || "Workplace situation") + (dialogue.title_ar || dialogue.situation_ar ? " — " + (dialogue.title_ar || dialogue.situation_ar) : ""));
-      (Array.isArray(dialogue.lines) ? dialogue.lines : []).forEach(line => {
-        const lineWrap = document.createElement("div"); lineWrap.className = "dialogue-line";
-        addText(lineWrap, "dialogue-speaker", line.speaker || "Speaker");
-        const textWrap = document.createElement("div"); textWrap.className = "dialogue-text";
-        addText(textWrap, "professional-en", line.en || "");
-        addText(textWrap, "professional-ar", line.ar || "");
-        lineWrap.appendChild(textWrap); group.appendChild(lineWrap);
-      });
-      section.appendChild(group);
-    });
-  }
-  return wrap;
-}
-
-async function refreshSavedLessonCount() {
-  const countEl = document.getElementById("savedLessonCount");
-  const dockCountEl = document.getElementById("dockSavedLessonCount");
-  if (!countEl && !dockCountEl) return;
-  try {
-    const url = SUPABASE_URL + "/rest/v1/user_saved_lessons?select=id&user_id=eq." + encodeURIComponent(user_id);
-    const response = await fetch(url, {
-      headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY, Prefer: "count=exact" },
-      cache: "no-store"
-    });
-    if (!response.ok) throw new Error(await response.text());
-    const rows = await response.json();
-    const count = String(Array.isArray(rows) ? rows.length : 0);
-    if (countEl) countEl.textContent = count;
-    if (dockCountEl) dockCountEl.textContent = count;
-  } catch (error) {
-    console.debug("Saved lesson count unavailable", error);
-    if (countEl) countEl.textContent = "—";
-    if (dockCountEl) dockCountEl.textContent = "—";
-  }
-}
-
-async function toggleSavedLessonsPanel() {
-  const panel = document.getElementById("savedLessonsPanel");
-  const opening = panel.style.display !== "block";
-  panel.style.display = opening ? "block" : "none";
-  if (opening) {
-    await loadSavedLessons();
-    panel.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-}
-
-async function loadSavedLessons() {
-  const list = document.getElementById("savedLessonsList");
-  list.textContent = "جارٍ تحميل دروسك...";
-  try {
-    const url = SUPABASE_URL + "/rest/v1/user_saved_lessons?select=id,lesson_title,student_level,story,translation,words,created_at&user_id=eq." + encodeURIComponent(user_id) + "&order=created_at.desc&limit=100";
-    const response = await fetch(url, {
-      headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
-      cache: "no-store"
-    });
-    if (!response.ok) throw new Error(await response.text());
-    const rows = await response.json();
-    list.replaceChildren();
-    if (!Array.isArray(rows) || !rows.length) {
-      list.textContent = "لا توجد دروس في قائمتك حتى الآن. سيتم حفظ الدروس الجديدة تلقائياً هنا.";
-      return;
-    }
-
-    for (const row of rows) {
-      const item = document.createElement("div");
-      item.className = "saved-lesson-item";
-      const info = document.createElement("div");
-      const title = document.createElement("div");
-      title.className = "saved-lesson-title";
-      title.textContent = row.lesson_title || "درس بدون عنوان";
-      const meta = document.createElement("div");
-      meta.className = "saved-lesson-meta";
-      const date = row.created_at ? new Date(row.created_at).toLocaleDateString("ar-SA") : "";
-      meta.textContent = "المستوى: " + (row.student_level || "—") + (date ? " · " + date : "");
-      info.append(title, meta);
-
-      const actions = document.createElement("div");
-      actions.className = "saved-lesson-actions";
-      const open = document.createElement("button");
-      open.className = "small-action open";
-      open.type = "button";
-      open.textContent = "📖 فتح الدرس";
-      open.addEventListener("click", () => {
-        currentLessonTitle = row.lesson_title || "درس محفوظ";
-        currentSavedLessonId = row.id;
-        renderLesson({
-          story: row.story,
-          translation: row.translation,
-          words: row.words || {},
-          student_level: row.student_level || storedLevel || "A1"
-        }, { savedId: row.id, title: currentLessonTitle });
-        document.getElementById("lesson").scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-      const remove = document.createElement("button");
-      remove.className = "small-action delete";
-      remove.type = "button";
-      remove.textContent = "حذف";
-      remove.addEventListener("click", () => deleteSavedLesson(row.id));
-      actions.append(open, remove);
-      item.append(info, actions);
-      list.appendChild(item);
-    }
-  } catch (error) {
-    console.error(error);
-    list.textContent = "تعذر تحميل دروسك. تحقق من الاتصال بقاعدة البيانات وصلاحيات جدول الدروس.";
-  }
-}
-
-async function deleteSavedLesson(id) {
-  if (!confirm("هل تريد حذف هذا الدرس من دروسك؟")) return;
-  try {
-    const url = SUPABASE_URL + "/rest/v1/user_saved_lessons?id=eq." + encodeURIComponent(id) + "&user_id=eq." + encodeURIComponent(user_id);
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY, Prefer: "return=minimal" }
-    });
-    if (!response.ok) throw new Error(await response.text());
-    if (currentSavedLessonId === id) currentSavedLessonId = null;
-    await loadSavedLessons();
-    await refreshSavedLessonCount();
-  } catch (error) {
-    console.error(error);
-    alert("تعذر حذف الدرس. تحقق من صلاحيات جدول user_saved_lessons.");
-  }
-}
-
-async function saveCurrentLessonAutomatically() {
-  if (!currentLessonData?.story) return null;
-  if (currentSavedLessonId) return currentSavedLessonId;
-
-  const lessonSnapshot = {
-    user_id,
-    lesson_title: currentLessonTitle || "درس جديد",
-    student_level: currentLessonData.student_level || storedLevel || "A1",
-    story: currentLessonData.story,
-    translation: currentLessonData.translation || "",
-    words: currentLessonData.words || {}
-  };
-  const saveKey = lessonSnapshot.lesson_title + "::" + lessonSnapshot.story;
-  if (pendingLessonSaveKeys.has(saveKey)) return null;
-  pendingLessonSaveKeys.add(saveKey);
-
-  const status = document.getElementById("lessonSaveStatus");
-  if (status && currentLessonData?.story === lessonSnapshot.story) {
-    status.textContent = "💾 يتم حفظ الدرس تلقائياً في دروسك...";
-  }
-
-  const saveOperation = async () => {
-    const response = await fetch(SUPABASE_URL + "/rest/v1/user_saved_lessons", {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: "Bearer " + SUPABASE_KEY,
-        "Content-Type": "application/json",
-        Prefer: "return=representation"
+      "id": "a437e478-82ec-4552-95e3-f9f9705bb0ab",
+      "name": "Normalize Specialty Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Normalize Specialty Request').first().json.profile_lookup_url }}",
+        "method": "GET",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer sb_publishable_DH6LH89gqOx_-ovHZP5tTg_SNDHluJO"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        }
       },
-      body: JSON.stringify(lessonSnapshot)
-    });
-    if (!response.ok) throw new Error(await response.text());
-    const saved = await response.json();
-    const newId = Array.isArray(saved) ? saved[0]?.id || null : null;
-
-    if (currentLessonData?.story === lessonSnapshot.story && currentLessonTitle === lessonSnapshot.lesson_title) {
-      currentSavedLessonId = newId;
-      const currentStatus = document.getElementById("lessonSaveStatus");
-      if (currentStatus) currentStatus.textContent = "✅ تم حفظ الدرس تلقائياً في «دروسي».";
+      "id": "721bc732-8476-4e7c-acbe-1c30631e685c",
+      "name": "Lookup Student Profile - Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        300
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const req = $('Normalize Specialty Request').first().json;\nconst rows = $input.all().map(i => i.json || {}).filter(x => x && Object.keys(x).length);\nlet profile = rows.length ? rows[0] : {};\n// Accept common column names used for a student's English level.\nconst levelCandidates = [\n  profile.level, profile.student_level, profile.english_level,\n  profile.cefr_level, profile.current_level, profile.level_name,\n  profile.proficiency_level, profile.language_level,\n  req.suppliedLevel\n];\nlet rawLevel = String(levelCandidates.find(v => v !== undefined && v !== null && String(v).trim()) || '').trim();\nif (!rawLevel) rawLevel = 'A1';\nconst s = rawLevel.toLowerCase().replace(/[_-]+/g,' ').trim();\nlet level = 'A1';\nif (/\\b(a1)\\b|beginner|مبتدئ|مبتدئة/.test(s)) level = 'A1';\nelse if (/\\b(a2)\\b|elementary|مبتدئ مرتفع|أساسي/.test(s)) level = 'A2';\nelse if (/\\b(b1)\\b|pre intermediate|intermediate|متوسط/.test(s)) level = 'B1';\nelse if (/\\b(b2)\\b|upper intermediate|فوق المتوسط/.test(s)) level = 'B2';\nelse if (/\\b(c1)\\b|advanced|متقدم/.test(s)) level = 'C1';\nelse if (/\\b(c2)\\b|proficient|mastery|احترافي|طليق/.test(s)) level = 'C2';\nelse if (/^a1$|^a2$|^b1$|^b2$|^c1$|^c2$/.test(s)) level = s.toUpperCase();\nconst profileFound = rows.length > 0;\nconst levelFound = levelCandidates.some(v => v !== undefined && v !== null && String(v).trim());\nreturn [{json:{\n  ...req,\n  student_level: level,\n  student_level_raw: rawLevel,\n  level_source: levelFound ? (req.suppliedLevel ? 'page_or_profile' : 'profile') : 'default_A1',\n  profile_found: profileFound,\n  student_name: String(profile.name || profile.full_name || profile.username || '').trim() || null,\n  profile_notice: !profileFound ? 'لم يتم العثور على سجل الطالب في users؛ تم استخدام A1 مؤقتاً.' : (!levelFound ? 'لم يتم العثور على عمود مستوى معروف؛ تم استخدام A1 مؤقتاً.' : null)\n}}];"
+      },
+      "id": "ce4c5920-5b5e-4807-91db-6d7955d10e3a",
+      "name": "Resolve Student Level",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst levelSpecs = {\n  A1:{label:'Beginner (A1)',guide:'Use short, clear sentences and frequent repetition. Preserve essential professional terms, explain each in simple Arabic, and keep the story easy to read without removing real workplace content.'},\n  A2:{label:'Elementary (A2)',guide:'Use clear connected sentences, practical workplace vocabulary and simple explanations of technical terms.'},\n  B1:{label:'Intermediate (B1)',guide:'Use natural intermediate English, realistic job-specific vocabulary, connected paragraphs and clear workplace interactions.'},\n  B2:{label:'Upper-intermediate (B2)',guide:'Use natural professional English, accurate collocations, domain vocabulary and varied sentence structures.'},\n  C1:{label:'Advanced (C1)',guide:'Use precise advanced professional English, nuanced terminology and realistic complex workplace situations.'},\n  C2:{label:'Proficient (C2)',guide:'Use highly proficient, natural workplace English, specialized terminology and nuanced professional interactions.'}\n};\nconst spec = levelSpecs[d.student_level] || levelSpecs.A1;\nconst schema = `Return exactly one valid JSON object only, with no Markdown fences and no text before or after it. Use this shape:\n{\"specialty\":\"\",\"story\":\"English story with numbered or titled plain-text sections and paragraphs\",\"translation\":\"Faithful Arabic translation with the same section order and paragraphs\",\"professional_topics\":[{\"title_en\":\"\",\"title_ar\":\"\",\"explanation_en\":\"\",\"explanation_ar\":\"\"}],\"abbreviations\":[{\"short\":\"\",\"full_en\":\"\",\"full_ar\":\"\",\"usage_en\":\"\",\"usage_ar\":\"\"}],\"workplace_phrases\":[{\"en\":\"\",\"ar\":\"\",\"context_en\":\"\",\"context_ar\":\"\"}],\"dialogues\":[{\"title_en\":\"\",\"title_ar\":\"\",\"lines\":[{\"speaker\":\"\",\"en\":\"\",\"ar\":\"\"}]}]}\nAll English content must be natural English. All Arabic fields must be Arabic. Every array must exist. Do not include a vocabulary object in this first response; a separate multi-part audit extracts vocabulary directly from the English story.`;\nlet system, user;\nif (d.mode === 'analyze') {\n  system = `You are a precise English-for-work text analyst. Learner level: ${spec.label}. ${spec.guide}\nAnalyze ONLY the exact text supplied by the learner. Preserve its wording and paragraph order in story; do not invent facts, examples, topics, dialogue, acronyms or phrases. You may remove Markdown heading/bold markers from the displayed copy, but do not rewrite the sentences. Translate it faithfully into Arabic in the same order. professional_topics may only describe topics explicitly supported by the source. abbreviations may include only acronyms that appear in the source, and expand them only when the context supports the expansion. workplace_phrases must be exact phrases that occur in the source. dialogues must be empty unless actual dialogue turns occur in the source; do not turn ordinary prose into a dialogue. This is a source-based analysis, not a new lesson. Do not add a words object; another step extracts only vocabulary present in story.\n${schema}`;\n  user = `Learner level: ${d.student_level} (${spec.label})\\nAnalyze this exact source text.\\nSOURCE TEXT BEGIN\\n${d.storyText}\\nSOURCE TEXT END\\nReturn the source text and faithful translation plus only source-supported professional topics, abbreviations, phrases and dialogues.`;\n} else {\n  system = `You are a senior instructional designer for English for Specific Purposes (ESP), specializing in workplace English for Arabic-speaking employees. Target learner level: ${spec.label}. ${spec.guide}\nCreate a substantial, useful professional English module specifically for this specialty/job: ${d.specialty}. Do not produce a generic office story. The employee should learn what people in THIS profession do, what they call equipment/documents/processes, and what they actually say at work.\nSTORY LENGTH AND STRUCTURE ARE IMPORTANT:\n- Write exactly 10 distinct specialty-specific sections, each with a clear plain-text heading on its own line (e.g. \"1. Main Responsibilities\").\n- EACH of the 10 sections MUST contain exactly 2 meaningful paragraphs, each roughly 45-65 words. The English story MUST contain at least 900 words and ideally 1,000-1,200 words. A story under 900 words is incomplete. Count the story words internally before returning JSON; if short, add relevant specialty-specific details to the shortest sections before answering. Do not stop after a short overview. If the specialty is broad, cover its main departments and workflows; if it is narrow, go deeper into real tasks and situations.\n- Use plain-text headings only. NEVER use Markdown heading marks (#), bold markers (**), bullets, backticks or code fences in story or translation. Keep paragraphs separated by one blank line.\n- Cover relevant core work areas, job roles and responsibilities, a typical workday, workflow from start to finish, tools/equipment/software, documents and records, communication with colleagues and customers/patients/clients, meetings and handovers, reports and follow-up, quality and safety, privacy/confidentiality/compliance where applicable, routine tasks, problem-solving, urgent situations and realistic workplace challenges. Make all examples specific to the chosen specialty.\n- Use terminology real employees actually hear. Do not invent laws, policies, technical standards, certifications, software products or medical instructions. For Healthcare, present general language-learning examples only, not patient-specific clinical advice.\n- Include 6-8 natural fixed workplace expressions or idiomatic expressions in the STORY itself where they genuinely fit the specialty. Do not force slang or unsafe expressions. Use them in context so the vocabulary audit can find them.\n- STORY must be English only. Write the complete Arabic translation in the separate translation field with exactly the same 10-section order and corresponding paragraphs; do not put Arabic explanations inside the English story.\nPROFESSIONAL TOPICS: provide 10-12 core areas. Each requires a useful English explanation and a complete Arabic explanation, not just a title.\nABBREVIATIONS: provide 15-25 genuinely established abbreviations/acronyms relevant to this exact specialty only when they truly exist. Include the full English expansion, Arabic meaning, a realistic sentence in which an employee says/uses it, and its Arabic translation. Prefer widely recognized abbreviations used by actual practitioners or recognized professional organizations. Do not invent internal shorthand, shorten ordinary words, or use course codes/job titles as abbreviations. Never pad the list with doubtful or invented abbreviations; return fewer if the field genuinely has fewer.\nWORKPLACE PHRASES: provide 30-40 natural expressions employees use in everyday work. Include the Arabic meaning and a short bilingual explanation of when the phrase is used. Do not simply repeat the abbreviations list.\nDIALOGUES: provide 4 realistic dialogues covering different situations (for example, a routine request, a handover/meeting, a customer/patient interaction, and a problem or urgent situation). Each dialogue should have 8-10 turns, named speakers, natural English lines and accurate Arabic translations.\nCheck the specialty name and terminology for consistency throughout. Do not produce vocabulary lists in this response; a separate audit will extract vocabulary from the complete English story only.\n${schema}`;\n  user = `Learner level: ${d.student_level} (${spec.label})\\nSpecialty or job title: ${d.specialty}\\nProduce the full 10-section professional study now. Meet the 900-1,200 word story target and all required counts unless a count would require inventing inaccurate specialty content. Return JSON only.`;\n}\nreturn [{json:{...d,promptMessages:[{role:'system',content:system},{role:'user',content:user}]}}];"
+      },
+      "id": "74f09338-1a84-4c56-8036-2937c4c7ce4c",
+      "name": "Build Specialty or Analysis Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "HTTP-Referer",
+              "value": "https://njmaldyn1311.github.io/english-arabic/"
+            },
+            {
+              "name": "X-OpenRouter-Title",
+              "value": "English Belarabi Professional Specialty Learning"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'openai/gpt-4o-mini', temperature: 0.22, max_tokens: 22000, response_format: { type: 'json_object' }, messages: $json.promptMessages, stream: false } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "8ead616d-3443-49cc-8409-c7ecbe373954",
+      "name": "Generate Specialty Module - OpenRouter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2jnaNXeGBbM7VBQW",
+          "name": "openrouter"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const root = $input.first().json || {};\nif (root.error) throw new Error(root.error.message || 'OpenRouter error');\nconst choice = root.choices?.[0];\nlet content = choice?.message?.content ?? choice?.message?.parsed ?? root.output_text ?? null;\nif (Array.isArray(content)) content = content.map(x => typeof x === 'string' ? x : (x.text || '')).join('\\n');\nif (content && typeof content === 'object') content = JSON.stringify(content);\nif (typeof content !== 'string' || !content.trim()) throw new Error('OpenRouter لم يُرجع محتوى الدراسة.');\ncontent = content.trim().replace(/^```json\\s*/i,'').replace(/^```\\s*/i,'').replace(/\\s*```$/i,'');\nlet parsed;\ntry { parsed = JSON.parse(content); }\ncatch (e) { const a=content.indexOf('{'), b=content.lastIndexOf('}'); if(a<0||b<=a) throw new Error('استجابة OpenRouter ليست JSON صالحاً: '+e.message); parsed=JSON.parse(content.slice(a,b+1)); }\nconst meta = $('Resolve Student Level').first().json;\nfunction cleanText(value) {\n  return String(value ?? '').replace(/\\r\\n?/g,'\\n')\n    .replace(/(^|[\\s([{])#{1,6}(?=$|[\\s.,;:!?)}\\]])/g,'$1')\n    .replace(/(^|[\\s([{])#{1,6}(?=[\\p{L}\\p{N}])/gu,'$1')\n    .replace(/\\*\\*([^*]+)\\*\\*/g,'$1')\n    .replace(/(^|[^*])\\*([^*\\n]+)\\*(?!\\*)/g,'$1$2')\n    .replace(/^\\s*```[a-z0-9_-]*\\s*$/gmi,'')\n    .replace(/(^|\\n)\\s*[-+]\\s+(?=\\S)/g,'$1')\n    .replace(/[ \\t]+\\n/g,'\\n')\n    .replace(/\\n{3,}/g,'\\n\\n')\n    .trim();\n}\nfunction cleanArray(key, fields) {\n  return (Array.isArray(parsed[key]) ? parsed[key] : []).map(x => {\n    const out={}; for (const field of fields) out[field]=cleanText(x?.[field] ?? ''); return out;\n  }).filter(x => Object.values(x).some(Boolean));\n}\nconst story = cleanText(meta.mode === 'analyze' ? meta.storyText : parsed.story);\nconst translation = cleanText(parsed.translation);\nif (!story || !translation) throw new Error('لم يرجع النص والترجمة معاً.');\nconst words = {verbs:[],nouns:[],adjectives:[],phrasal_verbs:[],idioms:[],adverbs:[]};\nwords.professional_topics=cleanArray('professional_topics',['title_en','title_ar','explanation_en','explanation_ar']);\nwords.abbreviations=cleanArray('abbreviations',['short','full_en','full_ar','usage_en','usage_ar']);\nwords.workplace_phrases=cleanArray('workplace_phrases',['en','ar','context_en','context_ar']);\nwords.dialogues=(Array.isArray(parsed.dialogues)?parsed.dialogues:[]).map(x=>({\n  title_en:cleanText(x?.title_en||x?.situation_en||''),\n  title_ar:cleanText(x?.title_ar||x?.situation_ar||''),\n  lines:(Array.isArray(x?.lines)?x.lines:[]).map(line=>({speaker:cleanText(line?.speaker||''),en:cleanText(line?.en||''),ar:cleanText(line?.ar||'')})).filter(line=>line.en||line.ar)\n})).filter(x=>x.lines.length);\nconst specialty=cleanText(parsed.specialty||meta.specialty||'');\nconst story_words = story.split(/\\s+/).filter(Boolean).length;\nreturn [{json:{success:true,mode:meta.mode,specialty,story,translation,words,story_word_count:story_words,student_level:meta.student_level,student_level_raw:meta.student_level_raw,level_source:meta.level_source,profile_notice:meta.profile_notice,user_id:meta.user_id,message:meta.mode==='analyze'?'تم تجهيز النص والترجمة، وجارٍ تدقيق مفرداته.':'تم إنشاء الدراسة المهنية، وجارٍ تدقيق مفرداتها.'}}];"
+      },
+      "id": "edc59ddf-3dc8-4b81-8fdc-bd7933b1186a",
+      "name": "Parse Specialty Learning JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        300
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Parse Specialty Learning JSON').first().json;\nconst source = String(base.story || '').trim();\nif (!source) throw new Error('لا يوجد نص لاستخراج المفردات منه.');\n// Keep paragraph boundaries intact. Very long paragraphs are split into sentences.\nconst rawParagraphs = source.replace(/\\r/g,'').split(/\\n\\s*\\n/).map(x=>x.trim()).filter(Boolean);\nconst paragraphs=[];\nfor (const paragraph of rawParagraphs) {\n  const wc=paragraph.split(/\\s+/).filter(Boolean).length;\n  if (wc <= 390) { paragraphs.push(paragraph); continue; }\n  const sentences=paragraph.split(/(?<=[.!?])\\s+(?=[A-Z0-9])/);\n  let part='';\n  for (const sentence of sentences) {\n    if (part && (part+' '+sentence).split(/\\s+/).length > 300) { paragraphs.push(part.trim()); part=''; }\n    part += (part?' ':'') + sentence;\n  }\n  if (part.trim()) paragraphs.push(part.trim());\n}\nconst chunks=[]; let current=[]; let count=0;\nfor (const paragraph of paragraphs) {\n  const words=paragraph.split(/\\s+/).filter(Boolean).length;\n  if (current.length && count+words > 350) { chunks.push(current.join('\\n\\n')); current=[]; count=0; }\n  current.push(paragraph); count+=words;\n}\nif (current.length) chunks.push(current.join('\\n\\n'));\nconst sourceNorm = source.toLowerCase();\nconst system = `You are a meticulous English vocabulary auditor and practical linguist. Extract vocabulary ONLY from the exact English source chunk provided. The source is one part of a longer professional story or pasted passage.\nReturn all six arrays: verbs, nouns, adjectives, phrasal_verbs, idioms, adverbs. Aim for maximum recall, not a small sample. Read the complete chunk, then perform a second audit pass specifically for each of the six categories.\nGRAMMATICAL CLASSIFICATION IS CRITICAL:\n1) VERBS: include distinct lexical/action/state verbs actually used. Keep the exact surface form from the source (including -s, -ed, -ing, irregular forms). Exclude auxiliary-only be/have/do. Include them when they carry their own lexical meaning. Do not list the same surface form twice in this category.\n2) NOUNS: include meaningful nouns actually used: professional terms, job roles, tools, equipment, documents, departments, processes, people and abstract concepts. Include a noun compound as a complete useful term where appropriate. Do not include words that are only adjectives or verbs in this context.\n3) ADJECTIVES: include words that function as adjectives in the actual sentence: they describe a noun or act as a subject/object complement. Include participles only when they function adjectivally. NEVER put an adverb here just because it ends in -ly. In particular, regularly, quickly, carefully, usually, often, immediately, professionally and similarly are adverbs, not adjectives.\n4) PHRASAL_VERBS: include the complete multiword verb only when a verb plus an adverb/prepositional particle forms a recognized verb expression in the source (e.g. check in, carry out, look after, follow up). Do NOT include ordinary verb + object phrases such as hold meetings, make decisions, provide care, take records or wash hands. Keep only the shortest complete verb expression, without extra object words.\n5) IDIOMS: include genuine fixed/idiomatic expressions present in the source. Do NOT relabel ordinary collocations, simple instructions or normal verb-object phrases as idioms. If no genuine idiom occurs in this chunk, return an empty array.\n6) ADVERBS: include words actually functioning as adverbs: manner, time, frequency, degree, sequence and sentence adverbs. Include adverbs such as regularly and quickly here, not in adjectives.\nFor every item return {en, ar, definition_ar}. 'en' must be the exact source surface word/expression, not an invented lemma. 'ar' is a concise contextual Arabic equivalent. 'definition_ar' explains the meaning/use in Arabic. Do not list articles, pronouns, prepositions, determiners, conjunctions, numbers or proper names as normal vocabulary. Avoid duplicates within a category. A word may occur in two categories only if it genuinely performs two different grammatical functions in this source context. Never invent words absent from SOURCE. Do not set fixed quotas and do not truncate lists. Keep definitions concise so more vocabulary can be returned.\nReturn ONLY valid JSON: {\"verbs\":[{\"en\":\"\",\"ar\":\"\",\"definition_ar\":\"\"}],\"nouns\":[{\"en\":\"\",\"ar\":\"\",\"definition_ar\":\"\"}],\"adjectives\":[{\"en\":\"\",\"ar\":\"\",\"definition_ar\":\"\"}],\"phrasal_verbs\":[{\"en\":\"\",\"ar\":\"\",\"definition_ar\":\"\"}],\"idioms\":[{\"en\":\"\",\"ar\":\"\",\"definition_ar\":\"\"}],\"adverbs\":[{\"en\":\"\",\"ar\":\"\",\"definition_ar\":\"\"}]}. All Arabic fields must be Arabic. No Markdown fences or commentary.`;\nreturn chunks.map((chunk,index)=>({json:{chunk_index:index+1,chunk_total:chunks.length,promptMessages:[{role:'system',content:system},{role:'user',content:`SOURCE CHUNK ${index+1} OF ${chunks.length} BEGIN\\n${chunk}\\nSOURCE CHUNK ${index+1} OF ${chunks.length} END\\nExtract and audit all six vocabulary categories from this chunk only. Do not use the Arabic translation or any external knowledge.`}]}}));"
+      },
+      "id": "f5acb5df-7846-49a6-bc7a-ab7a55277461",
+      "name": "Build Complete Vocabulary Audit Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        300
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "HTTP-Referer",
+              "value": "https://njmaldyn1311.github.io/english-arabic/"
+            },
+            {
+              "name": "X-OpenRouter-Title",
+              "value": "English Belarabi Professional Specialty Learning"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'openai/gpt-4o-mini', temperature: 0.05, max_tokens: 8500, response_format: { type: 'json_object' }, messages: $json.promptMessages, stream: false } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "84acfab4-e169-4a02-9136-c9020943a247",
+      "name": "Extract Complete Vocabulary - OpenRouter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2060,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2jnaNXeGBbM7VBQW",
+          "name": "openrouter"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const responses=$input.all().map(i=>parseResponse(i.json||{}));\nconst base=$('Parse Specialty Learning JSON').first().json;\nconst source=String(base.story||'');\nfunction parseResponse(root){\n  if(root.error) throw new Error(root.error.message||'Vocabulary audit failed');\n  const choice=root.choices?.[0];\n  let content=choice?.message?.content??choice?.message?.parsed??root.output_text??null;\n  if(Array.isArray(content))content=content.map(x=>typeof x==='string'?x:(x.text||'')).join('\\n');\n  if(content&&typeof content==='object')content=JSON.stringify(content);\n  if(typeof content!=='string'||!content.trim()) throw new Error('لم يرجع أحد أجزاء تدقيق المفردات نتيجة.');\n  content=content.trim().replace(/^```json\\s*/i,'').replace(/^```\\s*/i,'').replace(/\\s*```$/i,'');\n  try{return JSON.parse(content);}catch(e){const a=content.indexOf('{'),b=content.lastIndexOf('}');if(a<0||b<=a)throw new Error('نتيجة المفردات ليست JSON صالحاً: '+e.message);return JSON.parse(content.slice(a,b+1));}\n}\nfunction norm(value){return String(value||'').normalize('NFKC').toLowerCase().replace(/[’‘]/g,\"'\").replace(/[^\\p{L}\\p{N}' -]+/gu,' ').replace(/\\s+/g,' ').trim();}\nconst sourceTokens=norm(source).split(' ').filter(Boolean);\nfunction occurs(value){\n  const needle=norm(value).split(' ').filter(Boolean);\n  if(!needle.length||needle.length>sourceTokens.length)return false;\n  outer: for(let i=0;i<=sourceTokens.length-needle.length;i++){\n    for(let j=0;j<needle.length;j++)if(sourceTokens[i+j]!==needle[j])continue outer;\n    return true;\n  }\n  return false;\n}\nconst keys=['verbs','nouns','adjectives','phrasal_verbs','idioms','adverbs'];\nconst words={...base.words};\nfor(const key of keys){\n  const seen=new Set(); const gathered=[];\n  for(const parsed of responses){\n    const arr=Array.isArray(parsed[key])?parsed[key]:[];\n    for(const item of arr){\n      const en=String(item?.en||'').trim(); const k=norm(en);\n      if(!k||!occurs(en)||seen.has(k))continue;\n      seen.add(k);\n      const ar=String(item?.ar||item?.translation_ar||item?.translation||item?.arabic||item?.meaning_ar||item?.meaning||'').trim();\n      gathered.push({en,ar,definition_ar:String(item?.definition_ar||item?.description_ar||item?.meaning_ar||item?.meaning||ar||'').trim()});\n    }\n  }\n  words[key]=gathered;\n}\n// Do not count obvious -ly adverbs as adjectives. Preserve common -ly adjectives.\nconst lyAdjectives=new Set(['friendly','lovely','lonely','lively','silly','ugly','likely','unlikely','elderly','costly','daily','weekly','monthly','yearly','early','timely','orderly','scholarly','worldly','manly','womanly','cowardly','deadly','holy','ghastly']);\nconst adverbs=new Set(words.adverbs.map(x=>norm(x.en)));\nwords.adjectives=words.adjectives.filter(x=>{\n  const k=norm(x.en);\n  if(adverbs.has(k)&&k.endsWith('ly')&&!lyAdjectives.has(k))return false;\n  if(k.endsWith('ly')&&!lyAdjectives.has(k))return false;\n  return true;\n});\nconst vocabulary_total=keys.reduce((n,k)=>n+words[k].length,0);\nconst vocabulary_counts={}; for(const k of keys)vocabulary_counts[k]=words[k].length;\nconst story_word_count=String(base.story||'').split(/\\s+/).filter(Boolean).length;\nreturn [{json:{...base,words,vocabulary_total,vocabulary_counts,story_word_count,audit_chunks:responses.length,message:(base.message||'')+' تم تدقيق المفردات على '+responses.length+' أجزاء مستقلة، والتحقق من وجود كل مفردة في النص. الإجمالي '+vocabulary_total+'.'}}];"
+      },
+      "id": "348e4b37-f059-489e-8271-75b76f27f6c0",
+      "name": "Merge Audited Vocabulary Into Specialty Module",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        300
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Normalize Specialty Request').first().json;\nreturn [{json:{\n  job_id:d.job_id,\n  user_id:d.user_id,\n  mode:d.mode,\n  specialty:d.specialty || null,\n  status:'processing',\n  result:null,\n  error_text:null,\n  created_at:new Date().toISOString(),\n  updated_at:new Date().toISOString()\n}}];"
+      },
+      "id": "1abf0361-7a7e-4ead-a027-4ce58c49a227",
+      "name": "Build Specialty Job Record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        250,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ofyugbhplaynjeafdrgx.supabase.co/rest/v1/specialty_learning_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {job_id:$json.job_id,user_id:$json.user_id,mode:$json.mode,specialty:$json.specialty,status:$json.status,result:null,error_text:null,created_at:$json.created_at,updated_at:$json.updated_at} }}"
+      },
+      "id": "4190a109-04fb-42f8-bc8c-1f72c748ce11",
+      "name": "Create Specialty Job Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        520
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {success:true,accepted:true,job_id:$('Normalize Specialty Request').first().json.job_id,status:'processing',message:'تم استلام الطلب. ستظهر الدراسة عند اكتمال إعدادها.'} }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "6aa0ea0f-3aa8-4b21-943c-46ceaaa17d29",
+      "name": "Respond Job Accepted",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        760,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://ofyugbhplaynjeafdrgx.supabase.co/rest/v1/specialty_learning_jobs?job_id=eq.' + encodeURIComponent($('Normalize Specialty Request').first().json.job_id) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {status:'completed',result:$json,error_text:null,updated_at:new Date().toISOString()} }}"
+      },
+      "id": "8419b5ac-1951-4d39-8ef1-0899ef34dee9",
+      "name": "Save Completed Specialty Result",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3620,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Normalize Specialty Request').first().json;\nconst e = $input.first().json || {};\nconst raw = e.error?.message || e.message || e.description || 'حدث خطأ أثناء إنشاء الدراسة أو تدقيق المفردات.';\nreturn [{json:{job_id:d.job_id,error_text:String(raw).slice(0,1500),status:'failed',updated_at:new Date().toISOString()}}];"
+      },
+      "id": "81a01885-cd27-43e0-9a32-311b38b0b90f",
+      "name": "Build Specialty Failure Record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3100,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://ofyugbhplaynjeafdrgx.supabase.co/rest/v1/specialty_learning_jobs?job_id=eq.' + encodeURIComponent($json.job_id) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {status:'failed',error_text:$json.error_text,updated_at:$json.updated_at} }}"
+      },
+      "id": "ef9b5d6f-01f8-406e-aedf-bcb4f523663f",
+      "name": "Mark Specialty Job Failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3360,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "specialty-learning-status",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://njmaldyn1311.github.io"
+        }
+      },
+      "id": "391dfa9d-362c-46b4-8d2a-ded79a82524b",
+      "name": "Webhook - Specialty Status",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        900
+      ],
+      "webhookId": "specialty-learning-status-2026"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://ofyugbhplaynjeafdrgx.supabase.co/rest/v1/specialty_learning_jobs?select=job_id,status,result,error_text,updated_at&job_id=eq.' + encodeURIComponent($json.query?.job_id || '') + '&limit=1' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "7e204947-f890-4530-93d4-da06e89345d2",
+      "name": "Get Specialty Job Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        300,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input=$input.all().map(x=>x.json||{});\nlet rows=[];\nfor(const x of input){if(Array.isArray(x))rows.push(...x);else if(x&&x.job_id)rows.push(x);else if(x&&Array.isArray(x.data))rows.push(...x.data);}\nconst row=rows[0];\nif(!row) return [{json:{success:false,status:'not_found',message:'لم يتم العثور على المهمة. تأكد من job_id.'}}];\nif(row.status==='completed') return [{json:{success:true,status:'completed',job_id:row.job_id,result:row.result}}];\nif(row.status==='failed') return [{json:{success:false,status:'failed',job_id:row.job_id,error:row.error_text||'تعذر إكمال الدراسة.'}}];\nreturn [{json:{success:true,status:'processing',job_id:row.job_id,message:'ما زالت الدراسة قيد الإعداد.'}}];"
+      },
+      "id": "1bc8e505-ea81-4b1c-a65f-7949d991ff61",
+      "name": "Format Specialty Job Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        580,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "89260a18-717c-474e-bc09-186bc8f445f9",
+      "name": "Respond Specialty Job Status",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        840,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Merge Audited Vocabulary Into Specialty Module').first().json;\nconst keys = ['verbs','nouns','adjectives','phrasal_verbs','idioms','adverbs'];\nconst missing = [];\nfor (const category of keys) {\n  const list = Array.isArray(base.words?.[category]) ? base.words[category] : [];\n  list.forEach((item, index) => {\n    const ar = String(item?.ar || item?.translation_ar || item?.translation || item?.arabic || item?.meaning_ar || item?.meaning || '').trim();\n    const en = String(item?.en || '').trim();\n    if (en && !ar) missing.push({category, index, en});\n  });\n}\nif (!missing.length) return [{json:{skip_translation:true, message:'All vocabulary items already have Arabic translations.'}}];\nconst chunks = [];\nfor (let i=0; i<missing.length; i+=60) chunks.push(missing.slice(i,i+60));\nconst system = `You are a professional English-Arabic vocabulary translator for English learners. Translate every supplied English vocabulary item into clear, concise Arabic that fits its grammatical category and the original phrase. Do not omit items. Preserve the exact category, index, and English text supplied. Do not invent or change English entries. The Arabic field must be Arabic, not English transliteration. Return ONLY valid JSON, no Markdown, with exactly this shape: {\"translations\":[{\"category\":\"verbs\",\"index\":0,\"en\":\"worked\",\"ar\":\"عمل\",\"definition_ar\":\"شرح عربي موجز للمعنى في السياق\"}]}. Every supplied item must appear exactly once.`;\nreturn chunks.map((items, i) => ({json:{\n  skip_translation:false,\n  translation_chunk:i+1,\n  translation_chunks:chunks.length,\n  promptMessages:[\n    {role:'system',content:system},\n    {role:'user',content:'Translate all these missing vocabulary entries. Preserve category and index exactly.\\n'+JSON.stringify({items})}\n  ]\n}}));"
+      },
+      "id": "326d630b-0a09-4c48-bd09-971aeba5ae81",
+      "name": "Build Missing Vocabulary Translation Prompts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2580,
+        300
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f4435ac-443b-409b-9aa2-c48be056e6d4",
+              "leftValue": "={{ $json.skip_translation }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "04a07d79-c158-41f8-ac99-0b6db4afb2a6",
+      "name": "Any Arabic Vocabulary Missing?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2840,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "HTTP-Referer",
+              "value": "https://njmaldyn1311.github.io/english-arabic/"
+            },
+            {
+              "name": "X-OpenRouter-Title",
+              "value": "English Belarabi Missing Vocabulary Arabic Translation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'openai/gpt-4o-mini', temperature: 0.05, max_tokens: 9000, response_format: { type: 'json_object' }, messages: $json.promptMessages, stream: false } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "a22302bd-30cb-4bcd-b9b1-662fbb980f53",
+      "name": "Translate Missing Vocabulary - OpenRouter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3100,
+        120
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2jnaNXeGBbM7VBQW",
+          "name": "openrouter"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Merge Audited Vocabulary Into Specialty Module').first().json;\nconst words = {...base.words};\nconst keys = ['verbs','nouns','adjectives','phrasal_verbs','idioms','adverbs'];\nfunction parseResponse(root) {\n  if (root.skip_translation) return {translations:[]};\n  if (root.error) throw new Error(root.error.message || 'تعذر استكمال ترجمة المفردات.');\n  const choice=root.choices?.[0];\n  let content=choice?.message?.content ?? choice?.message?.parsed ?? root.output_text ?? null;\n  if (Array.isArray(content)) content=content.map(x=>typeof x==='string'?x:(x.text||'')).join('\\n');\n  if (content && typeof content==='object') content=JSON.stringify(content);\n  if (typeof content!=='string' || !content.trim()) throw new Error('لم يرجع نموذج الترجمة محتوى صالحاً.');\n  content=content.trim().replace(/^```json\\s*/i,'').replace(/^```\\s*/i,'').replace(/\\s*```$/i,'');\n  try { return JSON.parse(content); }\n  catch(e) { const a=content.indexOf('{'), b=content.lastIndexOf('}'); if(a<0||b<=a) throw new Error('استجابة ترجمة المفردات ليست JSON صالحاً: '+e.message); return JSON.parse(content.slice(a,b+1)); }\n}\nconst results=$input.all().map(x=>parseResponse(x.json||{}));\nlet translatedCount=0;\nfor (const result of results) {\n  const entries=Array.isArray(result.translations)?result.translations:[];\n  for (const item of entries) {\n    const category=String(item?.category||'');\n    const index=Number(item?.index);\n    if (!keys.includes(category) || !Number.isInteger(index) || index<0 || !words[category]?.[index]) continue;\n    const target=words[category][index];\n    const ar=String(item?.ar||item?.translation_ar||item?.translation||item?.arabic||item?.meaning_ar||'').trim();\n    if (ar && !String(target.ar||'').trim()) { target.ar=ar; translatedCount++; }\n    const definition=String(item?.definition_ar||item?.description_ar||'').trim();\n    if (definition && !String(target.definition_ar||'').trim()) target.definition_ar=definition;\n  }\n}\nconst missingAfter=keys.reduce((n,k)=>n+words[k].filter(x=>!String(x?.ar||'').trim()).length,0);\nconst vocabulary_total=keys.reduce((n,k)=>n+words[k].length,0);\nconst vocabulary_counts={}; for(const k of keys) vocabulary_counts[k]=words[k].length;\nreturn [{json:{...base,words,vocabulary_total,vocabulary_counts,missing_arabic_translations:missingAfter,translated_arabic_count:translatedCount,message:(base.message||'')+' تم استكمال الترجمة العربية لـ '+translatedCount+' مفردة. '+(missingAfter?('بقيت '+missingAfter+' مفردة دون ترجمة.'): 'جميع المفردات المعروضة تحتوي على ترجمة عربية.')}}];"
+      },
+      "id": "71be75f5-e69e-4e95-86f9-4adab1b66b4a",
+      "name": "Apply Missing Arabic Vocabulary Translations",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3360,
+        300
+      ],
+      "onError": "continueErrorOutput"
     }
-    track("حفظ تلقائي لدرس: " + lessonSnapshot.lesson_title);
-    await refreshSavedLessonCount();
-    return newId;
-  };
-
-  const queuedOperation = lessonSaveQueue.then(saveOperation, saveOperation);
-  lessonSaveQueue = queuedOperation.catch(() => null);
-
-  try {
-    return await queuedOperation;
-  } catch (error) {
-    console.error("Automatic lesson save failed", error);
-    if (currentLessonData?.story === lessonSnapshot.story && currentLessonTitle === lessonSnapshot.lesson_title) {
-      const currentStatus = document.getElementById("lessonSaveStatus");
-      if (currentStatus) currentStatus.textContent = "⚠️ تعذر الحفظ التلقائي. تحقق من الاتصال بقاعدة البيانات.";
+  ],
+  "connections": {
+    "Webhook - Specialty Learning": {
+      "main": [
+        [
+          {
+            "node": "Normalize Specialty Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Specialty Request": {
+      "main": [
+        [
+          {
+            "node": "Build Specialty Job Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Student Profile - Supabase": {
+      "main": [
+        [
+          {
+            "node": "Resolve Student Level",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Specialty Failure Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Student Level": {
+      "main": [
+        [
+          {
+            "node": "Build Specialty or Analysis Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Specialty or Analysis Prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate Specialty Module - OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Specialty Module - OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "Parse Specialty Learning JSON",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Specialty Failure Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Specialty Learning JSON": {
+      "main": [
+        [
+          {
+            "node": "Build Complete Vocabulary Audit Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Specialty Failure Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Complete Vocabulary Audit Prompt": {
+      "main": [
+        [
+          {
+            "node": "Extract Complete Vocabulary - OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Specialty Failure Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Complete Vocabulary - OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "Merge Audited Vocabulary Into Specialty Module",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Specialty Failure Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Audited Vocabulary Into Specialty Module": {
+      "main": [
+        [
+          {
+            "node": "Build Missing Vocabulary Translation Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Specialty Failure Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Specialty Job Record": {
+      "main": [
+        [
+          {
+            "node": "Create Specialty Job Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Specialty Job Record": {
+      "main": [
+        [
+          {
+            "node": "Respond Job Accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Job Accepted": {
+      "main": [
+        [
+          {
+            "node": "Lookup Student Profile - Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Specialty Failure Record": {
+      "main": [
+        [
+          {
+            "node": "Mark Specialty Job Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Specialty Status": {
+      "main": [
+        [
+          {
+            "node": "Get Specialty Job Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Specialty Job Status": {
+      "main": [
+        [
+          {
+            "node": "Format Specialty Job Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Specialty Job Status": {
+      "main": [
+        [
+          {
+            "node": "Respond Specialty Job Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Missing Vocabulary Translation Prompts": {
+      "main": [
+        [
+          {
+            "node": "Any Arabic Vocabulary Missing?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Specialty Failure Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any Arabic Vocabulary Missing?": {
+      "main": [
+        [
+          {
+            "node": "Apply Missing Arabic Vocabulary Translations",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Translate Missing Vocabulary - OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translate Missing Vocabulary - OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "Apply Missing Arabic Vocabulary Translations",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Specialty Failure Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Missing Arabic Vocabulary Translations": {
+      "main": [
+        [
+          {
+            "node": "Save Completed Specialty Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Specialty Failure Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
-    return null;
-  } finally {
-    pendingLessonSaveKeys.delete(saveKey);
-  }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "versionId": "d63dcdbb-eecd-46fa-b0fa-3e82b8125d8b",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
 }
-
-function cleanLearningText(value) {
-  return String(value ?? "").replace(/\r\n?/g, "\n")
-    // Remove Markdown heading tokens wherever the model accidentally places them.
-    .replace(/(^|[\s([{])#{1,6}(?=$|[\s.,;:!?)}\]])/g, "$1")
-    .replace(/(^|[\s([{])#{1,6}(?=[\p{L}\p{N}])/gu, "$1")
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1$2")
-    .replace(/^\s*```[a-z0-9_-]*\s*$/gmi, "")
-    .replace(/(^|\n)\s*[-+]\s+(?=\S)/g, "$1")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-function renderLesson(data, options = {}) {
-  const root = document.getElementById("lesson");
-  root.replaceChildren();
-  stopStoryReading();
-  const cleanStoryText = cleanLearningText(data.story || "");
-  const cleanTranslationText = cleanLearningText(data.translation || "");
-  currentLessonData = {
-    story: cleanStoryText,
-    translation: cleanTranslationText,
-    words: data.words && typeof data.words === "object" ? data.words : {},
-    student_level: data.student_level || storedLevel || "A1",
-    specialty: String(data.specialty || data.words?.specialty || "").trim(),
-    mode: String(data.mode || data.words?.mode || "generate").trim()
-  };
-  if (currentLessonData.specialty) currentLessonData.words.specialty = currentLessonData.specialty;
-  currentLessonData.words.mode = currentLessonData.mode;
-  if (options.title) currentLessonTitle = options.title;
-  currentSavedLessonId = options.savedId || null;
-
-  const lessonCard = document.createElement("section");
-  lessonCard.className = "card lesson-card";
-
-  const storyHead = document.createElement("div");
-  storyHead.className = "section-head";
-  const storyTitle = document.createElement("h2");
-  storyTitle.className = "section-title";
-  storyTitle.textContent = "📖 القصة";
-  const level = document.createElement("span");
-  level.className = "level-pill";
-  level.textContent = "المستوى: " + (data.student_level || storedLevel || "A1");
-
-  const readControls = document.createElement("div");
-  readControls.className = "read-controls";
-  const readButton = document.createElement("button");
-  readButton.type = "button";
-  readButton.id = "readStoryBtn";
-  readButton.className = "read-btn";
-  readButton.textContent = "🔊 قراءة القصة";
-  readButton.addEventListener("click", () => startStoryReading(false));
-
-  const pauseButton = document.createElement("button");
-  pauseButton.type = "button";
-  pauseButton.id = "pauseStoryBtn";
-  pauseButton.className = "read-btn pause";
-  pauseButton.textContent = "⏸ إيقاف مؤقت";
-  pauseButton.disabled = true;
-  pauseButton.addEventListener("click", toggleStoryPause);
-
-  const restartButton = document.createElement("button");
-  restartButton.type = "button";
-  restartButton.id = "restartStoryBtn";
-  restartButton.className = "read-btn";
-  restartButton.textContent = "↻ من البداية";
-  restartButton.addEventListener("click", () => startStoryReading(true));
-
-  const stopButton = document.createElement("button");
-  stopButton.type = "button";
-  stopButton.className = "read-btn stop";
-  stopButton.textContent = "⏹ إيقاف";
-  stopButton.addEventListener("click", stopStoryReading);
-
-  const speedWrap = document.createElement("label");
-  speedWrap.className = "read-speed";
-  speedWrap.htmlFor = "storySpeedRange";
-  const speedLabel = document.createElement("span");
-  speedLabel.textContent = "سرعة القراءة";
-  const speedRange = document.createElement("input");
-  speedRange.type = "range";
-  speedRange.id = "storySpeedRange";
-  speedRange.min = "0.65";
-  speedRange.max = "1.25";
-  speedRange.step = "0.05";
-  speedRange.value = String(storyRate);
-  speedRange.setAttribute("aria-label", "سرعة قراءة القصة");
-  const speedValue = document.createElement("output");
-  speedValue.id = "storyRateValue";
-  speedValue.textContent = storyRate.toFixed(2) + "×";
-  speedRange.addEventListener("input", () => {
-    const value = Number(speedRange.value);
-    speedValue.textContent = value.toFixed(2) + "×";
-  });
-  speedRange.addEventListener("change", () => updateStoryRate(speedRange.value, true));
-  speedWrap.append(speedLabel, speedRange, speedValue);
-
-  const readNote = document.createElement("span");
-  readNote.className = "read-note";
-  readNote.textContent = "اضغط على أي كلمة لسماعها ومعرفة معناها";
-  readControls.append(readButton, pauseButton, restartButton, stopButton, speedWrap, readNote);
-  storyHead.append(storyTitle, level);
-  const dockControls = document.getElementById("readingDockControls");
-  dockControls.replaceChildren(readControls);
-  document.getElementById("readingDock").style.display = "flex";
-  document.body.classList.add("has-reading-dock");
-  lessonCard.appendChild(storyHead);
-  const saveStatus = document.createElement("div");
-  saveStatus.id = "lessonSaveStatus";
-  saveStatus.className = "lesson-save-status";
-  if (currentSavedLessonId) saveStatus.textContent = "✅ هذا الدرس محفوظ في دروسك.";
-  else saveStatus.textContent = "💾 سيتم حفظ هذا الدرس تلقائياً في دروسك.";
-  lessonCard.appendChild(saveStatus);
-
-  const englishPanel = document.createElement("div");
-  englishPanel.className = "story-panel";
-  const englishLabel = document.createElement("div");
-  englishLabel.className = "story-label";
-  englishLabel.textContent = "English Story";
-  const englishText = document.createElement("p");
-  englishPanel.dir = "ltr";
-  englishPanel.lang = "en";
-  englishText.className = "story story-en";
-  englishText.id = "storyEnglishText";
-  englishText.setAttribute("dir", "ltr");
-  englishText.setAttribute("lang", "en");
-  englishText.dataset.rawText = cleanStoryText || "لم تصل القصة.";
-  renderClickableStory(cleanStoryText || "لم تصل القصة.", englishText);
-  englishPanel.append(englishLabel, englishText);
-  lessonCard.appendChild(englishPanel);
-
-  const arabicPanel = document.createElement("div");
-  arabicPanel.className = "story-panel";
-  const arabicLabel = document.createElement("div");
-  arabicLabel.className = "story-label";
-  arabicLabel.textContent = "الترجمة العربية";
-  const arabicText = document.createElement("p");
-  arabicPanel.dir = "rtl";
-  arabicPanel.lang = "ar";
-  arabicText.className = "story story-ar";
-  arabicText.setAttribute("dir", "rtl");
-  arabicText.setAttribute("lang", "ar");
-  arabicText.textContent = cleanTranslationText || "⚠️ لا توجد ترجمة";
-  arabicPanel.append(arabicLabel, arabicText);
-  lessonCard.appendChild(arabicPanel);
-
-  if (data.words && typeof data.words === "object") {
-    const specialtyHeading = document.createElement("div");
-    specialtyHeading.className = "profile-note";
-    specialtyHeading.textContent = currentLessonData.specialty
-      ? "المجال المهني: " + currentLessonData.specialty
-      : (currentLessonData.mode === "analyze" ? "تحليل النص المقدم" : "دراسة مهنية");
-    lessonCard.appendChild(specialtyHeading);
-    const vocabKeys = ["verbs","nouns","adjectives","phrasal_verbs","idioms","adverbs"];
-    const vocabLabels = {verbs:"أفعال",nouns:"أسماء",adjectives:"صفات",phrasal_verbs:"أفعال مركبة",idioms:"تعبيرات",adverbs:"ظروف"};
-    const vocabTotal = vocabKeys.reduce((sum, key) => sum + (Array.isArray(data.words[key]) ? data.words[key].length : 0), 0);
-    const vocabSummary = document.createElement("div");
-    vocabSummary.className = "profile-note vocab-summary";
-    const summaryTitle = document.createElement("div");
-    summaryTitle.textContent = "📚 إجمالي المفردات والتعبيرات: " + (Number(data.vocabulary_total) || vocabTotal);
-    summaryTitle.style.fontWeight = "bold";
-    vocabSummary.appendChild(summaryTitle);
-    const counts = document.createElement("div");
-    counts.className = "vocab-counts";
-    vocabKeys.forEach(key => {
-      const chip = document.createElement("span");
-      chip.className = "vocab-count-chip";
-      chip.textContent = vocabLabels[key] + ": " + (Array.isArray(data.words[key]) ? data.words[key].length : 0);
-      counts.appendChild(chip);
-    });
-    vocabSummary.appendChild(counts);
-    const auditNote = document.createElement("div");
-    auditNote.className = "vocab-audit-note";
-    auditNote.textContent = "تم تدقيق المفردات على أجزاء من النص والتحقق من وجودها فيه.";
-    vocabSummary.appendChild(auditNote);
-    lessonCard.appendChild(vocabSummary);
-    lessonCard.appendChild(renderProfessionalExtras(data.words));
-    lessonCard.appendChild(renderWords(data.words));
-  }
-
-  if (data.profile_notice) {
-    const notice = document.createElement("p");
-    notice.className = "profile-note";
-    notice.textContent = data.profile_notice;
-    lessonCard.appendChild(notice);
-  }
-
-  root.appendChild(lessonCard);
-  track("اكتمال إنشاء الدرس");
-  if (!options.savedId && options.autoSave !== false) {
-    // حفظ تلقائي بعد عرض الدرس؛ لا يتطلب من الطالب الضغط على زر.
-    saveCurrentLessonAutomatically();
-  }
-}
-
-let specialtyMode = "generate";
-function setSpecialtyMode(mode) {
-  specialtyMode = mode === "analyze" ? "analyze" : "generate";
-  const generate = specialtyMode === "generate";
-  document.getElementById("generatePanel").hidden = !generate;
-  document.getElementById("analyzePanel").hidden = generate;
-  document.getElementById("generateModeBtn").classList.toggle("active", generate);
-  document.getElementById("analyzeModeBtn").classList.toggle("active", !generate);
-  document.getElementById("generateModeBtn").setAttribute("aria-selected", String(generate));
-  document.getElementById("analyzeModeBtn").setAttribute("aria-selected", String(!generate));
-}
-
-async function submitSpecialtyRequest(mode) {
-  const isAnalyze = mode === "analyze";
-  const specialty = document.getElementById("textInput").value.trim();
-  const storyText = document.getElementById("storyInput").value.trim();
-  const input = isAnalyze ? storyText : specialty;
-  if (!input) {
-    alert(isAnalyze ? "الصق النص الذي تريد تحليله أولاً." : "اكتب اسم التخصص أو الوظيفة أولاً.");
-    return;
-  }
-  if (isAnalyze && storyText.length > 30000) {
-    alert("النص طويل جداً. قسّمه إلى أجزاء، ثم حلّل كل جزء على حدة (الحد 30,000 حرف).");
-    return;
-  }
-
-  const button = document.getElementById(isAnalyze ? "analyzeBtn" : "generateBtn");
-  const root = document.getElementById("lesson");
-  currentLessonTitle = isAnalyze ? "تحليل نص مهني" : "الإنجليزية المهنية: " + specialty;
-  currentSavedLessonId = null;
-  button.disabled = true;
-  const oldText = button.textContent;
-  button.textContent = isAnalyze ? "⏳ جارٍ تحليل النص..." : "⏳ جارٍ بناء دراسة التخصص...";
-  root.innerHTML = '<div class="card loading"><div id="specialtyJobStatus">⏳ يتم استلام الطلب وتجهيز المهمة...</div><div class="hint">يمكن أن يستغرق إعداد الدراسة وتدقيق مفرداتها عدة دقائق. لا تغلق الصفحة حتى تظهر النتيجة.</div></div>';
-  track(isAnalyze ? "تحليل نص مهني" : "إنشاء دراسة تخصصية: " + specialty);
-
-  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-  try {
-    // The POST returns immediately with a job_id; the heavy AI work continues in n8n.
-    const response = await fetch(WEBHOOK, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=UTF-8" },
-      body: JSON.stringify({
-        mode: mode,
-        specialty: isAnalyze ? "" : specialty,
-        storyText: isAnalyze ? storyText : "",
-        inputPart: input,
-        type: isAnalyze ? "analyze" : "specialty",
-        user_id,
-        phone,
-        student_level: storedLevel
-      })
-    });
-    const initialText = await response.text();
-    let accepted;
-    try { accepted = JSON.parse(initialText); }
-    catch { throw new Error("استجابة بدء المهمة غير مفهومة من n8n: " + initialText.slice(0, 250)); }
-    if (!response.ok || accepted.success === false || !accepted.job_id) {
-      throw new Error(accepted.message || accepted.error || "تعذر بدء المهمة في n8n.");
-    }
-
-    const jobId = String(accepted.job_id);
-    const startedAt = Date.now();
-    const maxWaitMs = 12 * 60 * 1000;
-    let completedData = null;
-    let lastStatusText = "تم استلام الطلب. يجري إعداد الدراسة الآن...";
-    let consecutivePollErrors = 0;
-
-    while (Date.now() - startedAt < maxWaitMs) {
-      await wait(2500);
-      const statusUrl = STATUS_WEBHOOK + "?job_id=" + encodeURIComponent(jobId);
-      let statusResponse, statusData;
-      try {
-        statusResponse = await fetch(statusUrl, { method: "GET", cache: "no-store" });
-        const statusText = await statusResponse.text();
-        try { statusData = JSON.parse(statusText); }
-        catch { throw new Error("استجابة متابعة المهمة غير مفهومة: " + statusText.slice(0, 180)); }
-        if (!statusResponse.ok) throw new Error(statusData.message || "تعذر متابعة حالة المهمة.");
-        consecutivePollErrors = 0;
-      } catch (pollError) {
-        consecutivePollErrors += 1;
-        if (consecutivePollErrors >= 5) throw new Error("تعذر الاتصال بخدمة متابعة المهمة عدة مرات. آخر خطأ: " + pollError.message);
-        continue;
-      }
-
-      if (statusData.status === "completed") {
-        completedData = statusData.result;
-        break;
-      }
-      if (statusData.status === "failed") {
-        throw new Error(statusData.error || "تعذر إكمال الدراسة. افتح سجل التنفيذ في n8n لمعرفة السبب.");
-      }
-      if (statusData.status === "not_found") {
-        throw new Error("لم يتم العثور على المهمة في جدول التخزين. تأكد من تشغيل SQL وربط اعتماد Supabase في n8n.");
-      }
-
-      const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
-      if (elapsedSeconds < 30) lastStatusText = "✅ تم استلام الطلب. يجري إعداد القصة والمحاور المهنية...";
-      else if (elapsedSeconds < 90) lastStatusText = "📖 القصة والترجمة قيد الإعداد. نراجع أيضاً المحاور والاختصارات...";
-      else if (elapsedSeconds < 180) lastStatusText = "🔎 يجري استخراج الأفعال والأسماء والصفات والأفعال المركبة والتعبيرات والظروف...";
-      else lastStatusText = "🧠 التدقيق التفصيلي ما زال يعمل. ننتظر حفظ النتيجة النهائية...";
-      const statusEl = document.getElementById("specialtyJobStatus");
-      if (statusEl) statusEl.textContent = lastStatusText + " (" + elapsedSeconds + " ثانية)";
-    }
-
-    if (!completedData) throw new Error("استغرق إعداد الدراسة أكثر من 12 دقيقة. راجع سجل n8n؛ قد تكون إحدى عقد OpenRouter متوقفة أو بطيئة.");
-    const data = completedData;
-    if (!data || data.success === false) throw new Error(data?.message || data?.error || "لم تصل نتيجة مكتملة.");
-    if (!data.words || typeof data.words !== "object") data.words = {};
-    data.words.specialty = data.specialty || specialty || "";
-    data.words.mode = mode;
-    currentLessonTitle = isAnalyze ? "تحليل نص مهني" : "الإنجليزية المهنية: " + (data.specialty || specialty);
-    if (isAnalyze) document.getElementById("storyInput").value = "";
-    else document.getElementById("textInput").value = "";
-    renderLesson(data);
-    track(isAnalyze ? "اكتمال تحليل نص مهني" : "اكتمال دراسة تخصصية");
-  } catch (error) {
-    console.error(error);
-    root.innerHTML = '<div class="card error">❌ ' + escapeHTML(error.message || "حدث خطأ أثناء المعالجة") + '</div>';
-  } finally {
-    button.disabled = false;
-    button.textContent = oldText;
-  }
-}
-
-function generateLesson() { return submitSpecialtyRequest("generate"); }
-function analyzePastedStory() { return submitSpecialtyRequest("analyze"); }
-
-document.getElementById("closeMeaningCard").addEventListener("click", () => {
-  clearTimeout(meaningCardTimer);
-  document.getElementById("wordMeaningCard").classList.remove("show");
-});
-document.getElementById("meaningSaveBtn").addEventListener("click", saveMeaningCardWord);
-document.getElementById("generateBtn").addEventListener("click", generateLesson);
-document.getElementById("analyzeBtn").addEventListener("click", analyzePastedStory);
-document.getElementById("generateModeBtn").addEventListener("click", () => setSpecialtyMode("generate"));
-document.getElementById("analyzeModeBtn").addEventListener("click", () => setSpecialtyMode("analyze"));
-document.getElementById("textInput").addEventListener("keydown", event => {
-  if (event.key === "Enter") generateLesson();
-});
-setSpecialtyMode("generate");
-window.addEventListener("beforeunload", () => {
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
-});
-</script>
-</body>
-</html>
